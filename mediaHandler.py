@@ -1,7 +1,7 @@
 import pims
 import numpy as np
 
-class MediaHandler():
+class mediaHandler():
     def __init__(self,filename,modus,fps=0,bufferSize = 2000):
         self.activeFrame = []
         self.frameNo = 0
