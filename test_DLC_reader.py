@@ -8,7 +8,7 @@ reload(DLC_reader)
 flyPos    = '/media/dataSSD/Anka1/A_01_01DeepCut_resnet50_ParalellClimb2Aug22shuffle1_150000.h5'
 cornerPos2= '/media/dataSSD/Anka1/A_01_01DeepCut_resnet50_darkClimbCornersSep13shuffle1_1030000.h5'
 
-x = DLC_reader.DLC_H5_reader(flyPos)  
+x = DLC_reader.DLC_H5_reader(flyPos,15)  
 x.readH5()
 x.multiAnimal2numpy()
 
@@ -32,7 +32,7 @@ for areaI in range(tra3.shape[1]):
         c+=1
 
 c = 0
-for areaI in range(tra3Sorted.shape[1]):
+for areaI in range(500):
     if areaI%2 == 0:
         axs[1].plot(tra3Sorted[:,areaI,0],tra3Sorted[:,areaI,1],'.',color=cmap.colors[c])
     else:
@@ -43,5 +43,17 @@ axs[1].axis('equal')
 
 plt.show()
 
+# plot single frame
 
+
+fig, axs = plt.subplots()
+
+frame = x.tra[125,:,:,:]
+cmap = plt.get_cmap('tab20')   
+
+for animalI in  range(frame.shape[0]):
+    axs.plot(frame[animalI,:,0],frame[animalI,:,1],'o-',color=cmap.colors[animalI])
+axs.axis('equal')
+
+plt.show()
     
