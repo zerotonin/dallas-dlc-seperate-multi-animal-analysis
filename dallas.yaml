@@ -13,7 +13,8 @@
 # update:  conda env update -f dallas.yaml 
 name: dallas 
 dependencies:   
-- python=3.7   
+- python=3.7
+- pandas   
 - pip   
 - pip:
     -
