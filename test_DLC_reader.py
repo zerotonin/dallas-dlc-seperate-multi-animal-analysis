@@ -10,6 +10,9 @@ x.readH5()
 x.multiAnimal2numpy()
 
 
+
+
+
 #fig, ax = plt.subplots()
 #ax.hold(True)
 cmap = plt.get_cmap('tab20')      
