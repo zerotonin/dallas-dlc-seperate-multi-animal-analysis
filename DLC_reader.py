@@ -26,14 +26,19 @@ class DLC_H5_reader:
             frameRes = frameRes.to_numpy()  
             frameRes = np.reshape(frameRes,(self.areaNo,-1))  
             self.tra.append(frameRes)
+        self.tra = np.array(self.tra)
         
     
 class multiAreaEval:
     def __init__(self,tra3):
         self.tra = tra3
-        self.traLen = len(tra3)
+        self.traLen = tra3.shape[0]
         self.posSorted= list()
         self.accuracyThreshold = 0.95
+
+
+    def 
+
 
     def thresholdAcc(self,areaCoords):
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
@@ -44,11 +49,11 @@ class multiAreaEval:
     def sortOnPos(self):
 
         self.posSorted= list()
-        ptsOld = self.tra[0]
+        ptsOld = self.tra[0,:,:]
         self.posSorted.append(ptsOld)
         
         for frameI in tqdm.tqdm(range(1,self.traLen)):
-            ptsNew = copy.deepcopy(self.tra[frameI])
+            ptsNew = copy.deepcopy(self.tra[frameI,:,:])
             IDX = self.thresholdAcc(ptsNew)
             C = cdist(ptsOld[:,0:2], ptsNew[IDX,0:2], 'euclidean')
             assignmentOld, assigmentNew = linear_sum_assignment(C)
