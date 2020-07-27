@@ -5,8 +5,9 @@ from scipy.optimize import linear_sum_assignment
 
 
 class DLC_H5_reader:
-    def __init__(self,filePosition):
+    def __init__(self,filePosition,animalNo):
         self.fPos = filePosition
+        self.animalNo = animalNo
         self.pandasDF = None
         self.frameNo  = None  
         self.columns  = None
@@ -25,6 +26,7 @@ class DLC_H5_reader:
             frameRes = self.pandasDF.iloc[frameI].iloc[:] 
             frameRes = frameRes.to_numpy()  
             frameRes = np.reshape(frameRes,(self.areaNo,-1))  
+            x = np.reshape(frameRes,[int(self.areaNo/self.animalNo),3,self.areaNo])   
             self.tra.append(frameRes)
         self.tra = np.array(self.tra)
         
@@ -36,16 +38,10 @@ class multiAreaEval:
         self.posSorted= list()
         self.accuracyThreshold = 0.95
 
-
-    def 
-
-
     def thresholdAcc(self,areaCoords):
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
         return idx[0]  
-    
-
-
+ 
     def sortOnPos(self):
 
         self.posSorted= list()
