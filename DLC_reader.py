@@ -23,7 +23,15 @@ class DLC_H5_reader:
             frameRes = frameRes.to_numpy()  
             frameRes = np.reshape(frameRes,(self.areaNo,-1))  
             self.tra.append(frameRes)
-           
+    
+class multiAreaEval:
+    def __init__(self,tra3):
+        self.tra = tra3
+    
+    def sortNevaluate(self):
+        pass
+
+
             
 
 
