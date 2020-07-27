@@ -1,5 +1,8 @@
 import pandas,tqdm
 import numpy as np
+from scipy.spatial.distance import cdist
+from scipy.optimize import linear_sum_assignment
+
 
 class DLC_H5_reader:
     def __init__(self,filePosition):
@@ -27,9 +30,22 @@ class DLC_H5_reader:
 class multiAreaEval:
     def __init__(self,tra3):
         self.tra = tra3
+        self.traLen = len(tra3)
     
-    def sortNevaluate(self):
-        pass
+    def sortOnPos(self):
+
+        self.posSorted= list()
+        ptsOld = self.tra[0][:,0:2]
+        self.posSorted.append(ptsOld)
+        for frameI in range(1,self.traLen):
+            ptsNew = self.tra[frameI][:,0:2]
+            C = cdist(ptsOld, ptsNew, 'euclidean')
+            _, assigment = linear_sum_assignment(C)
+            self.posSorted(self.tra[frameI][assigment,:])
+            ptsOld = ptsNew
+
+
+        
 
 
             
