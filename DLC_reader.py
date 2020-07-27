@@ -31,6 +31,7 @@ class multiAreaEval:
     def __init__(self,tra3):
         self.tra = tra3
         self.traLen = len(tra3)
+        self.posSorted= list()
     
     def sortOnPos(self):
 
