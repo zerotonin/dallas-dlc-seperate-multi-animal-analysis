@@ -1,6 +1,7 @@
 import DLC_reader,tqdm 
 from importlib import reload 
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 reload(DLC_reader)
@@ -18,17 +19,15 @@ y.sortOnPos()
 
 #fig, ax = plt.subplots()
 #ax.hold(True)
+tra3 = np.array(y.posSorted) 
 cmap = plt.get_cmap('tab20')      
-for frame in tqdm.tqdm(y.posSorted):
-    rows,cols = frame.shape
-    c = 0
-    for rowI in range(rows):
-        if rowI%2 == 0:
-            plt.plot(frame[rowI,0],frame[rowI,1],'x',color=cmap.colors[c])
-        else:
-            plt.plot(frame[rowI,0],frame[rowI,1],'o',color=cmap.colors[c])
-            c+=1
-plt.hold(False)
+c = 0
+for areaI in tqdm.tqdm(range(tra3.shape[1])):
+    if areaI%2 == 0:
+        plt.plot(tra3[:,areaI,0],tra3[:,areaI,1],'x',color=cmap.colors[c])
+    else:
+        plt.plot(tra3[:,areaI,0],tra3[:,areaI,1],'o',color=cmap.colors[c])
+        c+=1
 
 plt.show()
 
