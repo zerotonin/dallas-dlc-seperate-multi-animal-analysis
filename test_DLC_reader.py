@@ -9,6 +9,9 @@ x = DLC_reader.DLC_H5_reader(fPos)
 x.readH5()
 x.multiAnimal2numpy()
 
+y= DLC_reader.multiAreaEval(x.tra)
+y.sortOnPos()
+
 
 
 
@@ -16,7 +19,7 @@ x.multiAnimal2numpy()
 #fig, ax = plt.subplots()
 #ax.hold(True)
 cmap = plt.get_cmap('tab20')      
-for frame in tqdm.tqdm(x.tra):
+for frame in tqdm.tqdm(y.posSorted):
     rows,cols = frame.shape
     c = 0
     for rowI in range(rows):
