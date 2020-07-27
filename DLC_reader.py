@@ -1,4 +1,4 @@
-import pandas,tqdm
+import pandas,tqdm,copy
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
@@ -26,24 +26,39 @@ class DLC_H5_reader:
             frameRes = frameRes.to_numpy()  
             frameRes = np.reshape(frameRes,(self.areaNo,-1))  
             self.tra.append(frameRes)
+        
     
 class multiAreaEval:
     def __init__(self,tra3):
         self.tra = tra3
         self.traLen = len(tra3)
         self.posSorted= list()
+        self.accuracyThreshold = 0.95
+
+    def thresholdAcc(self,areaCoords):
+        idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
+        return idx[0]  
     
+
+
     def sortOnPos(self):
 
         self.posSorted= list()
-        ptsOld = self.tra[0][:,0:2]
+        ptsOld = self.tra[0]
         self.posSorted.append(ptsOld)
+        
         for frameI in tqdm.tqdm(range(1,self.traLen)):
-            ptsNew = self.tra[frameI][:,0:2]
-            C = cdist(ptsOld, ptsNew, 'euclidean')
-            _, assigment = linear_sum_assignment(C)
-            self.posSorted.append(self.tra[frameI][assigment,:])
-            ptsOld = ptsNew
+            ptsNew = copy.deepcopy(self.tra[frameI])
+            IDX = self.thresholdAcc(ptsNew)
+            C = cdist(ptsOld[:,0:2], ptsNew[IDX,0:2], 'euclidean')
+            assignmentOld, assigmentNew = linear_sum_assignment(C)
+
+            ptsOld[assignmentOld,:] = ptsNew[assigmentNew,:]
+
+
+            self.posSorted.append(copy.deepcopy(ptsOld))
+
+
 
 
         
