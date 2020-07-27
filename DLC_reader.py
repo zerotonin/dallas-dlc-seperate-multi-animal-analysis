@@ -37,7 +37,7 @@ class multiAreaEval:
         self.posSorted= list()
         ptsOld = self.tra[0][:,0:2]
         self.posSorted.append(ptsOld)
-        for frameI in range(1,self.traLen):
+        for frameI in tqdm.tqdm(range(1,self.traLen))):
             ptsNew = self.tra[frameI][:,0:2]
             C = cdist(ptsOld, ptsNew, 'euclidean')
             _, assigment = linear_sum_assignment(C)
