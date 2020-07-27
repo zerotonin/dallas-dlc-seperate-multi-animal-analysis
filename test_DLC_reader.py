@@ -24,20 +24,14 @@ tra3 = np.array(x.tra)
 cmap = plt.get_cmap('tab20')      
 fig, axs = plt.subplots(2, 1)
 c = 0
-for areaI in range(tra3.shape[1]):
-    if areaI%2 == 0:
-        axs[0].plot(tra3[:,areaI,0],tra3[:,areaI,1],'.',color=cmap.colors[c])
-    else:
-        axs[0].plot(tra3[:,areaI,0],tra3[:,areaI,1],'<',color=cmap.colors[c])
+for frameI in tqdm.tqdm(range(tra3.shape[0])):
+    for animalI in range(tra3.shape[1]):
+        axs[0].plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'o',color=cmap.colors[animalI])
+       # axs[1].plot(tra3Sorted[frameI,animalI,:,0],tra3Sorted[frameI,animalI,:,1],'o-',color=cmap.colors[animalI])
         c+=1
+    
 
-c = 0
-for areaI in range(500):
-    if areaI%2 == 0:
-        axs[1].plot(tra3Sorted[:,areaI,0],tra3Sorted[:,areaI,1],'.',color=cmap.colors[c])
-    else:
-        axs[1].plot(tra3Sorted[:,areaI,0],tra3Sorted[:,areaI,1],'<',color=cmap.colors[c])
-        c+=1
+
 axs[0].axis('equal')
 axs[1].axis('equal')
 
@@ -46,14 +40,22 @@ plt.show()
 # plot single frame
 
 
-fig, axs = plt.subplots()
+plt.ion()
+fig = plt.figure()
+ax = fig.add_subplot(111)
+cmap = plt.get_cmap('tab20')  
+ax.set_xlim(0,1000)
+ax.set_ylim(0,800)
+ax.axis('equal')
+plt.gca().invert_yaxis()
 
-frame = x.tra[125,:,:,:]
-cmap = plt.get_cmap('tab20')   
-
-for animalI in  range(frame.shape[0]):
-    axs.plot(frame[animalI,:,0],frame[animalI,:,1],'o-',color=cmap.colors[animalI])
-axs.axis('equal')
+for frameI in np.linspace(0,x.frameNo,500, endpoint=False, dtype=int ):
+    
+    for animalI in  range(frame.shape[0]):
+        ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
+        ax.plot(tra3[frameI,animalI,0,0],tra3[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
+        
+    fig.canvas.draw()
 
 plt.show()
     
