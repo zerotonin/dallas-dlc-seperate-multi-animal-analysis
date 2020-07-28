@@ -12,8 +12,8 @@ x = DLC_reader.DLC_H5_reader(flyPos,15)
 x.readH5()
 x.multiAnimal2numpy()
 
-y= DLC_reader.multiAreaEval(x.tra)
-y.sortOnPos()
+y= DLC_reader.multiAnimalEval(x.tra)
+y.lengthTest()
 
 
 
