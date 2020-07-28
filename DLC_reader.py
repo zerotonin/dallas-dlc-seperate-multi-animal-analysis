@@ -47,7 +47,13 @@ class multiAnimalEval:
         for frameI in range(self.traLen):
             for animalI in range(self.animalNo):
                 animal = self.tra[frameI,animalI,:,0:2]
-                self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0))    
+                self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
+
+    def testBodyLen(self):
+        self.calcBodyLen()
+        normBL = self.bodyLength/np.median(self.bodyLength,axis=0)
+        self.lengthDiff = np.abs(normBL -1)    
+      
  
     def sortOnPos(self):
 
