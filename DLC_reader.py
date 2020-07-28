@@ -31,7 +31,7 @@ class DLC_H5_reader:
         self.tra = np.array(self.tra)
         
     
-class multiAanimalEval:
+class multiAnimalEval:
     def __init__(self,tra3):
         self.tra = tra3
         self.traLen,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
@@ -42,6 +42,12 @@ class multiAanimalEval:
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
         return idx[0]  
 
+    def lengthTest(self):
+        self.bodyLength = np.zeros(shape=(self.traLen,self.animalNo))
+        for frameI in range(self.traLen):
+            for animalI in range(self.animalNo):
+                animal
+ 
     def sortOnPos(self):
 
         self.posSorted= list()
