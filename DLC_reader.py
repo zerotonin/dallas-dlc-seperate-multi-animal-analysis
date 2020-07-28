@@ -42,7 +42,7 @@ class multiAnimalEval:
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
         return idx[0]  
 
-    def lengthTest(self):
+    def calcBodyLen(self):
         self.bodyLength = np.zeros(shape=(self.traLen,self.animalNo))
         for frameI in range(self.traLen):
             for animalI in range(self.animalNo):
