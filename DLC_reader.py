@@ -46,7 +46,8 @@ class multiAnimalEval:
         self.bodyLength = np.zeros(shape=(self.traLen,self.animalNo))
         for frameI in range(self.traLen):
             for animalI in range(self.animalNo):
-                animal
+                animal = self.tra[frameI,animalI,:,0:2]
+                self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0))    
  
     def sortOnPos(self):
 
