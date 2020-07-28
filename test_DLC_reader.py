@@ -13,8 +13,8 @@ x.readH5()
 x.multiAnimal2numpy()
 
 y= DLC_reader.multiAnimalEval(x.tra)
-y.lengthTest()
-
+y.testBodyLen()
+y.calcStepSize()
 
 
 
