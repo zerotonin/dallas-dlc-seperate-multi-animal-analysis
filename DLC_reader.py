@@ -31,7 +31,7 @@ class DLC_H5_reader:
         self.tra = np.array(self.tra)
         
     
-class multiAreaEval:
+class multiAanimalEval:
     def __init__(self,tra3):
         self.tra = tra3
         self.traLen,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
