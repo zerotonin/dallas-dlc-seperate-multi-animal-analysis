@@ -3,11 +3,16 @@ import numpy as np
 class trajectory_corrector:
     
     def __init__(self,trajectory,artifactList):
+
         self.tra     = trajectory
         self.traLen,self.coordNo  = trajectory.shape[:]
-        self.artList = artifactList
+
+
         self.artSequences = indexTools.boolSequence2startEndIndices(artifactList)
+        self.artSequences = indexTools.bracket_StartsEndOfSequence(self.artSequences,self.traLen)
         self.artSeqLen = self.artSequences.shape[0]
+
+
 
     def interpolateOverArtifacts(self):
 
@@ -23,10 +28,18 @@ class trajectory_corrector:
 
 
     def interpolateAtStart(self, endOfSequence):
-        pass
+        steps = endOfSequence+1
+        self.tra[0:endOfSequence,:] = np.kron(np.ones((steps,1)),self.tra[endOfSequence,:]) 
 
     def interpolateAtEnd(self, startOfSequence):
-        pass            
+        steps = self.traLen-startOfSequence+1
+        self.tra[startOfSequence:self.traLen,:] = np.kron(np.ones((steps,1)),self.tra[startOfSequence,:]) 
+               
 
-    def interpolateTra(self, startOfSequence,endOfSequence):
-        pass            
+    def interpolateTra(self, startOfSequence, endOfSequence):
+        startCoords = self.tra[startOfSequence,:]
+        endCoords   = self.tra[endOfSequence,:]
+        steps       = endOfSequence-startOfSequence +1
+
+        for coordI in range(self.coordNo):
+            self.tra[startOfSequence:endOfSequence,coordI] = np.linspace(startCoords[coordI],endCoords[coordI],steps)
