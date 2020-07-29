@@ -7,8 +7,8 @@ class trajectory_corrector:
         self.tra     = trajectory
         self.traLen,self.coordNo  = trajectory.shape[:]
 
-
-        self.artSequences = indexTools.boolSequence2startEndIndices(artifactList)
+        self.artSequences = indexTools.bracket_Bools(artifactList)
+        self.artSequences = indexTools.boolSequence2startEndIndices(self.artSequences)
         self.artSequences = indexTools.bracket_StartsEndOfSequence(self.artSequences,self.traLen)
         self.artSeqLen = self.artSequences.shape[0]
 
