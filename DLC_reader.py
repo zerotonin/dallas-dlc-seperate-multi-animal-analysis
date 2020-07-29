@@ -22,7 +22,7 @@ class DLC_H5_reader:
     
     def multiAnimal2numpy(self):
         self.tra = list()
-        for frameI in tqdm.tqdm(range(self.frameNo)):
+        for frameI in tqdm.tqdm(range(self.frameNo),desc ='reading '+self.fPos):
             frameRes = self.pandasDF.iloc[frameI].iloc[:] 
             frameRes = frameRes.to_numpy()  
             frameRes = np.reshape(frameRes,(self.areaNo,-1))  
