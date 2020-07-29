@@ -65,7 +65,8 @@ class multiAnimalEval:
                 self.step[frameI,animalI] = max(tempSteps)
 
     def testStepSize(self):
-        pass 
+        stepThreshold = np.percentile(self.step.flatten(),99)
+
  
     def sortOnPos(self):
 
