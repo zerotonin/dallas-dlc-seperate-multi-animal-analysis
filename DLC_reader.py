@@ -49,7 +49,7 @@ class multiAnimalEval:
                 animal = self.tra[frameI,animalI,:,0:2]
                 self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
 
-    def testBodyLen(self, lenThreshold = 2):
+    def testBodyLen(self, lenThreshold):
         self.calcBodyLen()
         lengthDiff = self.bodyLength/np.median(self.bodyLength,axis=0)
         return lengthDiff > lenThreshold
@@ -65,7 +65,7 @@ class multiAnimalEval:
                         tempSteps.append(np.linalg.norm(np.diff(bpCoord,axis=0)))
                 self.step[frameI,animalI] = max(tempSteps)
 
-    def testStepSize(self,percentile = 99):
+    def testStepSize(self,percentile):
         self.calcMaxStepSize()
         stepThreshold = np.percentile(self.step.flatten(),percentile)
         return self.step > stepThreshold
