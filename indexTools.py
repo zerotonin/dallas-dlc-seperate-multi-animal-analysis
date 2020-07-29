@@ -4,6 +4,12 @@ import numpy as np
 def bool2indice(boolList):
     return np.array([i for i, x in enumerate(boolList) if x])
 
+def bracketBools(boolList):
+
+    for i in range(1,len(boolList)-1):
+        if boolLis[i] == 1:
+            boolList[i-1],boolList[i+1] = (True,True)
+
 def indiceSeq2startEnd(indiceList):
     indDiff = np.diff(indiceList)
     starts = [indiceList[0]]
