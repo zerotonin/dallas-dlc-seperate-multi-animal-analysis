@@ -42,17 +42,20 @@ class multiAnimalEval:
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
         return idx[0]  
 
-    def calcBodyLen(self):
+    def calcBodyLen(self, artifactCandidates):
         self.bodyLength = np.zeros(shape=(self.frameNo,self.animalNo))
         for frameI in range(self.frameNo):
             for animalI in range(self.animalNo):
-                animal = self.tra[frameI,animalI,:,0:2]
-                self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
+                if artifactCandidates[frameI,animalI] == False:
+                    animal = self.tra[frameI,animalI,:,0:2]
+                    self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
+                else:
+                    self.bodyLength[frameI,animalI] = np.nan
 
-    def testBodyLen(self, lenThreshold):
-        self.calcBodyLen()
-        lengthDiff = self.bodyLength/np.median(self.bodyLength.flatten())
-        return lengthDiff > lenThreshold
+    def testBodyLen(self, lenThreshold, artifactCandidates):
+        self.calcBodyLen(artifactCandidates)
+        lengthDiff = self.bodyLength/np.nanmedian(self.bodyLength.flatten())
+        return np.nan_to_num(lengthDiff,copy=False) > lenThreshold
         #self.lengthDiff = np.abs(normBL -1)    
     
     def calcMaxStepSize(self):
@@ -71,9 +74,9 @@ class multiAnimalEval:
         return self.step > stepThreshold
     
     def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2,sepCoord= 0):
-        bodyLenCandidates  = self.testBodyLen(bodyThresh)
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
-        positionCandidates = self.positionTest(sepCoord,sepCoordExt)
+        positionCandidates = self.positionTest(sepCoord)
+        bodyLenCandidates  = self.testBodyLen(bodyThresh,stepSizeCandidates | positionCandidates)
 
         self.artifactCandidates = bodyLenCandidates | stepSizeCandidates | positionCandidates
 
@@ -94,7 +97,7 @@ class multiAnimalEval:
     def positionTest(self,seperaterCoord):
         allSepCoords = self.tra[:,:,:,seperaterCoord].flatten()
 
-        boundaries = np.linspace(np.percentile(allSepCoords,1),np.percentile(allSepCoords,99) ,self.animalNo+1,endpoint=True)   
+        boundaries = np.linspace(np.percentile(allSepCoords,0.5),np.percentile(allSepCoords,99.5) ,self.animalNo+1,endpoint=True)   
         posCandidates = np.zeros(shape=(self.frameNo,self.animalNo),dtype=bool)   
         for frameI in range(self.frameNo):
             for animalI in range(self.animalNo):
