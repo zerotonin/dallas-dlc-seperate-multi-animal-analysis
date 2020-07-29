@@ -51,7 +51,7 @@ class multiAnimalEval:
 
     def testBodyLen(self, lenThreshold):
         self.calcBodyLen()
-        lengthDiff = self.bodyLength/np.median(self.bodyLength,axis=0)
+        lengthDiff = self.bodyLength/np.median(self.bodyLength.flatten())
         return lengthDiff > lenThreshold
         #self.lengthDiff = np.abs(normBL -1)    
     
