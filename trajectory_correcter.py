@@ -4,7 +4,7 @@ class trajectory_corrector:
     
     def __init__(self,trajectory,artifactList):
         self.tra     = trajectory
-        self.traLen  = trajectory.shape[0]
+        self.traLen,self.coordNo  = trajectory.shape[:]
         self.artList = artifactList
         self.artSequences = indexTools.boolSequence2startEndIndices(artifactList)
         self.artSeqLen = self.artSequences.shape[0]
