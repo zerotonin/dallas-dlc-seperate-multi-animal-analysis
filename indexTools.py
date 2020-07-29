@@ -9,6 +9,7 @@ def bracketBools(boolList):
     for i in range(1,len(boolList)-1):
         if boolList[i] == 1:
             boolList[i-1],boolList[i+1] = (True,True)
+    return boolList
 
 def indiceSeq2startEnd(indiceList):
     indDiff = np.diff(indiceList)
