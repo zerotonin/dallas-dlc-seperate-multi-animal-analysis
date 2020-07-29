@@ -20,7 +20,7 @@ class trajectory_corrector:
 
             if self.artSequences[i,0] == 0:
                 self.interpolateAtStart(self.artSequences[i,1])
-            elif self.artSequence[i,1] == self.traLen:
+            elif self.artSequences[i,1] == self.traLen:
                 self.interpolateAtEnd(self.artSequences[i,0])
             else:
                 self.interpolateTra(self.artSequences[i,0],self.artSequences[i,1])
@@ -29,10 +29,10 @@ class trajectory_corrector:
 
     def interpolateAtStart(self, endOfSequence):
         steps = endOfSequence+1
-        self.tra[0:endOfSequence,:] = np.kron(np.ones((steps,1)),self.tra[endOfSequence,:]) 
+        self.tra[0:endOfSequence+1,:] = np.kron(np.ones((steps,1)),self.tra[endOfSequence,:]) 
 
     def interpolateAtEnd(self, startOfSequence):
-        steps = self.traLen-startOfSequence+1
+        steps = self.traLen-startOfSequence
         self.tra[startOfSequence:self.traLen,:] = np.kron(np.ones((steps,1)),self.tra[startOfSequence,:]) 
                
 
@@ -42,4 +42,4 @@ class trajectory_corrector:
         steps       = endOfSequence-startOfSequence +1
 
         for coordI in range(self.coordNo):
-            self.tra[startOfSequence:endOfSequence,coordI] = np.linspace(startCoords[coordI],endCoords[coordI],steps)
+            self.tra[startOfSequence:endOfSequence+1,coordI] = np.linspace(startCoords[coordI],endCoords[coordI],steps)
