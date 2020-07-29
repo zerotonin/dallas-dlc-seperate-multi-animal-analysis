@@ -18,6 +18,29 @@ y.testForArtifacts()
 
 
 
+
+plt.ion()
+fig = plt.figure()
+ax = fig.add_subplot(111)
+cmap = plt.get_cmap('tab20')  
+ax.set_xlim(0,1000)
+ax.set_ylim(0,800)
+ax.axis('equal')
+plt.gca().invert_yaxis()
+
+for frameI in np.linspace(0,x.frameNo,500, endpoint=False, dtype=int ):
+    
+    for animalI in  range(x.animalNo):
+        if y.artifactCandidates[frameI,animalI]:
+            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'k-')        
+            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'kx')
+        else:
+            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
+            ax.plot(tra3[frameI,animalI,0,0],tra3[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
+        
+    fig.canvas.draw()
+
+
 tra3Sorted = np.array(y.posSorted) 
 tra3 = np.array(x.tra) 
 cmap = plt.get_cmap('tab20')      
@@ -37,25 +60,3 @@ axs[1].axis('equal')
 plt.show()
 
 # plot single frame
-
-
-plt.ion()
-fig = plt.figure()
-ax = fig.add_subplot(111)
-cmap = plt.get_cmap('tab20')  
-ax.set_xlim(0,1000)
-ax.set_ylim(0,800)
-ax.axis('equal')
-plt.gca().invert_yaxis()
-
-for frameI in np.linspace(0,x.frameNo,100, endpoint=False, dtype=int ):
-    
-    for animalI in  range(x.animalNo):
-        if y.artifactCandidates[frameI,animalI]:
-            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'k-')        
-            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'kx')
-        else:
-            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
-            ax.plot(tra3[frameI,animalI,0,0],tra3[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
-        
-    fig.canvas.draw()
