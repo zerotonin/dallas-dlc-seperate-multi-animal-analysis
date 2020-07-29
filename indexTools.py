@@ -1,15 +1,15 @@
 import numpy as np
-
+import copy
 
 def bool2indice(boolList):
     return np.array([i for i, x in enumerate(boolList) if x])
 
 def bracketBools(boolList):
-
-    for i in range(1,len(boolList)-1):
+    returnList = copy.deepcopy(boolList)
+    for i in range(1,len(returnList)-1):
         if boolList[i] == 1:
-            boolList[i-1],boolList[i+1] = (True,True)
-    return boolList
+            returnList[i-1],returnList[i+1] = (True,True)
+    return returnList
 
 def indiceSeq2startEnd(indiceList):
     indDiff = np.diff(indiceList)
