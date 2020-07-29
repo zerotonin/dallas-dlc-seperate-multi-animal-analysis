@@ -13,8 +13,7 @@ x.readH5()
 x.multiAnimal2numpy()
 
 y= DLC_reader.multiAnimalEval(x.tra)
-y.testBodyLen()
-y.calcStepSize()
+y.testForArtifacts()
 
 
 
@@ -49,13 +48,14 @@ ax.set_ylim(0,800)
 ax.axis('equal')
 plt.gca().invert_yaxis()
 
-for frameI in np.linspace(0,x.frameNo,500, endpoint=False, dtype=int ):
+for frameI in np.linspace(0,x.frameNo,100, endpoint=False, dtype=int ):
     
-    for animalI in  range(frame.shape[0]):
-        ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
-        ax.plot(tra3[frameI,animalI,0,0],tra3[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
+    for animalI in  range(x.animalNo):
+        if y.artifactCandidates[frameI,animalI]:
+            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'k-')        
+            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'kx')
+        else:
+            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
+            ax.plot(tra3[frameI,animalI,0,0],tra3[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
         
     fig.canvas.draw()
-
-plt.show()
-    
