@@ -26,16 +26,17 @@ ax.set_ylim(0,800)
 ax.axis('equal')
 plt.gca().invert_yaxis()
 
-for frameI in np.linspace(0,x.frameNo,150, endpoint=False, dtype=int ):
+for frameI in np.linspace(0,x.frameNo,6002, endpoint=False, dtype=int ):
     
-    for animalI in  range(x.animalNo):
-        if y.artifactCandidates[frameI,animalI]:
-            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'k-')        
-            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'kx')
-        else:
-            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
-            ax.plot(y.tra[frameI,animalI,0,0],y.tra[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
-        
-    fig.canvas.draw()
-
+    #for animalI in  range(x.animalNo):
+    animalI =5
+    if y.artifactCandidates[frameI,animalI]:
+        ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'k-')        
+        ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'kx')
+    else:
+        ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
+        ax.plot(y.tra[frameI,animalI,0,0],y.tra[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
+    
+    #fig.canvas.draw()
+plt.show()
 
