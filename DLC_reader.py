@@ -81,10 +81,11 @@ class multiAnimalEval:
     def interpOverArtifacts(self):
 
         for animalI in range(self.animalNo):
-            for bodyPartI in range(self.bodyPartNo):
-                z = trajectory_correcter.trajectory_corrector(self.tra[:,animalI,bodypartI,0:2],elf.artifactCandidates[:,animalI])
-                z.interpolateOverArtifacts()
-                self.tra[:,animalI,bodypartI,0:2] = z.tra
+            if self.artifactCandidates[:,animalI].any() == True:
+                for bodyPartI in range(self.bodyPartNo):
+                    z = trajectory_correcter.trajectory_corrector(self.tra[:,animalI,bodyPartI,0:2],self.artifactCandidates[:,animalI])
+                    z.interpolateOverArtifacts()
+                    self.tra[:,animalI,bodyPartI,0:2] = z.tra
 
      
 
