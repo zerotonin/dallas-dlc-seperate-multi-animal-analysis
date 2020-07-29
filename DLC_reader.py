@@ -55,7 +55,7 @@ class multiAnimalEval:
         return lengthDiff > lenThreshold
         #self.lengthDiff = np.abs(normBL -1)    
     
-    def calcStepSize(self):
+    def calcMaxStepSize(self):
         self.step = np.zeros(shape=(self.traLen,self.animalNo))
         for frameI in range(1,self.traLen):
             for animalI in range(self.animalNo):
@@ -66,10 +66,11 @@ class multiAnimalEval:
                 self.step[frameI,animalI] = max(tempSteps)
 
     def testStepSize(self,percentile = 99):
+        self.calcMaxStepSize()
         stepThreshold = np.percentile(self.step.flatten(),percentile)
         return self.step > stepThreshold
     
-    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2)
+    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2):
         bodyLenCandidates  = self.testBodyLen(bodyThresh)
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
 
