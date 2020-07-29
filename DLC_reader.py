@@ -1,4 +1,4 @@
-import pandas,tqdm,copy
+import pandas,tqdm,copy,trajectory_correcter
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
@@ -76,6 +76,18 @@ class multiAnimalEval:
 
         self.artifactCandidates = bodyLenCandidates | stepSizeCandidates
  
+
+
+    def interpOverArtifacts(self):
+
+        for animalI in range(self.animalNo):
+            for bodyPartI in range(self.bodyPartNo):
+                z = trajectory_correcter.trajectory_corrector(self.tra[:,animalI,bodypartI,0:2],elf.artifactCandidates[:,animalI])
+                z.interpolateOverArtifacts()
+                self.tra[:,animalI,bodypartI,0:2] = z.tra
+
+     
+
     def sortOnPos(self):
 
         self.posSorted= list()
