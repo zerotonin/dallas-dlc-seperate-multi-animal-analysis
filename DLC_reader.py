@@ -74,7 +74,7 @@ class multiAnimalEval:
         bodyLenCandidates  = self.testBodyLen(bodyThresh)
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
 
-        self.artifactCandidates = bodyLenCandidates & stepSizeCandidates
+        self.artifactCandidates = bodyLenCandidates | stepSizeCandidates
  
     def sortOnPos(self):
 
