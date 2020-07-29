@@ -75,6 +75,7 @@ class multiAnimalEval:
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
 
         self.artifactCandidates = bodyLenCandidates | stepSizeCandidates
+
  
 
 
@@ -89,24 +90,15 @@ class multiAnimalEval:
 
      
 
-    def sortOnPos(self):
+    def sortOnPos(self,seperaterCoord):
 
-        self.posSorted= list()
-        ptsOld = self.tra[0,:,:]
-        self.posSorted.append(ptsOld)
         
-        for frameI in tqdm.tqdm(range(1,self.traLen)):
-            ptsNew = copy.deepcopy(self.tra[frameI,:,:])
-            IDX = self.thresholdAcc(ptsNew)
-            C = cdist(ptsOld[:,0:2], ptsNew[IDX,0:2], 'euclidean')
+
+    
+    def Hungarian(ptsA,ptsB)
+            C = cdist(ptsA,ptsB, 'euclidean')
             assignmentOld, assigmentNew = linear_sum_assignment(C)
-
-            ptsOld[assignmentOld,:] = ptsNew[assigmentNew,:]
-
-
-            self.posSorted.append(copy.deepcopy(ptsOld))
-
-
+            return assignmentOld, assigmentNew
 
 
         
