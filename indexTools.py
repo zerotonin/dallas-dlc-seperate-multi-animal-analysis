@@ -27,8 +27,11 @@ def bracket_Bools(boolList):
     return returnList
 
 def bracket_StartsEndOfSequence(startEndSequenceInd,seqLen):
-    for seqI in range(startEndSequenceInd.shape[0]):
+    returnList = copy.deepcopy(startEndSequenceInd)
+    for seqI in range(returnList.shape[0]):
         
-        if startEndSequenceInd[seqI,0] != 0 and startEndSequenceInd[seqI,1] != seqLen:
-            startEndSequenceInd[seqI,0] = startEndSequenceInd[seqI,0]-1
-            startEndSequenceInd[seqI,1] = startEndSequenceInd[seqI,1]+1
+        if returnList[seqI,0] != 0 and returnList[seqI,1] != seqLen:
+            returnList[seqI,0] = returnList[seqI,0]-1
+            returnList[seqI,1] = returnList[seqI,1]+1
+    return returnList
+    
