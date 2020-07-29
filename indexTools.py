@@ -7,7 +7,7 @@ def bool2indice(boolList):
 def bracketBools(boolList):
 
     for i in range(1,len(boolList)-1):
-        if boolLis[i] == 1:
+        if boolList[i] == 1:
             boolList[i-1],boolList[i+1] = (True,True)
 
 def indiceSeq2startEnd(indiceList):
