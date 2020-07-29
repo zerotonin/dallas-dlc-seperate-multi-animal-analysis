@@ -1,4 +1,4 @@
-import DLC_reader,tqdm 
+import DLC_reader,tqdm, trajectory_correcter,copy
 from importlib import reload 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,8 +12,10 @@ x = DLC_reader.DLC_H5_reader(flyPos,15)
 x.readH5()
 x.multiAnimal2numpy()
 
-y= DLC_reader.multiAnimalEval(x.tra)
+y= DLC_reader.multiAnimalEval(copy.deepcopy(x.tra))
 y.testForArtifacts()
+y.interpOverArtifacts()
+
 
 plt.ion()
 fig = plt.figure()
@@ -28,11 +30,11 @@ for frameI in np.linspace(0,x.frameNo,150, endpoint=False, dtype=int ):
     
     for animalI in  range(x.animalNo):
         if y.artifactCandidates[frameI,animalI]:
-            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'k-')        
-            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'kx')
+            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'k-')        
+            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'kx')
         else:
-            ax.plot(tra3[frameI,animalI,:,0],tra3[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
-            ax.plot(tra3[frameI,animalI,0,0],tra3[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
+            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
+            ax.plot(y.tra[frameI,animalI,0,0],y.tra[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
         
     fig.canvas.draw()
 
