@@ -32,8 +32,10 @@ class DLC_H5_reader:
         
     
 class multiAnimalEval:
-    def __init__(self,tra3):
+    def __init__(self,tra3,arenaCoords,slotNo = 15):
         self.tra = tra3
+        self.slotNo = 15
+        self.arenaCoords = arenaCoords
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
         self.posSorted= list()
         self.accuracyThreshold = 0.95
@@ -94,7 +96,7 @@ class multiAnimalEval:
 
      
 
-    def positionTest(self,seperaterCoord):
+    def simplePositionTest(self,seperaterCoord):
         allSepCoords = self.tra[:,:,:,seperaterCoord].flatten()
 
         boundaries = np.linspace(np.percentile(allSepCoords,0.5),np.percentile(allSepCoords,99.5) ,self.animalNo+1,endpoint=True)   
