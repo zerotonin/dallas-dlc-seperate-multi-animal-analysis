@@ -54,8 +54,8 @@ class multiAnimalEval:
 
     def testBodyLen(self, lenThreshold):
         self.calcBodyLen()
-        lengthDiff = self.bodyLength/np.nanmedian(self.bodyLength.flatten())
-        return np.nan_to_num(lengthDiff,copy=False) > lenThreshold
+        lengthDiff = self.bodyLength/np.median(self.bodyLength.flatten())
+        return lengthDiff > lenThreshold
         #self.lengthDiff = np.abs(normBL -1)    
     
     def calcMaxStepSize(self):
