@@ -107,8 +107,8 @@ class multiAnimalEval:
         lowerYCoords = np.linspace(arenaC[2,1],arenaC[3,1],self.slotNo+1,endpoint=True)
         self.slotCoord = list() 
         for animalI in range(self.animalNo):
-            xPts = [lowerXCoords[animalI],lowerXCoords[animalI+1],upperXCoords[animalI],upperXCoords[animalI+1]]
-            yPts = [lowerYCoords[animalI],lowerYCoords[animalI+1],upperYCoords[animalI],upperYCoords[animalI+1]]
+            xPts = [lowerXCoords[animalI],lowerXCoords[animalI+1],upperXCoords[animalI+1],upperXCoords[animalI]]
+            yPts = [lowerYCoords[animalI],lowerYCoords[animalI+1],upperYCoords[animalI+1],upperYCoords[animalI]]
             self.slotCoord.append(np.array(list(zip(xPts,yPts))))
 
     def positionTest(self):
