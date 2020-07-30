@@ -38,7 +38,7 @@ class multiAnimalEval:
         self.slotNo = 15
         self.arenaCoords = arenaCoords
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
-        self.coordNo =-1
+        self.coordNo -=1
         self.posSorted= list()
         self.accuracyThreshold = 0.95
 
@@ -74,7 +74,7 @@ class multiAnimalEval:
         stepThreshold = np.percentile(self.step.flatten(),percentile)
         return self.step > stepThreshold
     
-    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 1.5):
+    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2):
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
         positionCandidates = self.positionTest()
         bodyLenCandidates  = self.testBodyLen(bodyThresh)
@@ -85,11 +85,11 @@ class multiAnimalEval:
 
 
     def interpOverArtifacts(self):
-        for animalI in range(self.animalNo):
+        for animalI in tqdm.tqdm(range(self.animalNo),desc='trajectory correction'):
             if self.artifactCandidates[:,animalI].any() == True:
                 for bodyPartI in range(self.bodyPartNo):
                     z = trajectory_correcter.trajectory_corrector(self.tra[:,animalI,bodyPartI,0:self.coordNo],self.artifactCandidates[:,animalI])
-                    z.interpolateOverArtifacts
+                    z.interpolateOverArtifacts()
                     self.tra[:,animalI,bodyPartI,0:self.coordNo] = z.tra
 
     def pointInPolygon(self,bodyCoord,slotCoord):
