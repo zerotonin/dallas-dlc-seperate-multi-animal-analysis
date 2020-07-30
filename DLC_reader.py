@@ -2,7 +2,8 @@ import pandas,tqdm,copy,trajectory_correcter
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
-
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 
 class DLC_H5_reader:
     def __init__(self,filePosition,animalNo):
@@ -94,8 +95,14 @@ class multiAnimalEval:
                     z.interpolateOverArtifacts
                     self.tra[:,animalI,bodyPartI,0:2] = z.tra
 
-     
-
+    def pointInPolygon(self,bodyCoord,slotCoord):
+        bodyCoord = Point(bodyCoord[0],bodyCoord[1])
+        slotCoord = Polygon((slotCoord[0:,0],slotCoord[0:,1]),(slotCoord[1:,0],slotCoord[1:,1]),
+                            (slotCoord[2:,0],slotCoord[2:,1]),(slotCoord[3:,0],slotCoord[3:,1]))
+        return slotCoord.contains(bodyCoord)
+        
+    def positionTest(self):
+        pass
     def simplePositionTest(self,seperaterCoord):
         allSepCoords = self.tra[:,:,:,seperaterCoord].flatten()
 
