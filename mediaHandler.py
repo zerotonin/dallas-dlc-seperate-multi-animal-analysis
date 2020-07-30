@@ -1,4 +1,4 @@
-import pims
+import pims,cv2
 import numpy as np
 
 class mediaHandler():
@@ -11,10 +11,14 @@ class mediaHandler():
         self.bufferSize = bufferSize
         self.fileName = filename
         if (modus == 'movie'):
-            
-            self.media =  pims.open(filename)
-            self.length = len(self.media)-1
-            self.height, self.width, self.colorDim = self.media.frame_shape
+            self.media  =  cv2.VideoCapture(filename)
+            self.length   = self.media.get(cv2.CAP_PROP_FRAME_COUNT) 
+            self.height   = self.media.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            self.width    = self.media.get(cv2.CAP_PROP_FRAME_WIDTH)
+            flag,testFrame = self.media.read()
+            if len(testFrame.shape) == 3:
+                self.colorDim = testFrame.shape[2]
+
             self.size   = (self.width, self.height)
             self.fps    = 25
             
@@ -80,7 +84,8 @@ class mediaHandler():
     def getFrameMov(self,frameNo):
         
         self.frameNo     = frameNo
-        self.activeFrame = self.media.get_frame(frameNo)   
+        self.media.set(1,frameNo)
+        flag,self.activeFrame = self.media.read(frameNo)   
         
     def getFrameNorpix(self,frameNo):
         self.frameNo     = frameNo
