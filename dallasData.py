@@ -54,7 +54,7 @@ class dallasData():
                      'exampePictureFN     ': self.exampePictureFN     }
 
         with open(jsonFPos, 'w') as outfile:
-            json.dump(data, outfile)
+            json.dump(out_dict, outfile)
 
         
     
