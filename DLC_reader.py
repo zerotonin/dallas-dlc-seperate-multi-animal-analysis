@@ -38,6 +38,7 @@ class multiAnimalEval:
         self.slotNo = 15
         self.arenaCoords = arenaCoords
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
+        self.coordNo =-1
         self.posSorted= list()
         self.accuracyThreshold = 0.95
 
@@ -49,7 +50,7 @@ class multiAnimalEval:
         self.bodyLength = np.zeros(shape=(self.frameNo,self.animalNo))
         for frameI in tqdm.tqdm(range(self.frameNo),desc = 'body length test'):
             for animalI in range(self.animalNo):
-                animal = self.tra[frameI,animalI,:,0:2]
+                animal = self.tra[frameI,animalI,:,0:self.coordNo]
                 self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
 
     def testBodyLen(self, lenThreshold):
@@ -64,7 +65,7 @@ class multiAnimalEval:
             for animalI in range(self.animalNo):
                 tempSteps = []
                 for bodyPartI in range(self.bodyPartNo):
-                        bpCoord = self.tra[frameI-1:frameI+1,animalI,bodyPartI,0:2]   
+                        bpCoord = self.tra[frameI-1:frameI+1,animalI,bodyPartI,0:self.coordNo]   
                         tempSteps.append(np.linalg.norm(np.diff(bpCoord,axis=0)))
                 self.step[frameI,animalI] = max(tempSteps)
 
@@ -89,7 +90,7 @@ class multiAnimalEval:
                 for bodyPartI in range(self.bodyPartNo):
                     z = trajectory_correcter.trajectory_corrector(self.tra[:,animalI,bodyPartI,0:self.coordNo],self.artifactCandidates[:,animalI])
                     z.interpolateOverArtifacts
-                    self.tra[:,animalI,bodyPartI,0:2] = z.tra
+                    self.tra[:,animalI,bodyPartI,0:self.coordNo] = z.tra
 
     def pointInPolygon(self,bodyCoord,slotCoord):
         bodyCoord = Point(bodyCoord[0],bodyCoord[1])
