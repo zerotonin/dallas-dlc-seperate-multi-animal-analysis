@@ -74,7 +74,7 @@ class multiAnimalEval:
         stepThreshold = np.percentile(self.step.flatten(),percentile)
         return self.step > stepThreshold
     
-    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 1.5,sepCoord= 0):
+    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 1.5):
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
         positionCandidates = self.positionTest()
         bodyLenCandidates  = self.testBodyLen(bodyThresh)
