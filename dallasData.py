@@ -29,7 +29,7 @@ class dallasData():
         csvFPos  = os.path.join(directory,fileName+'.csv')
         jsonFPos = os.path.join(directory,fileName+'.json')
         # write trajectory_away
-        numpy.savetxt(csvFPos, self.trajectory, delimiter=",")
+        np.savetxt(csvFPos, self.trajectory, delimiter=",")
 
         # dict that shit
         out_dict = {'movieFileName       ': self.movieFileName       ,
