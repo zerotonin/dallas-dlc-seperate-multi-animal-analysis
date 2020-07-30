@@ -100,8 +100,22 @@ class multiAnimalEval:
         slotCoord = Polygon([(slotCoord[0:,0],slotCoord[0:,1]),(slotCoord[1:,0],slotCoord[1:,1]),
                             (slotCoord[2:,0],slotCoord[2:,1]),(slotCoord[3:,0],slotCoord[3:,1])])
         return slotCoord.contains(bodyCoord)
-        
+    
+    def calculateSlotCoords(self):
+        arenaC = self.arenaCoords[self.arenaCoords[:,1].argsort()]
+
+        upperXCoords = np.linspace(arenaC[0,0],arenaC[1,0],self.slotNo+1,endpoint=True)   
+        upperYCoords = np.linspace(arenaC[0,1],arenaC[1,1],self.slotNo+1,endpoint=True) 
+        lowerXCoords = np.linspace(arenaC[2,0],arenaC[3,0],self.slotNo+1,endpoint=True)   
+        lowerYCoords = np.linspace(arenaC[2,1],arenaC[3,1],self.slotNo+1,endpoint=True)
+        self.slotCoord = list() 
+        for animalI in range(self.animalNo):
+            xPts = [lowerXCoords[animalI],lowerXCoords[animalI+1],upperXCoords[animalI],upperXCoords[animalI+1]]
+            yPts = [lowerYCoords[animalI],lowerYCoords[animalI+1],upperYCoords[animalI],upperYCoords[animalI+1]]
+            self.slotCoord.append(np.array(list(zip(xPts,yPts))))
+
     def positionTest(self):
+        self.calculateSlotCoords()
         posCandidates = np.zeros(shape=(self.frameNo,self.animalNo),dtype=bool)   
         for frameI in range(self.frameNo):
             for animalI in range(self.animalNo):
