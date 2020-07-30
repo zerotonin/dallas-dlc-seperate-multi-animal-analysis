@@ -1,21 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def standardPlot(frame,traObj):
+def standardPlot(frame,traObj,traSteps):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cmap = plt.get_cmap('tab20b')  
     ax.imshow(frame)
     plotSlots(traObj,ax)
-    plotTra(traObj,ax,cmap)
+    plotTra(traObj,ax,cmap,traSteps)
     plt.show()
 
 def plotSlots(traObj,ax):
         for animalI in  range(traObj.animalNo):
             ax.fill(traObj.slotCoord[animalI][:,0],traObj.slotCoord[animalI][:,1],fill=None,edgecolor='salmon') 
 
-def plotTra(traObj,ax,cmap):
-    for frameI in np.linspace(0,traObj.frameNo,100, endpoint=False, dtype=int ):
+def plotTra(traObj,ax,cmap,traSteps):
+    for frameI in np.linspace(0,traObj.frameNo,traSteps, endpoint=False, dtype=int ):
 
         for animalI in  range(traObj.animalNo):
             
