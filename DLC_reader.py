@@ -45,25 +45,22 @@ class multiAnimalEval:
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
         return idx[0]  
 
-    def calcBodyLen(self, artifactCandidates):
+    def calcBodyLen(self):
         self.bodyLength = np.zeros(shape=(self.frameNo,self.animalNo))
-        for frameI in range(self.frameNo):
+        for frameI in tqdm.tqdm(range(self.frameNo),desc = 'body length test'):
             for animalI in range(self.animalNo):
-                if artifactCandidates[frameI,animalI] == False:
-                    animal = self.tra[frameI,animalI,:,0:2]
-                    self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
-                else:
-                    self.bodyLength[frameI,animalI] = np.nan
+                animal = self.tra[frameI,animalI,:,0:2]
+                self.bodyLength[frameI,animalI] = np.linalg.norm(np.diff(animal,axis=0)) 
 
-    def testBodyLen(self, lenThreshold, artifactCandidates):
-        self.calcBodyLen(artifactCandidates)
+    def testBodyLen(self, lenThreshold):
+        self.calcBodyLen()
         lengthDiff = self.bodyLength/np.nanmedian(self.bodyLength.flatten())
         return np.nan_to_num(lengthDiff,copy=False) > lenThreshold
         #self.lengthDiff = np.abs(normBL -1)    
     
     def calcMaxStepSize(self):
         self.step = np.zeros(shape=(self.frameNo,self.animalNo))
-        for frameI in range(1,self.frameNo):
+        for frameI in tqdm.tqdm(range(1,self.frameNo),desc='step size test'):
             for animalI in range(self.animalNo):
                 tempSteps = []
                 for bodyPartI in range(self.bodyPartNo):
@@ -76,10 +73,10 @@ class multiAnimalEval:
         stepThreshold = np.percentile(self.step.flatten(),percentile)
         return self.step > stepThreshold
     
-    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2,sepCoord= 0):
+    def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 1.5,sepCoord= 0):
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
         positionCandidates = self.positionTest()
-        bodyLenCandidates  = self.testBodyLen(bodyThresh,stepSizeCandidates | positionCandidates)
+        bodyLenCandidates  = self.testBodyLen(bodyThresh)
 
         self.artifactCandidates = bodyLenCandidates | stepSizeCandidates | positionCandidates
 
