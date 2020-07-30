@@ -1,44 +1,22 @@
-import DLC_reader,tqdm, trajectory_correcter,copy,cv2
+import DLC_reader,tqdm, trajectory_correcter,copy,cv2,videoDataGUI,dallasPlots
 from importlib import reload 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
-reload(DLC_reader)
 flyPos    = '/media/dataSSD/Anka1/A_01_01DeepCut_resnet50_ParalellClimb2Aug22shuffle1_150000.h5'
+movPos    = '/media/dataSSD/Anka1/A_01_01.avi'
 
-
-
+vGUI = videoDataGUI.videoDataGUI(movPos,'movie')  
+arenaCoords = vGUI.run()
+reload(DLC_reader)
 x = DLC_reader.DLC_H5_reader(flyPos,15)  
 x.readH5()
 x.multiAnimal2numpy()
 
 
-y= DLC_reader.multiAnimalEval(x.tra )
+y= DLC_reader.multiAnimalEval(x.tra,arenaCoords )
 y.testForArtifacts()
 y.interpOverArtifacts()
 
-
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-cmap = plt.get_cmap('tab20')  
-ax.set_xlim(0,1000)
-ax.set_ylim(0,800)
-ax.axis('equal')
-plt.gca().invert_yaxis()
-
-for frameI in np.linspace(0,x.frameNo,100, endpoint=False, dtype=int ):
-    
-    for animalI in  range(x.animalNo):
-    #animalI =5
-        if y.artifactCandidates[frameI,animalI]:
-            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'k-')        
-            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'kx')
-        else:
-            ax.plot(y.tra[frameI,animalI,:,0],y.tra[frameI,animalI,:,1],'-',color=cmap.colors[animalI])        
-            ax.plot(y.tra[frameI,animalI,0,0],y.tra[frameI,animalI,0,1],'.',color=cmap.colors[animalI])
-        
-        #fig.canvas.draw()
-plt.show()
-
+reload(dallasPlots)
+dallasPlots.standardPlot(vGUI.frame,y)
