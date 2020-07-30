@@ -20,6 +20,8 @@ class dallasData():
         self.reachedTop           = False  # did the fly reach the 90% height line
         self.pix2mmFactor         = np.nan # pixel 2 mm convertion factor
         self.movieFileName        = ''     # file location of the movie
+        self.collection           = ''     # collection tag e.g. Anka1
+        self.recordingDate        = ''     # date and time of recording
         self.anaObjFileName       = ''     # file location of the pickle object 
         self.traCSVFileName       = ''     # file location of the flies tra file
         self.exampePictureFN      = ''     # file location of the example Picture
@@ -32,7 +34,9 @@ class dallasData():
         np.savetxt(csvFPos, self.trajectory, delimiter=",")
 
         # dict that shit
-        out_dict = {'movieFileName       ': self.movieFileName       ,
+        out_dict = { 'movieFileName       ': self.movieFileName       ,
+                     'collection          ': self.collection          ,
+                     'recordingDate       ': self.recordingDate          ,
                      'flyID               ': self.flyID               ,
                      'frameNo             ': self.frameNo             ,
                      'animalNo            ': self.animalNo            ,
@@ -48,7 +52,6 @@ class dallasData():
                      'crossedMidLine      ': self.crossedMidLine      ,
                      'reachedTop          ': self.reachedTop          ,
                      'pix2mmFactor        ': self.pix2mmFactor        ,
-                     'movieFileName       ': self.movieFileName       ,
                      'anaObjFileName      ': self.anaObjFileName      ,
                      'traCSVFileName      ': self.traCSVFileName      ,
                      'exampePictureFN     ': self.exampePictureFN     }
