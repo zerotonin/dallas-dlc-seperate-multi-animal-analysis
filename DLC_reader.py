@@ -78,7 +78,7 @@ class multiAnimalEval:
     
     def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2,sepCoord= 0):
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
-        positionCandidates = self.positionTest(sepCoord)
+        positionCandidates = self.positionTest()
         bodyLenCandidates  = self.testBodyLen(bodyThresh,stepSizeCandidates | positionCandidates)
 
         self.artifactCandidates = bodyLenCandidates | stepSizeCandidates | positionCandidates
@@ -97,12 +97,23 @@ class multiAnimalEval:
 
     def pointInPolygon(self,bodyCoord,slotCoord):
         bodyCoord = Point(bodyCoord[0],bodyCoord[1])
-        slotCoord = Polygon((slotCoord[0:,0],slotCoord[0:,1]),(slotCoord[1:,0],slotCoord[1:,1]),
-                            (slotCoord[2:,0],slotCoord[2:,1]),(slotCoord[3:,0],slotCoord[3:,1]))
+        slotCoord = Polygon([(slotCoord[0:,0],slotCoord[0:,1]),(slotCoord[1:,0],slotCoord[1:,1]),
+                            (slotCoord[2:,0],slotCoord[2:,1]),(slotCoord[3:,0],slotCoord[3:,1])])
         return slotCoord.contains(bodyCoord)
         
     def positionTest(self):
-        pass
+        posCandidates = np.zeros(shape=(self.frameNo,self.animalNo),dtype=bool)   
+        for frameI in range(self.frameNo):
+            for animalI in range(self.animalNo):
+                allInPolygon = list()
+                for bodyPartI in range(self.bodyPartNo):
+                    allInPolygon.append(self.pointInPolygon(self.tra[frameI-1:frameI+1,animalI,bodyPartI,0:2],
+                                        self.slotCoord[animalI]))
+                if not all(allInPolygon):
+                    posCandidates[frameI,animalI] = True 
+        return posCandidates
+
+
     def simplePositionTest(self,seperaterCoord):
         allSepCoords = self.tra[:,:,:,seperaterCoord].flatten()
 
@@ -118,7 +129,7 @@ class multiAnimalEval:
                     
 
 
-    def Hungarian(ptsA,ptsB):
+    def Hungarian(self,ptsA,ptsB):
             C = cdist(ptsA,ptsB, 'euclidean')
             assignmentOld, assigmentNew = linear_sum_assignment(C)
             return assignmentOld, assigmentNew
