@@ -62,15 +62,15 @@ class pix2mm():
 
         return pixTra*self.pix2mmFactor
         
-    def getMM_Standard(self,arena = self.arenaType):
+    def getMM_Standard(self):
         if mode == 'box':
-            self.get_mmBox_standardArenas(arena)
+            self.get_mmBox_standardArenas(self.arenaType)
         elif mode == 'line':
-            self.get_mmLine_standardArenas(arena)
+            self.get_mmLine_standardArenas(self.arenaType)
         elif mode == 'circle':
-            self.get_mmCirc_standardArenas(arena)
+            self.get_mmCirc_standardArenas(self.arenaType)
         else:
-            self.raiseExceptionFlag('arena type',arenaType)
+            self.raiseExceptionFlag('arena type',self.arenaType)
     
     def get_mmBox_standardArenas(self,arena):
 
