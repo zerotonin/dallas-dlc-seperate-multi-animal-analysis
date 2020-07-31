@@ -1,5 +1,5 @@
 import numpy as np
-from scipy import interpolate
+from scipy.interpolate import griddata
 
 class trajectoryAna():
     
@@ -11,7 +11,7 @@ class trajectoryAna():
 
 class pix2mm():
 
-    def __init__(self,pixArray,mmArray = None,mode = 'box',arenaType = None):
+    def __init__(self,pixArray,arenaType,mode = 'box',mmArray = np.nan):
         self.mmArray      = mmArray  
         self.pixArray     = pixArray 
         self.mode         = mode 
@@ -19,17 +19,18 @@ class pix2mm():
         self.pix2mmFactor = None
 
     
-    def pix2mm(self, pixTra):
-        if self.mmArray == None:
+    def convertPix2mm(self, pixTra):
+
+        if np.isnan(self.mmArray).any():
             print('You have to first define a mmArray')
             mmTra =  None
         else:
                 
-            if mode == 'box':
+            if self.mode == 'box':
                 mmTra = self.pix2mm_box(pixTra)
-            elif mode == 'line':
+            elif self.mode == 'line':
                 mmTra = self.pix2mm_line(pixTra)
-            elif mode == 'circle':
+            elif self.mode == 'circle':
                 mmTra = self.pix2mm_circle(pixTra)
             else:
                 self.raiseExceptionFlag('conversion type',self.mode)
@@ -38,17 +39,20 @@ class pix2mm():
         return mmTra
         
     def pix2mm_box(self,pixTra):
-        pixLen = np.linalg.norm(np.diff(pixTra[0:2,:],axis =0))  
+        pixLen = np.linalg.norm(np.diff(self.pixArray[0:2,:],axis =0))  
         mmLen = np.linalg.norm(np.diff(self.mmArray[0:2,:],axis =0))  
         self.pix2mmFactor = mmLen/pixLen
 
-        xx, yy = np.meshgrid(self.pixArray[:,0],self.pixArray[:,1])
-        intX_func = interpolate.interp2d(x, y, self.mmArray[:,0], kind='cubic')
-        intY_func = interpolate.interp2d(x, y, self.mmArray[:,1], kind='cubic')
+        points = np.array( (self.pixArray[:,0].flatten(), self.pixArray[:,1].flatten()) ).T
+        mmXvalues = self.mmArray[:,0].flatten()
+        mmYvalues = self.mmArray[:,1].flatten()
 
-        mmX = intX_func(pixTra[:,0])
-        mmY = intY_func(pixTra[:,1])
-        return (mmX,mmY)
+        mmX = griddata( points, mmXvalues, (pixTra[:,0],pixTra[:,1]) )
+        mmY = griddata( points, mmYvalues, (pixTra[:,0],pixTra[:,1]) )
+
+     
+            
+        return np.vstack((mmX,mmY)).T  
 
 
     def pix2mm_circle(self,pixTra):
@@ -63,11 +67,11 @@ class pix2mm():
         return pixTra*self.pix2mmFactor
         
     def getMM_Standard(self):
-        if mode == 'box':
+        if self.mode == 'box':
             self.get_mmBox_standardArenas(self.arenaType)
-        elif mode == 'line':
+        elif self.mode == 'line':
             self.get_mmLine_standardArenas(self.arenaType)
-        elif mode == 'circle':
+        elif self.mode == 'circle':
             self.get_mmCirc_standardArenas(self.arenaType)
         else:
             self.raiseExceptionFlag('arena type',self.arenaType)
@@ -75,7 +79,7 @@ class pix2mm():
     def get_mmBox_standardArenas(self,arena):
 
         if arena == 'smallBenzer':
-            self.mmArray = ((0,0),(90,0),(90,73),(0,73))
+            self.mmArray = np.array(((0,0),(90,0),(90,73),(0,73)))
         else:
             self.raiseExceptionFlag('arena',arena)
 
