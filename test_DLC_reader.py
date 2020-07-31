@@ -1,4 +1,4 @@
-import DLC_reader,tqdm, trajectory_correcter,copy,cv2,videoDataGUI,dallasPlots
+import DLC_reader,tqdm, trajectory_correcter,copy,cv2,videoDataGUI,dallasPlots,trajectoryAna
 from importlib import reload 
 import numpy as np
 
@@ -11,15 +11,28 @@ vGUI = videoDataGUI.videoDataGUI(movPos,'movie')
 arenaCoords = vGUI.run()
 #read in dlc file
 reload(DLC_reader)
-x = DLC_reader.DLC_H5_reader(flyPos,15)  
-x.readH5()
+readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
+readObj.readH5()
 # split to 4D trajectory
-x.multiAnimal2numpy()
+readObj.multiAnimal2numpy()
+
 
 # optimize trajectory
-y= DLC_reader.multiAnimalEval(x.tra,arenaCoords )
-y.testForArtifacts()
-y.interpOverArtifacts()
+optTraObj= DLC_reader.multiAnimalEval(readObj.tra,arenaCoords )
+optTraObj.testForArtifacts()
+optTraObj.interpOverArtifacts()
+
+#now to ethology analysis
+reload(trajectoryAna)
+# create pix2mm object
+p2m = trajectoryAna.pix2mm(arenaCoords,'smallBenzer') 
+p2m.getMM_Standard()
+animalI = 3
+
+tra = optTraObj.tra[:,animalI,:,0:2]
+mmTra = np.zeros(shape = tra.shape)
+for i in range(optTraObj.bodyPartNo):
+    mmTra[:,i,:] = p2m.convertPix2mm(tra[:,i,:])
 
 reload(dallasPlots)
 dallasPlots.standardPlot(vGUI.frame,y,200)
