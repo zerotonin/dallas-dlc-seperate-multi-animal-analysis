@@ -35,4 +35,6 @@ for i in range(optTraObj.bodyPartNo):
     mmTra[:,i,:] = p2m.convertPix2mm(tra[:,i,:])
 
 reload(dallasPlots)
-dallasPlots.standardPlot(vGUI.frame,y,200)
+ 
+dallasPlots.standardPlotTrajectory(mmTra,200,(0.5,0.5,0.5))
+dallasPlots.standardPlot(vGUI.frame,optTraObj,200)
