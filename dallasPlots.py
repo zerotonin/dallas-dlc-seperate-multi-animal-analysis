@@ -30,7 +30,20 @@ def plotFilterTraTest(tra,traF):
     ax.axis('equal')
     plt.show()    
                
-        
+def plotSingleFeature(feature,fps,yLabelStr):
+    plt.ion()
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    timeAx = getTimeAxis(len(feature),fps)
+    ax.plot(timeAx,feature)
+    plt.xlabel('time [s]')
+    plt.ylabel(yLabelStr)
+    plt.show()    
+
+
+def getTimeAxis(traLen,fps):
+
+    return np.linspace(0,traLen/fps,traLen)
 
 
 
