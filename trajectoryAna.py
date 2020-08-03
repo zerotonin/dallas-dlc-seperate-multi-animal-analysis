@@ -1,3 +1,4 @@
+
 import numpy as np
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter1d
@@ -19,6 +20,13 @@ class trajectoryAna():
         for bodyI in range(self.bodyPartNo):
             for coordI in range(self.coordNo):
                 self.mmTraSmooth[:,bodyI,coordI] = gaussian_filter1d(self.mmTra[:,bodyI,coordI], 5)
+    
+    def calculateYaw(self):
+        self.yaw = np.zeros(shape=(self.frameNo,))
+        directionVector = self.mmTraSmooth[:,0,:] - self.mmTraSmooth[:,-1,:]
+        for i in range(self.frameNo):
+            self.yaw[i] = np.math.atan2(directionVector[i,1],directionVector[i,0])
+
 
 
 
