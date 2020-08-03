@@ -27,14 +27,11 @@ reload(trajectoryAna)
 # create pix2mm object
 p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
 p2m.getMM_Standard()
-animalI = 3
-
-traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
-traObj.convert2mm()
-traObj.smoothTraGauss()
-traObj.calculateYaw()
-traObj.calculateSpeeds()
-traObj.BenzerPositionsCrossed(p2m.mmArray[0,1])
+traObjList = list()
+for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,position,statistics'):
+    traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
+    traObj.runStandardAnalysis()
+    traObjList.append(traObj)
 
 
 reload(dallasPlots)
