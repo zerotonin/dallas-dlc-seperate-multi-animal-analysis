@@ -2,7 +2,7 @@ import numpy as np
 import json,os
 
 class dallasData():
-    def __init__(self):
+    def __init__(self,traAnaObj):
         self.flyID                = np.nan # lane No
         self.trajectory           = []     # trajectory of this fly
         self.frameNo              = np.nan # number of frames in movies
@@ -10,6 +10,7 @@ class dallasData():
         self.bodyPartsNo          = np.nan # number of traced body parts
         self.coordNo              = np.nan # number of coords 
         self.framesPerSecond      = np.nan # sample rate of recording
+        self.speedClimb           = (np.nan,np.nan,np.nan,np.nan) # min,mean,median,max [mm/s]
         self.speedSumABS          = (np.nan,np.nan,np.nan,np.nan) # min,mean,median,max [mm/s]
         self.speedThrust          = (np.nan,np.nan,np.nan,np.nan)# min,mean,median,max [mm/s]
         self.speedSlip            = (np.nan,np.nan,np.nan,np.nan)# min,mean,median,max [mm/s]
@@ -26,6 +27,9 @@ class dallasData():
         self.anaObjFileName       = ''     # file location of the pickle object 
         self.traCSVFileName       = ''     # file location of the flies tra file
         self.exampePictureFN      = ''     # file location of the example Picture
+        self.traAnaObj            = traAnaObj
+    
+
     
     def writeFly2JSON(self,fileName,directory):
         # output filenames
