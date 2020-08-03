@@ -143,9 +143,4 @@ class multiAnimalEval:
         self.arenaCoords = sortedCoordinates
 
 
-    def Hungarian(self,ptsA,ptsB):
-            C = cdist(ptsA,ptsB, 'euclidean')
-            assignmentOld, assigmentNew = linear_sum_assignment(C)
-            return assignmentOld, assigmentNew
-
 

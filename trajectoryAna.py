@@ -15,6 +15,7 @@ class trajectoryAna():
         for i in range(self.bodyPartNo):
             self.mmTra[:,i,:] = self.pix2mmObj.convertPix2mm(self.pixTra[:,i,:])
     
+    
     def smoothTraGauss(self):
         self.mmTraSmooth= np.zeros(shape=self.mmTra.shape)
         for bodyI in range(self.bodyPartNo):
@@ -30,7 +31,14 @@ class trajectoryAna():
 
 
 
-
+class bodyDirectionCorrector():
+    def __init__(self,tra):
+        self.tra = tra
+    
+    def Hungarian(self,ptsA,ptsB):
+            C = cdist(ptsA,ptsB, 'euclidean')
+            assignmentOld, assigmentNew = linear_sum_assignment(C)
+            return assignmentOld, assigmentNew
 
 
 
