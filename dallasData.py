@@ -7,6 +7,7 @@ class dallasData():
         self.trajectory           = []     # trajectory of this fly
         self.frameNo              = np.nan # number of frames in movies
         self.animalNo             = np.nan # number of animals in movies
+        self.bodyPartsNo          = np.nan # number of traced body parts
         self.coordNo              = np.nan # number of coords 
         self.framesPerSecond      = np.nan # sample rate of recording
         self.speedSumABS          = (np.nan,np.nan,np.nan,np.nan) # min,mean,median,max [mm/s]
