@@ -79,7 +79,7 @@ class pix2mm():
     def get_mmBox_standardArenas(self,arena):
 
         if arena == 'smallBenzer':
-            self.mmArray = np.array(((0,0),(90,0),(90,73),(0,73)))
+            self.mmArray = np.array(((0,73),(90,73),(90,0),(0,0)))
         else:
             self.raiseExceptionFlag('arena',arena)
 
