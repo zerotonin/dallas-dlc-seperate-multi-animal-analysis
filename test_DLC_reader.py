@@ -33,9 +33,12 @@ traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.f
 traObj.convert2mm()
 traObj.smoothTraGauss()
 traObj.calculateYaw()
+traObj.calculateSpeeds()
 
 
 reload(dallasPlots)
+dallasPlots.plotSingleFeature(np.rad2deg(traObj.yaw),traObj.fps,'yaw [deg]')
+dallasPlots.plotSingleFeature(traObj.speeds,traObj.fps,'yaw [deg]')
 dallasPlots.plotFilterTraTest(traObj.mmTra,traObj.mmTraSmooth)     
 dallasPlots.standardPlotTrajectory(traObj.mmTra,200,(0.5,0.5,0.5))
 #dallasPlots.standardPlot(vGUI.frame,optTraObj,200)
