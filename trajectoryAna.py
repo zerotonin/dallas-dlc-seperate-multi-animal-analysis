@@ -4,6 +4,8 @@ from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
+from cmath import rect, phase
+
 class trajectoryAna():
     
     def __init__(self,trajectory,fps,pix2mmObj):
@@ -48,9 +50,7 @@ class trajectoryAna():
         absV = np.linalg.norm(transDiff,axis = 1) 
         # calculate thrust and slip
         thrust,slip = self.calculateThrustSlip(transDiff)
-            
-
-
+        
         self.speeds    = np.stack([thrust,slip,yawV,horizV,vertV,absV], axis=1)
         self.speeds    = self.speeds*self.fps 
         self.speedDict = {'thrust': self.speeds[:,0],
@@ -109,6 +109,12 @@ class trajectoryAna():
         self.speedStatYaw    = self.minMedianMeanMax4Speed(self.speeds[:,2]) 
     def minMedianMeanMax4Speed(self,speed):
         return (np.min(speed),np.mean(speed),np.median(speed),np.max(speed))
+
+    def calculateMeanOrientation(self):
+        self.bodyOrient =  np.rad2deg(phase(sum(rect(1, d) for d in self.yaw)/self.frameNo))    
+
+    def calculateActivity(self):
+        self.activityScore = sum(self.activityIDX)/self.frameNo   
 
 class bodyDirectionCorrector():
     def __init__(self,traObj):
