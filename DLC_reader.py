@@ -37,6 +37,7 @@ class multiAnimalEval:
         self.tra = tra3
         self.slotNo = 15
         self.arenaCoords = arenaCoords
+        self.sortBoxCoordsClockWise()
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
         self.coordNo -=1
         self.posSorted= list()
@@ -123,23 +124,23 @@ class multiAnimalEval:
                     posCandidates[frameI,animalI] = True 
         return posCandidates
 
-    def sortBoxCoords(self):
+    def sortBoxCoordsClockWise(self):
         arenaC = self.arenaCoords[self.arenaCoords[:, 0].argsort()]   
         sortedCoordinates = np.zeros(shape = arenaC.shape)
         if arenaC[0,1] < arenaC[1,1]:
-            sortedCoordinates[0,:] = arenaC[1,:]
-            sortedCoordinates[3,:] = arenaC[0,:]
-        else:
             sortedCoordinates[0,:] = arenaC[0,:]
             sortedCoordinates[3,:] = arenaC[1,:]
+        else:
+            sortedCoordinates[0,:] = arenaC[1,:]
+            sortedCoordinates[3,:] = arenaC[0,:]
 
         if arenaC[2,1] < arenaC[3,1]:
-            sortedCoordinates[1,:] = arenaC[3,:]
-            sortedCoordinates[2,:] = arenaC[2,:]
+            sortedCoordinates[1,:] = arenaC[2,:]
+            sortedCoordinates[2,:] = arenaC[3,:]
         else:
             sortedCoordinates[1,:] = arenaC[3,:]
             sortedCoordinates[2,:] = arenaC[2,:]
-
+        self.arenaCoords = sortedCoordinates
 
 
     def Hungarian(self,ptsA,ptsB):
