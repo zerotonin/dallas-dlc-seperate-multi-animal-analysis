@@ -25,7 +25,7 @@ optTraObj.interpOverArtifacts()
 #now to ethology analysis
 reload(trajectoryAna)
 # create pix2mm object
-p2m = trajectoryAna.pix2mm(arenaCoords,'smallBenzer') 
+p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
 p2m.getMM_Standard()
 animalI = 3
 
