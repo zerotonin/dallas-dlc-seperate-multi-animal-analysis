@@ -19,6 +19,20 @@ def standardPlotTrajectory(tra,traSteps,animalColor):
     ax.axis('equal')
     plt.show()
 
+def plotFilterTraTest(tra,traF):
+    cmap = plt.get_cmap('tab20b')  
+    plt.ion()
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for bodyI in range(tra.shape[1]):
+        ax.plot(tra[:,bodyI,0],tra[:,bodyI,1],'-',color=cmap.colors[bodyI]) 
+        ax.plot(traF[:,bodyI,0],traF[:,bodyI,1],'--',color=cmap.colors[bodyI])    
+    ax.axis('equal')
+    plt.show()    
+               
+        
+
+
 
 def plotSlots(traObj,ax):
         for animalI in  range(traObj.animalNo):
