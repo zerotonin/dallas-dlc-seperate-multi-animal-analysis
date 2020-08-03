@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.interpolate import griddata
-
+from scipy.ndimage import gaussian_filter1d
 class trajectoryAna():
     
     def __init__(self,trajectory,fps,pix2mmObj):
@@ -13,6 +13,12 @@ class trajectoryAna():
         self.mmTra = np.zeros(shape = self.pixTra.shape)
         for i in range(self.bodyPartNo):
             self.mmTra[:,i,:] = self.pix2mmObj.convertPix2mm(self.pixTra[:,i,:])
+    
+    def smoothTraGauss(self):
+        self.mmTraSmooth= np.zeros(shape=self.mmTra.shape)
+        for bodyI in range(self.bodyPartNo):
+            for coordI in range(self.coordNo):
+                self.mmTraSmooth[:,bodyI,coordI] = gaussian_filter1d(self.mmTra[:,bodyI,coordI], 5)
 
 
 
