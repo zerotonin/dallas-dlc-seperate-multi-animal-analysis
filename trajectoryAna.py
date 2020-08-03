@@ -75,6 +75,12 @@ class trajectoryAna():
                               [np.sin(yaw),  np.cos(yaw)]])
         
         return rotMatrix
+    
+    def BenzerPositionsCrossed(self,arenaHeight):
+        midLine=self.mmTra[:,:,1]> arenaHeight*0.5  
+        self.crossedMidLine = midLine.any()
+        topLine=self.mmTra[:,:,1]> arenaHeight*0.95  
+        self.crossedTopLine = topLine.any()
 
 class bodyDirectionCorrector():
     def __init__(self,traObj):
