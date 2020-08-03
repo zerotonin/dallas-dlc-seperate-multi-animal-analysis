@@ -34,6 +34,7 @@ traObj.convert2mm()
 traObj.smoothTraGauss()
 traObj.calculateYaw()
 traObj.calculateSpeeds()
+traObj.BenzerPositionsCrossed(p2m.mmArray[0,1])
 
 
 reload(dallasPlots)
