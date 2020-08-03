@@ -29,12 +29,13 @@ p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer')
 p2m.getMM_Standard()
 animalI = 3
 
-tra = optTraObj.tra[:,animalI,:,0:2]
-mmTra = np.zeros(shape = tra.shape)
-for i in range(optTraObj.bodyPartNo):
-    mmTra[:,i,:] = p2m.convertPix2mm(tra[:,i,:])
+traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
+traObj.convert2mm()
+traObj.smoothTraGauss()
+traObj.calculateYaw()
+
 
 reload(dallasPlots)
- 
-dallasPlots.standardPlotTrajectory(mmTra,200,(0.5,0.5,0.5))
-dallasPlots.standardPlot(vGUI.frame,optTraObj,200)
+dallasPlots.plotFilterTraTest(traObj.mmTra,traObj.mmTraSmooth)     
+dallasPlots.standardPlotTrajectory(traObj.mmTra,200,(0.5,0.5,0.5))
+#dallasPlots.standardPlot(vGUI.frame,optTraObj,200)
