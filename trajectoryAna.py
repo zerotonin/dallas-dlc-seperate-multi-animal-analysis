@@ -77,7 +77,8 @@ class trajectoryAna():
         
         return rotMatrix
     
-    def BenzerPositionsCrossed(self,arenaHeight):
+    def BenzerPositionsCrossed(self):
+        arenaHeight = self.pix2mmObj.mmArray[0,1]
         midLine=self.mmTra[:,:,1]> arenaHeight*0.5  
         if midLine.any() == True:
             crossIndex = np.where(midLine == True)    
