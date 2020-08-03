@@ -120,9 +120,19 @@ class trajectoryAna():
 
     def calculateDropScore(self,dropVel = -10):
 
-        self.dropIDX   = self.speedDict['vertV'] < self.dropVel
+        self.dropIDX   = self.speedDict['vertV'] < dropVel
         self.dropScore = sum(self.dropIDX)/self.frameNo
 
+    def runStandardAnalysis(self):
+        self.convert2mm()
+        self.smoothTraGauss()
+        self.calculateYaw()
+        self.calculateSpeeds()
+        self.BenzerPositionsCrossed()
+        self.calculateSpeedStatistics()
+        self.calculateMeanOrientation()
+        self.calculateActivityScore()
+        self.calculateDropScore()
 
 class bodyDirectionCorrector():
     def __init__(self,traObj):
