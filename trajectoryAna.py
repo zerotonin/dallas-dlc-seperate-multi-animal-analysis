@@ -107,14 +107,21 @@ class trajectoryAna():
         self.speedStatSlip   = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,1])
         self.speedStatAbs    = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,5])
         self.speedStatYaw    = self.minMedianMeanMax4Speed(self.speeds[:,2]) 
+    
     def minMedianMeanMax4Speed(self,speed):
         return (np.min(speed),np.mean(speed),np.median(speed),np.max(speed))
 
     def calculateMeanOrientation(self):
         self.bodyOrient =  np.rad2deg(phase(sum(rect(1, d) for d in self.yaw)/self.frameNo))    
 
-    def calculateActivity(self):
-        self.activityScore = sum(self.activityIDX)/self.frameNo   
+    def calculateActivityScore(self):
+        self.activityScore = sum(self.activityIDX)/self.frameNo
+
+    def calculateDropScore(self,dropVel = -10):
+
+        self.dropIDX   = self.speedDict['vertV'] < self.dropVel
+        self.dropScore = sum(self.dropIDX)/self.frameNo
+
 
 class bodyDirectionCorrector():
     def __init__(self,traObj):
