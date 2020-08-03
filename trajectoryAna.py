@@ -86,6 +86,21 @@ class trajectoryAna():
     def getClimbingIDX(self):
         self.climbIDX = self.speedDict['vertV'] > self.movThreshold
 
+    def getActivityIDX(self):
+        self.activityIDX = self.speedDict['absV'] > (self.movThreshold + self.movThreshold/3.)
+
+    def calculateSpeedStastics(self):
+        # to calculate speeds we have to ommitt those phases in which the animal is not moving
+        self.getActivityIDX()
+        self.getClimbingIDX()
+        self.speedStatClimb  = self.minMedianMeanMax4Speed(self.speeds[self.climbIDX,4])
+        self.speedStatThrust = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,0])
+        self.speedStatSlip   = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,1])
+        self.speedStatAbs    = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,5])
+        self.speedStatYaw    = self.minMedianMeanMax4Speed(self.speeds[:,2]) 
+    def minMedianMeanMax4Speed(self,speed):
+        return (np.min(speed),np.mean(speed),np.median(speed),np.max(speed))
+
 class bodyDirectionCorrector():
     def __init__(self,traObj):
         self.tra = traObj.pixTra
