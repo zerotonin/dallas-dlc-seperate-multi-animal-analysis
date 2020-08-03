@@ -1,14 +1,18 @@
-
+import copy
 import numpy as np
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter1d
+from scipy.optimize import linear_sum_assignment
+from scipy.spatial.distance import cdist
 class trajectoryAna():
     
     def __init__(self,trajectory,fps,pix2mmObj):
         self.pixTra     = trajectory 
         self.frameNo,self.bodyPartNo, self.coordNo = self.pixTra.shape
         self.fps        = fps        
-        self.pix2mmObj  = pix2mmObj  
+        self.pix2mmObj  = pix2mmObj 
+        self.bodyTurner = bodyDirectionCorrector(self)
+        self.bodyTurner.sortBodyPartsByProximity()
     
     def convert2mm(self): 
         self.mmTra = np.zeros(shape = self.pixTra.shape)
@@ -32,13 +36,33 @@ class trajectoryAna():
 
 
 class bodyDirectionCorrector():
-    def __init__(self,tra):
-        self.tra = tra
+    def __init__(self,traObj):
+        self.tra = traObj.pixTra
+        self.swapCounter = 0
+        self.swapIDX = list()
+
+    def sortBodyPartsByProximity(self):
+        self.swapCounter = 0
+        frameNo = self.tra.shape[0]
+        for frameI in range(1,frameNo):
+            ptsNew = self.tra[frameI,:,:]
+            ptsOld = self.tra[frameI-1,:,:]
+            assignmentOld, assignmentNew = self.Hungarian(ptsOld,ptsNew)
+            if assignmentNew[0] == 1:
+                self.tra[frameI,:,:] = self.tra[frameI,assignmentNew,:]
+                self.swapCounter += 1
+                self.swapIDX.append(frameI)
+        
+        if swapCounter > frameNo/2:
+            self.tra = self.tra[:,[1,0],:]
+            
+
+
     
     def Hungarian(self,ptsA,ptsB):
             C = cdist(ptsA,ptsB, 'euclidean')
-            assignmentOld, assigmentNew = linear_sum_assignment(C)
-            return assignmentOld, assigmentNew
+            assignmentOld, assignmentNew = linear_sum_assignment(C)
+            return assignmentOld, assignmentNew
 
 
 
