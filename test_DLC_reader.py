@@ -1,4 +1,4 @@
-import DLC_reader,tqdm, trajectory_correcter,copy,cv2,videoDataGUI,dallasPlots,trajectoryAna
+import DLC_reader,tqdm, trajectory_correcter,videoDataGUI,dallasPlots,trajectoryAna,dallasData
 from importlib import reload 
 import numpy as np
 
@@ -27,12 +27,18 @@ reload(trajectoryAna)
 # create pix2mm object
 p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
 p2m.getMM_Standard()
+
+#now to ethology analysis
 traObjList = list()
 for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,position,statistics'):
     traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
     traObj.runStandardAnalysis()
     traObjList.append(traObj)
 
+# write to dallas dataObj
+reload(dallasData)
+dataObj = dallasData.dallasData(traObj,14)
+dataObj.traAnaObj2DataObj()   
 
 reload(dallasPlots)
 dallasPlots.plotSingleFeature(np.rad2deg(traObj.yaw),traObj.fps,'yaw [deg]')
