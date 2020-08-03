@@ -44,13 +44,37 @@ class trajectoryAna():
         horizV = transDiff[:,0]
         vertV  = transDiff[:,1]
         # absolute speed
-        absV  = np.norm(transDiff)
+        absV = np.linalg.norm(transDiff,axis = 1) 
+        # calculate thrust and slip
+        thrust,slip = self.calculateThrustSlip(transDiff)
+            
+
+
+        self.speeds    = np.stack([thrust,], axis=1)
+        self.speeds    = self.speeds*self.fps 
+        self.speedDict = {'thrust': self.speeds[:,0],
+                          'slip'  : self.speeds[:,1],
+                          'yawV'  : self.speeds[:,2], 
+                          'horizV': self.speeds[:,3],
+                          'vertV' : self.speeds[:,4],
+                          'absV'  : self.speeds[:,5]}
+
+    def calculateThrustSlip(self,transDiff):
         # thrust and slip
+        thrust = np.zeros(shape=(len(self.yaw)-1,))  
+        slip   = np.zeros(shape=(len(self.yaw)-1,))      
+        for frameI in range(transDiff.shape[0]):
+            rotMat   = self.get2DrotationMat(-self.yaw[frameI])
+            thrust[frameI],slip[frameI] = np.dot(rotMat,transDiff[frameI,:])
+        return thrust,slip
+            
 
-        self.speeds = np.array([])
-        self.speeds = self.speeds*self.fps
-
-
+    
+    def get2DrotationMat(self,yaw):
+        rotMatrix = np.array([[np.cos(yaw), -np.sin(yaw)], 
+                              [np.sin(yaw),  np.cos(yaw)]])
+        
+        return rotMatrix
 
 class bodyDirectionCorrector():
     def __init__(self,traObj):
