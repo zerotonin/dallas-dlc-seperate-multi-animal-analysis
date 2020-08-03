@@ -13,6 +13,7 @@ class trajectoryAna():
         self.pix2mmObj  = pix2mmObj 
         self.bodyTurner = bodyDirectionCorrector(self)
         self.bodyTurner.sortBodyPartsByProximity()
+        self.movThreshold = 1.5 # 1.5 mm sec is minimal movement threshold
     
     def convert2mm(self): 
         self.mmTra = np.zeros(shape = self.pixTra.shape)
@@ -81,6 +82,9 @@ class trajectoryAna():
         self.crossedMidLine = midLine.any()
         topLine=self.mmTra[:,:,1]> arenaHeight*0.95  
         self.crossedTopLine = topLine.any()
+
+    def getClimbingIDX(self):
+        self.climbIDX = self.speedDict['vertV'] > self.movThreshold
 
 class bodyDirectionCorrector():
     def __init__(self,traObj):
