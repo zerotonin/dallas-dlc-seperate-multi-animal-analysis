@@ -32,7 +32,23 @@ class trajectoryAna():
         for i in range(self.frameNo):
             self.yaw[i] = np.math.atan2(directionVector[i,1],directionVector[i,0])
         self.yaw = np.unwrap(self.yaw)
+    
+    def calculateSpeeds(self):
+        # yaw velocity
+        yawV  = np.diff(np.rad2deg(self.yaw))
 
+        # center of mass positional change
+        transDiff= np.diff(np.median(self.mmTra,axis = 1),axis=0)
+
+        # horizontal and vertical velocity
+        horizV = transDiff[:,0]
+        vertV  = transDiff[:,1]
+        # absolute speed
+        absV  = np.norm(transDiff)
+        # thrust and slip
+
+        self.speeds = np.array([])
+        self.speeds = self.speeds*self.fps
 
 
 
