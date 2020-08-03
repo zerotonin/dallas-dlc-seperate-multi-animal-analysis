@@ -1,7 +1,5 @@
 import pandas,tqdm,copy,trajectory_correcter
 import numpy as np
-from scipy.spatial.distance import cdist
-from scipy.optimize import linear_sum_assignment
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
