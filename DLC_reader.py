@@ -102,10 +102,10 @@ class multiAnimalEval:
     def calculateSlotCoords(self):
         
 
-        upperXCoords = np.linspace(arenaC[0,0],arenaC[1,0],self.slotNo+1,endpoint=True)   
-        upperYCoords = np.linspace(arenaC[0,1],arenaC[1,1],self.slotNo+1,endpoint=True) 
-        lowerXCoords = np.linspace(arenaC[2,0],arenaC[3,0],self.slotNo+1,endpoint=True)   
-        lowerYCoords = np.linspace(arenaC[2,1],arenaC[3,1],self.slotNo+1,endpoint=True)
+        upperXCoords = np.linspace(self.arenaCoords[0,0],self.arenaCoords[1,0],self.slotNo+1,endpoint=True)   
+        upperYCoords = np.linspace(self.arenaCoords[0,1],self.arenaCoords[1,1],self.slotNo+1,endpoint=True) 
+        lowerXCoords = np.linspace(self.arenaCoords[3,0],self.arenaCoords[2,0],self.slotNo+1,endpoint=True)   
+        lowerYCoords = np.linspace(self.arenaCoords[3,1],self.arenaCoords[2,1],self.slotNo+1,endpoint=True)
         self.slotCoord = list() 
         for animalI in range(self.animalNo):
             xPts = [lowerXCoords[animalI],lowerXCoords[animalI+1],upperXCoords[animalI+1],upperXCoords[animalI]]
