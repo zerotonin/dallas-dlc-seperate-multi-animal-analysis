@@ -4,9 +4,20 @@ from scipy.interpolate import griddata
 class trajectoryAna():
     
     def __init__(self,trajectory,fps,pix2mmObj):
-        self.trajectory = trajectory 
+        self.pixTra     = trajectory 
+        self.frameNo,self.bodyPartNo, self.coordNo = self.pixTra.shape
         self.fps        = fps        
         self.pix2mmObj  = pix2mmObj  
+    
+    def convert2mm(self): 
+        self.mmTra = np.zeros(shape = self.pixTra.shape)
+        for i in range(optTraObj.bodyPartNo):
+            mmTra[:,i,:] = self.pix2mmObj.convertPix2mm(tra[:,i,:])
+
+
+
+
+
 
 
 class pix2mm():
