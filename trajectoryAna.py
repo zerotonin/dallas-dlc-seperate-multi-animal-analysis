@@ -41,7 +41,7 @@ class trajectoryAna():
         yawV  = np.diff(np.rad2deg(self.yaw))
 
         # center of mass positional change
-        transDiff= np.diff(np.median(self.mmTra,axis = 1),axis=0)
+        transDiff= np.diff(np.median(self.mmTraSmooth,axis = 1),axis=0)
 
         # horizontal and vertical velocity
         horizV = transDiff[:,0]
