@@ -31,6 +31,7 @@ class trajectoryAna():
         directionVector = self.mmTraSmooth[:,0,:] - self.mmTraSmooth[:,-1,:]
         for i in range(self.frameNo):
             self.yaw[i] = np.math.atan2(directionVector[i,1],directionVector[i,0])
+        self.yaw = np.unwrap(self.yaw)
 
 
 
@@ -53,7 +54,7 @@ class bodyDirectionCorrector():
                 self.swapCounter += 1
                 self.swapIDX.append(frameI)
         
-        if swapCounter > frameNo/2:
+        if self.swapCounter > frameNo/2:
             self.tra = self.tra[:,[1,0],:]
             
 
