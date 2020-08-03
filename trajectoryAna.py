@@ -50,7 +50,7 @@ class trajectoryAna():
             
 
 
-        self.speeds    = np.stack([thrust,], axis=1)
+        self.speeds    = np.stack([thrust,slip,yawV,horizV,vertV,absV], axis=1)
         self.speeds    = self.speeds*self.fps 
         self.speedDict = {'thrust': self.speeds[:,0],
                           'slip'  : self.speeds[:,1],
