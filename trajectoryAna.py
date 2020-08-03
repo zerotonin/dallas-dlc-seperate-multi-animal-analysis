@@ -11,8 +11,8 @@ class trajectoryAna():
     
     def convert2mm(self): 
         self.mmTra = np.zeros(shape = self.pixTra.shape)
-        for i in range(optTraObj.bodyPartNo):
-            mmTra[:,i,:] = self.pix2mmObj.convertPix2mm(tra[:,i,:])
+        for i in range(self.bodyPartNo):
+            self.mmTra[:,i,:] = self.pix2mmObj.convertPix2mm(self.pixTra[:,i,:])
 
 
 
