@@ -2,8 +2,9 @@ import numpy as np
 import json,os
 
 class dallasData():
-    def __init__(self,traAnaObj):
-        self.flyID                = np.nan # lane No
+    def __init__(self,traAnaObj,flyID,moVFpos,collection='Experiment',
+                 recordDate='XX-XX-XX__XX-XX-XX',examplePictureFN=None):
+        self.flyID                = flyID # lane No
         self.trajectory           = []     # trajectory of this fly
         self.frameNo              = np.nan # number of frames in movies
         self.animalNo             = np.nan # number of animals in movies
@@ -15,20 +16,50 @@ class dallasData():
         self.speedThrust          = (np.nan,np.nan,np.nan,np.nan)# min,mean,median,max [mm/s]
         self.speedSlip            = (np.nan,np.nan,np.nan,np.nan)# min,mean,median,max [mm/s]
         self.speedYaw             = (np.nan,np.nan,np.nan,np.nan)# min,mean,median,max [deg/s]
-        self.predominantBodyAngle = (np.nan,np.nan)# mean,median[deg]
+        self.predominantBodyAngle = np.nan # mean [deg]
         self.dropNo               = np.nan # number of times the animal fell
         self.activity             = np.nan # percentage the animal was active during movie
-        self.crossedMidLine       = False  # did the fly cross the midline -> classic Benzer 
-        self.reachedTop           = False  # did the fly reach the 90% height line
+        self.crossedMidLine       = (False,None)  # did the fly cross the midline -> classic Benzer 
+        self.reachedTop           = (False,None)  # did the fly reach the 90% height line
         self.pix2mmFactor         = np.nan # pixel 2 mm convertion factor
-        self.movieFileName        = ''     # file location of the movie
-        self.collection           = ''     # collection tag e.g. Anka1
-        self.recordingDate        = ''     # date and time of recording
-        self.anaObjFileName       = ''     # file location of the pickle object 
-        self.traCSVFileName       = ''     # file location of the flies tra file
-        self.exampePictureFN      = ''     # file location of the example Picture
+        self.movieFileName        = moVFpos # file location of the movie
+        self.collection           = collection # collection tag e.g. Anka1
+        self.recordingDate        = recordDate # date and time of recording
+        self.anaObjFileName       = '' # file location of the pickle object 
+        self.traCSVFileName       = '' # file location of the flies tra file
+        self.exampePictureFN      = examplePictureFN # file location of the example Picture
         self.traAnaObj            = traAnaObj
     
+
+    def traAnaObj2DataObj(self):
+
+        tra    = self.traAnaObj.mmTraSmooth[:,0,:]
+        for bodyI in range(1,self.traAnaObj.bodyPartNo):
+            tra = np.hstack((tra,self.traAnaObj.mmTraSmooth[:,bodyI,:]))
+        yaw    = self.traAnaObj.yaw
+        speeds = np.vstack([self.traAnaObj.speeds,self.traAnaObj.speeds[-1,:]])  
+        self.trajectory = np.hstack((np.column_stack((tra,yaw)),speeds))
+
+        self.frameNo              = self.traAnaObj.frameNo
+        self.animalNo             = self.traAnaObj.animalNo
+        self.bodyPartsNo          = self.traAnaObj.bodyPartNo
+        self.coordNo              = self.traAnaObj.coordNo
+        self.framesPerSecond      = self.traAnaObj.fps
+        self.speedClimb           = self.traAnaObj.speedStatClimb
+        self.speedSumABS          = self.traAnaObj.speedStatAbs
+        self.speedThrust          = self.traAnaObj.speedStatThrust 
+        self.speedSlip            = self.traAnaObj.speedStatSlip   
+        self.speedYaw             = self.traAnaObj.speedStatYaw
+        self.predominantBodyAngle = self.traAnaObj.bodyOrient
+        self.dropNo               = self.traAnaObj.dropScore
+        self.activity             = self.traAnaObj.activityScore
+        self.crossedMidLine       = self.traAnaObj.crossedMidLine
+        self.reachedTop           = self.traAnaObj.crossedTopLine
+        self.pix2mmFactor         = self.traAnaObj.pix2mmObj.pix2mmFactor
+        #self.anaObjFileName       = 
+        #self.traCSVFileName       = 
+
+
 
     
     def writeFly2JSON(self,fileName,directory):
