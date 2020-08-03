@@ -123,20 +123,23 @@ class multiAnimalEval:
                     posCandidates[frameI,animalI] = True 
         return posCandidates
 
+    def sortBoxCoords(self):
+        arenaC = self.arenaCoords[self.arenaCoords[:, 0].argsort()]   
+        sortedCoordinates = np.zeros(shape = arenaC.shape)
+        if arenaC[0,1] < arenaC[1,1]:
+            sortedCoordinates[0,:] = arenaC[1,:]
+            sortedCoordinates[3,:] = arenaC[0,:]
+        else:
+            sortedCoordinates[0,:] = arenaC[0,:]
+            sortedCoordinates[3,:] = arenaC[1,:]
 
-    def simplePositionTest(self,seperaterCoord):
-        allSepCoords = self.tra[:,:,:,seperaterCoord].flatten()
+        if arenaC[2,1] < arenaC[3,1]:
+            sortedCoordinates[1,:] = arenaC[3,:]
+            sortedCoordinates[2,:] = arenaC[2,:]
+        else:
+            sortedCoordinates[1,:] = arenaC[3,:]
+            sortedCoordinates[2,:] = arenaC[2,:]
 
-        boundaries = np.linspace(np.percentile(allSepCoords,0.5),np.percentile(allSepCoords,99.5) ,self.animalNo+1,endpoint=True)   
-        posCandidates = np.zeros(shape=(self.frameNo,self.animalNo),dtype=bool)   
-        for frameI in range(self.frameNo):
-            for animalI in range(self.animalNo):
-                sep_coords = self.tra[frameI,animalI,:,seperaterCoord]
-                for sep_coord in sep_coords:
-                    if ((boundaries[animalI] < sep_coord)  &  (boundaries[animalI+1] >= sep_coord)) == False:
-                        posCandidates[frameI,animalI] = True 
-        return posCandidates
-                    
 
 
     def Hungarian(self,ptsA,ptsB):
