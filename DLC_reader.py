@@ -100,7 +100,7 @@ class multiAnimalEval:
         return slotCoord.contains(bodyCoord)
     
     def calculateSlotCoords(self):
-        arenaC = self.arenaCoords[self.arenaCoords[:,1].argsort()]
+        
 
         upperXCoords = np.linspace(arenaC[0,0],arenaC[1,0],self.slotNo+1,endpoint=True)   
         upperYCoords = np.linspace(arenaC[0,1],arenaC[1,1],self.slotNo+1,endpoint=True) 
