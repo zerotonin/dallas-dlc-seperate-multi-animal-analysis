@@ -79,9 +79,18 @@ class trajectoryAna():
     
     def BenzerPositionsCrossed(self,arenaHeight):
         midLine=self.mmTra[:,:,1]> arenaHeight*0.5  
-        self.crossedMidLine = midLine.any()
+        if midLine.any() == True:
+            crossIndex = np.where(midLine == True)    
+            self.crossedMidLine = (True,crossIndex[0][0]/self.fps)
+        else:
+            self.crossedMidLine = (False,None)
+
         topLine=self.mmTra[:,:,1]> arenaHeight*0.95  
-        self.crossedTopLine = topLine.any()
+        if topLine.any() == True:
+            crossIndex = np.where(topLine == True)    
+            self.crossedTopLine = (True,crossIndex[0][0]/self.fps)
+        else:
+            self.crossedTopLine = (False,None)
 
     def getClimbingIDX(self):
         self.climbIDX = self.speedDict['vertV'] > self.movThreshold
@@ -89,7 +98,7 @@ class trajectoryAna():
     def getActivityIDX(self):
         self.activityIDX = self.speedDict['absV'] > (self.movThreshold + self.movThreshold/3.)
 
-    def calculateSpeedStastics(self):
+    def calculateSpeedStatistics(self):
         # to calculate speeds we have to ommitt those phases in which the animal is not moving
         self.getActivityIDX()
         self.getClimbingIDX()
