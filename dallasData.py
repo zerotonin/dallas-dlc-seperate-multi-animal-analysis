@@ -7,7 +7,6 @@ class dallasData():
         self.flyID                = flyID # lane No
         self.trajectory           = []     # trajectory of this fly
         self.frameNo              = np.nan # number of frames in movies
-        self.animalNo             = np.nan # number of animals in movies
         self.bodyPartsNo          = np.nan # number of traced body parts
         self.coordNo              = np.nan # number of coords 
         self.framesPerSecond      = np.nan # sample rate of recording
@@ -68,7 +67,6 @@ class dallasData():
                      'recordingDate'       : self.recordingDate       ,
                      'flyID'               : self.flyID               ,
                      'frameNo'             : self.frameNo             ,
-                     'animalNo'            : self.animalNo            ,
                      'coordNo'             : self.coordNo             ,
                      'framesPerSecond'     : self.framesPerSecond     ,
                      'speedSumABS'         : self.speedSumABS         ,
@@ -98,7 +96,6 @@ class dallasData():
                      'recordingDate'       : self.recordingDate       ,
                      'flyID'               : self.flyID               ,
                      'frameNo'             : self.frameNo             ,
-                     'animalNo'            : self.animalNo            ,
                      'coordNo'             : self.coordNo             ,
                      'framesPerSecond'     : self.framesPerSecond     ,
                      'speedSumABS_Min_MMperSec'         : float(self.speedSumABS[0])         ,
