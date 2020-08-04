@@ -7,12 +7,13 @@ collection = 'Anka1'
 saveDir    = '/media/dataSSD/AnkaArchive'
 sourceDir  = '/media/dataSSD/Anka1/'
 AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
+startFile  = 0
 
 #get all files that were analysed by this AI in source directory
 flyPos_files = [f for f in os.listdir(sourceDir) if f.endswith(AI_pattern)]
 flyPos_files.sort()
 
-for movieI in tqdm.tqdm(range(15,len(flyPos_files)),desc='detection files '):
+for movieI in tqdm.tqdm(range(startFile,len(flyPos_files)),desc='detection files '):
     # get movie position
     movPos = flyPos_files[movieI].split(AI_pattern)   
     movPos = os.path.join(sourceDir,movPos[0]+'.avi') 
