@@ -1,5 +1,5 @@
 import numpy as np
-import pandas,json,os
+import yaml,json,os
 
 class dallasData():
     def __init__(self,traAnaObj,flyID,moVFpos,dlcFPos,saveDir,collection='Experiment',
@@ -61,7 +61,6 @@ class dallasData():
         headerStr = "X pos Head [mm],Y pos Head [mm],X pos Abdomen [mm],Y pos Abdomen [mm],Yaw [rad],Thrust [mm/s],Slip [mm/s],Yaw [deg/s],Horiz. Vel. [mm/s],Vert. Vel. [mm/s],Abs. Vel. [mm/s]"
         np.savetxt(self.traCSVFileName, self.trajectory, delimiter=",",header=headerStr)
 
-    
     def writeFly2JSON(self,):
         # dict that shit
         out_dict = { 'movieFileName'       : self.movieFileName       ,
@@ -75,6 +74,7 @@ class dallasData():
                      'speedSumABS'         : self.speedSumABS         ,
                      'speedThrust'         : self.speedThrust         ,
                      'speedSlip'           : self.speedSlip           ,
+                     'speedClimb'          : self.speedClimb          ,
                      'speedYaw'            : self.speedYaw            ,
                      'predominantBodyAngle': self.predominantBodyAngle,
                      'dropScore'           : self.dropNo              ,
@@ -88,11 +88,56 @@ class dallasData():
 
         with open(self.jsonFileName, 'w') as outfile:
             json.dump(out_dict, outfile)
+    
+    def writeFly2YAML(self,):
+        # dict that shit
+        out_dict = { 'movieFileName'       : self.movieFileName       ,
+                     'collection'          : self.collection          ,
+                     'recordingDate'       : self.recordingDate       ,
+                     'flyID'               : self.flyID               ,
+                     'frameNo'             : self.frameNo             ,
+                     'animalNo'            : self.animalNo            ,
+                     'coordNo'             : self.coordNo             ,
+                     'framesPerSecond'     : self.framesPerSecond     ,
+                     'speedSumABS_Min_MMperSec'         : float(self.speedSumABS[0])         ,
+                     'speedSumABS_Mean_MMperSec'        : float(self.speedSumABS[1])         ,
+                     'speedSumABS_Median_MMperSec'      : float(self.speedSumABS[2])         ,
+                     'speedSumABS_Max_MMperSec'         : float(self.speedSumABS[3])         ,
+                     'speedThrust_Min_MMperSec'         : float(self.speedThrust[0])         ,
+                     'speedThrust_Mean_MMperSec'         : float(self.speedThrust[1])         ,
+                     'speedThrust_Median_MMperSec'         : float(self.speedThrust[2])         ,
+                     'speedThrust_Max_MMperSec'         : float(self.speedThrust[3])         ,
+                     'speedSlip_Min_MMperSec'           : float(self.speedSlip[0])           ,
+                     'speedSlip_Mean_MMperSec'           : float(self.speedSlip[1])           ,
+                     'speedSlip_Median_MMperSec'           : float(self.speedSlip[2])           ,
+                     'speedSlip_Max_MMperSec'           : float(self.speedSlip[3])           ,
+                     'speedYaw_Min_MMperSec'            : float(self.speedYaw[0])            ,
+                     'speedYaw_Mean_MMperSec'            : float(self.speedYaw[1])            ,
+                     'speedYaw_Median_MMperSec'            : float(self.speedYaw[2])            ,
+                     'speedYaw_Max_MMperSec'            : float(self.speedYaw[3])            ,
+                     'speedClimb_Min_MMperSec'          : float(self.speedClimb[0])            ,
+                     'speedClimb_Mean_MMperSec'          : float(self.speedClimb[1])            ,
+                     'speedClimb_Median_MMperSec'          : float(self.speedClimb[2])            ,
+                     'speedClimb_Max_MMperSec'          : float(self.speedClimb[3])            ,
+                     'predominantBodyAngle': float(self.predominantBodyAngle),
+                     'dropScore'           : float(self.dropNo)              ,
+                     'activityScore'       : float(self.activity)            ,
+                     'crossedMidLine'      : list(self.crossedMidLine),
+                     'reachedTop'          : list(self.reachedTop)     ,
+                     'pix2mmFactor'        : float(self.pix2mmFactor)        ,
+                     'anaObjFileName'      : self.anaObjFileName      ,
+                     'traCSVFileName'      : self.traCSVFileName      ,
+                     'exampelPictureFN'    : self.exampelPictureFileName}
+
+        with open(self.yamlFileName, 'w') as file:
+            documents = yaml.dump(out_dict, file)
+            
 
     def autoMakeSavePositions(self):
         saveFolders = {'jsonsFolder' : os.path.join(self.saveDir,'jsons'),
                        'traFolder'   : os.path.join(self.saveDir,'traCSV'),
                        'objectFolder': os.path.join(self.saveDir,'anaObj'),
+                       'yamlFolder'  : os.path.join(self.saveDir,'yamls'),
                        'examplePic'  : os.path.join(self.saveDir,'overViewPics')} 
         
         for key,val in saveFolders.items(): 
@@ -106,5 +151,5 @@ class dallasData():
         self.exampelPictureFileName = os.path.join(self.saveFolders['examplePic'],self.baseName+'_traOverview.png')
         self.anaObjFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_dallas.obj')
         self.jsonFileName           = os.path.join(self.saveFolders['jsonsFolder'],self.baseName+'.json')
-
+        self.yamlFileName           = os.path.join(self.saveFolders['yamlFolder'],self.baseName+'.yaml')
     
