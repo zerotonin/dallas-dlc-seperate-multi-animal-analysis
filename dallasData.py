@@ -2,7 +2,7 @@ import numpy as np
 import pandas,json,os
 
 class dallasData():
-    def __init__(self,traAnaObj,flyID,moVFpos,dlcFPos,collection='Experiment',
+    def __init__(self,traAnaObj,flyID,moVFpos,dlcFPos,saveDir,collection='Experiment',
                  recordDate='XX-XX-XX__XX-XX-XX',examplePictureFN=None):
         self.flyID                = flyID # lane No
         self.trajectory           = []     # trajectory of this fly
@@ -30,6 +30,7 @@ class dallasData():
         self.traCSVFileName       = '' # file location of the flies tra file
         self.exampePictureFN      = examplePictureFN # file location of the example Picture
         self.traAnaObj            = traAnaObj
+        self.saveDir              = saveDir
     
 
     def traAnaObj2DataObj(self):
