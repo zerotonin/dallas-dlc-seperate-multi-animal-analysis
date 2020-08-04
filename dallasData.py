@@ -1,5 +1,5 @@
 import numpy as np
-import yaml,json,os
+import yaml,json,os,pickle
 
 class dallasData():
     def __init__(self,traAnaObj,flyID,moVFpos,dlcFPos,saveDir,collection='Experiment',
@@ -50,6 +50,16 @@ class dallasData():
         self.reachedTop           = self.traAnaObj.crossedTopLine
         self.pix2mmFactor         = self.traAnaObj.pix2mmObj.pix2mmFactor
     
+    def runStandardOut(self):
+        self.traAnaObj2DataObj()
+        self.writeFly2JSON()
+        self.writeFly2YAML()
+        self.writeCSVtra() 
+        self.writeDallasAnaObj()  
+
+    def writeDallasAnaObj(self):
+        pickle.dump( self.traAnaObj, open( self.anaObjFileName, "wb" ) )
+
     def writeCSVtra(self):
         tra    = self.traAnaObj.mmTraSmooth[:,0,:]
         for bodyI in range(1,self.traAnaObj.bodyPartNo):
@@ -150,7 +160,7 @@ class dallasData():
 
         self.traCSVFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_tra.csv')
         self.exampelPictureFileName = os.path.join(self.saveFolders['examplePic'],self.baseName+'_traOverview.png')
-        self.anaObjFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_dallas.obj')
+        self.anaObjFileName         = os.path.join(self.saveFolders['objectFolder'],self.baseName+'_dallas.obj')
         self.jsonFileName           = os.path.join(self.saveFolders['jsonsFolder'],self.baseName+'.json')
         self.yamlFileName           = os.path.join(self.saveFolders['yamlFolder'],self.baseName+'.yaml')
     
