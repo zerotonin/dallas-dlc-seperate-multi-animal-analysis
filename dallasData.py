@@ -1,8 +1,8 @@
 import numpy as np
-import json,os
+import pandas,json,os
 
 class dallasData():
-    def __init__(self,traAnaObj,flyID,moVFpos,collection='Experiment',
+    def __init__(self,traAnaObj,flyID,moVFpos,dlcFPos,collection='Experiment',
                  recordDate='XX-XX-XX__XX-XX-XX',examplePictureFN=None):
         self.flyID                = flyID # lane No
         self.trajectory           = []     # trajectory of this fly
@@ -25,6 +25,7 @@ class dallasData():
         self.movieFileName        = moVFpos # file location of the movie
         self.collection           = collection # collection tag e.g. Anka1
         self.recordingDate        = recordDate # date and time of recording
+        self.dlcFileName          = dlcFPos
         self.anaObjFileName       = '' # file location of the pickle object 
         self.traCSVFileName       = '' # file location of the flies tra file
         self.exampePictureFN      = examplePictureFN # file location of the example Picture
@@ -41,7 +42,6 @@ class dallasData():
         self.trajectory = np.hstack((np.column_stack((tra,yaw)),speeds))
 
         self.frameNo              = self.traAnaObj.frameNo
-        self.animalNo             = self.traAnaObj.animalNo
         self.bodyPartsNo          = self.traAnaObj.bodyPartNo
         self.coordNo              = self.traAnaObj.coordNo
         self.framesPerSecond      = self.traAnaObj.fps
@@ -70,27 +70,27 @@ class dallasData():
         np.savetxt(csvFPos, self.trajectory, delimiter=",")
 
         # dict that shit
-        out_dict = { 'movieFileName       ': self.movieFileName       ,
-                     'collection          ': self.collection          ,
-                     'recordingDate       ': self.recordingDate          ,
-                     'flyID               ': self.flyID               ,
-                     'frameNo             ': self.frameNo             ,
-                     'animalNo            ': self.animalNo            ,
-                     'coordNo             ': self.coordNo             ,
-                     'framesPerSecond     ': self.framesPerSecond     ,
-                     'speedSumABS         ': self.speedSumABS         ,
-                     'speedThrust         ': self.speedThrust         ,
-                     'speedSlip           ': self.speedSlip           ,
-                     'speedYaw            ': self.speedYaw            ,
+        out_dict = { 'movieFileName'       : self.movieFileName       ,
+                     'collection'          : self.collection          ,
+                     'recordingDate'       : self.recordingDate          ,
+                     'flyID'               : self.flyID               ,
+                     'frameNo'             : self.frameNo             ,
+                     'animalNo'            : self.animalNo            ,
+                     'coordNo'             : self.coordNo             ,
+                     'framesPerSecond'     : self.framesPerSecond     ,
+                     'speedSumABS'         : self.speedSumABS         ,
+                     'speedThrust'         : self.speedThrust         ,
+                     'speedSlip'           : self.speedSlip           ,
+                     'speedYaw'            : self.speedYaw            ,
                      'predominantBodyAngle': self.predominantBodyAngle,
-                     'dropNo              ': self.dropNo              ,
-                     'activity            ': self.activity            ,
-                     'crossedMidLine      ': self.crossedMidLine      ,
-                     'reachedTop          ': self.reachedTop          ,
-                     'pix2mmFactor        ': self.pix2mmFactor        ,
-                     'anaObjFileName      ': self.anaObjFileName      ,
-                     'traCSVFileName      ': self.traCSVFileName      ,
-                     'exampePictureFN     ': self.exampePictureFN     }
+                     'dropNo'              : self.dropNo              ,
+                     'activity'            : self.activity            ,
+                     'crossedMidLine'      : self.crossedMidLine      ,
+                     'reachedTop'          : self.reachedTop          ,
+                     'pix2mmFactor'        : self.pix2mmFactor        ,
+                     'anaObjFileName'      : self.anaObjFileName      ,
+                     'traCSVFileName'      : self.traCSVFileName      ,
+                     'exampePictureFN'     : self.exampePictureFN     }
 
         with open(jsonFPos, 'w') as outfile:
             json.dump(out_dict, outfile)
