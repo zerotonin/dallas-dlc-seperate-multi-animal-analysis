@@ -24,6 +24,7 @@ def plotForDataArchive(frame,traObj,traSteps,fname):
     plotSlots(traObj,ax)
     plotTraPix(traObj,ax,cmap,traSteps)
     fig.savefig(fname)
+    plt.close(fig)
 
 def standardPlotTrajectory(tra,traSteps,animalColor):
     plt.ion()
