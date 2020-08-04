@@ -45,8 +45,7 @@ class videoDataGUI():
             for p in ph:
                 p.remove()
         #clear overlay
-        for p in ph:
-            p.remove()
+        plt.close('all')
         return pts
 
     def run(self):
