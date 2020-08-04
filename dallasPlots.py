@@ -10,6 +10,20 @@ def standardPlot(frame,traObj,traSteps):
     plotSlots(traObj,ax)
     plotTraPix(traObj,ax,cmap,traSteps)
     plt.show()
+   
+
+
+def plotForDataArchive(frame,traObj,traSteps,fname):
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(frame.shape[1]/40/2.54,frame.shape[0]/40/2.54)
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    cmap = plt.get_cmap('tab20b')  
+    ax.imshow(frame,aspect='auto')
+    plotSlots(traObj,ax)
+    plotTraPix(traObj,ax,cmap,traSteps)
+    fig.savefig(fname)
 
 def standardPlotTrajectory(tra,traSteps,animalColor):
     plt.ion()
