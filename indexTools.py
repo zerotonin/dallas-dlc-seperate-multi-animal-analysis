@@ -12,7 +12,7 @@ def indiceSeq2startEnd(indiceList):
         if indDiff[i-1] !=1:
             ends.append(indiceList[i-1])
             starts.append(indiceList[i])
-    ends.append(indiceList[i])
+    ends.append(indiceList[-1])
     return np.array(list(zip(starts,ends)))
 
 def boolSequence2startEndIndices(boolList):
