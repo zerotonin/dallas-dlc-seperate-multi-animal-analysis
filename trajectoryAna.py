@@ -103,14 +103,25 @@ class trajectoryAna():
         # to calculate speeds we have to ommitt those phases in which the animal is not moving
         self.getActivityIDX()
         self.getClimbingIDX()
-        self.speedStatClimb  = self.minMedianMeanMax4Speed(self.speeds[self.climbIDX,4])
-        self.speedStatThrust = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,0])
-        self.speedStatSlip   = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,1])
-        self.speedStatAbs    = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,5])
+        if self.climbIDX.any() == True:
+            self.speedStatClimb  = self.minMedianMeanMax4Speed(self.speeds[self.climbIDX,4])
+        else:
+            self.speedStatClimb  =(np.nan,np.nan,np.nan,np.nan)
+
+        if self.activityIDX.any() == True:
+            self.speedStatThrust = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,0])
+            self.speedStatSlip   = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,1])
+            self.speedStatAbs    = self.minMedianMeanMax4Speed(self.speeds[self.activityIDX,5])
+        else:
+            self.speedStatThrust =(np.nan,np.nan,np.nan,np.nan)
+            self.speedStatSlip   =(np.nan,np.nan,np.nan,np.nan)
+            self.speedStatAbs    =(np.nan,np.nan,np.nan,np.nan)
+
         self.speedStatYaw    = self.minMedianMeanMax4Speed(self.speeds[:,2]) 
-    
+        
     def minMedianMeanMax4Speed(self,speed):
         return (np.min(speed),np.mean(speed),np.median(speed),np.max(speed))
+
 
     def calculateMeanOrientation(self):
         self.bodyOrient =  np.rad2deg(phase(sum(rect(1, d) for d in self.yaw)/self.frameNo))    
