@@ -3,7 +3,7 @@ import pandas,json,os
 
 class dallasData():
     def __init__(self,traAnaObj,flyID,moVFpos,dlcFPos,saveDir,collection='Experiment',
-                 recordDate='XX-XX-XX__XX-XX-XX',examplePictureFN=None):
+                 recordDate='XX-XX-XX__XX-XX-XX'):
         self.flyID                = flyID # lane No
         self.trajectory           = []     # trajectory of this fly
         self.frameNo              = np.nan # number of frames in movies
@@ -28,9 +28,9 @@ class dallasData():
         self.dlcFileName          = dlcFPos
         self.anaObjFileName       = '' # file location of the pickle object 
         self.traCSVFileName       = '' # file location of the flies tra file
-        self.exampePictureFN      = examplePictureFN # file location of the example Picture
         self.traAnaObj            = traAnaObj
         self.saveDir              = saveDir
+        self.autoMakeSavePositions()
     
 
     def traAnaObj2DataObj(self):
@@ -57,16 +57,12 @@ class dallasData():
         self.crossedMidLine       = self.traAnaObj.crossedMidLine
         self.reachedTop           = self.traAnaObj.crossedTopLine
         self.pix2mmFactor         = self.traAnaObj.pix2mmObj.pix2mmFactor
-        #self.anaObjFileName       = 
-        #self.traCSVFileName       = 
-
 
 
     
-    def writeFly2JSON(self,fileName,directory):
+    def writeFly2JSON(self,):
         # output filenames
-        csvFPos  = os.path.join(directory,fileName+'.csv')
-        jsonFPos = os.path.join(directory,fileName+'.json')
+
         # write trajectory_away
         np.savetxt(csvFPos, self.trajectory, delimiter=",")
 
@@ -96,5 +92,22 @@ class dallasData():
         with open(jsonFPos, 'w') as outfile:
             json.dump(out_dict, outfile)
 
+    def autoMakeSavePositions(self):
+        saveFolders = {'jsonsFolder' : os.path.join(self.saveDir,'jsons'),
+                       'traFolder'   : os.path.join(self.saveDir,'traCSV'),
+                       'objectFolder': os.path.join(self.saveDir,'anaObj'),
+                       'examplePic'  : os.path.join(self.saveDir,'overViewPics')} 
         
+        for key,val in saveFolders.items(): 
+            newFolder =os.path.join(val,self.collection)
+            saveFolders[key] = newFolder
+            os.makedirs(newFolder, exist_ok=True)
+        self.saveFolders = saveFolders
+        self.baseName = os.path.splitext(os.path.basename(self.movieFileName))[0]  
+
+        self.traCSVFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_tra.csv')
+        self.exampelPictureFileName = os.path.join(self.saveFolders['examplePic'],self.baseName+'_traOverview.png')
+        self.anaObjFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_dallas.obj')
+        self.jsonFileName           = os.path.join(self.saveFolders['traFolder'],self.baseName+'.json')
+
     
