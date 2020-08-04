@@ -132,7 +132,7 @@ class dallasData():
                      'speedClimb_Mean_MMperSec'          : float(self.speedClimb[1])            ,
                      'speedClimb_Median_MMperSec'          : float(self.speedClimb[2])            ,
                      'speedClimb_Max_MMperSec'          : float(self.speedClimb[3])            ,
-                     'predominantBodyAngle': float(self.predominantBodyAngle),
+                     'predominantBodyAngleDeg': float(self.predominantBodyAngle),
                      'dropScore'           : float(self.dropNo)              ,
                      'activityScore'       : float(self.activity)            ,
                      'crossedMidLineTimeSec'      : float(self.crossedMidLine[1]),  
