@@ -35,13 +35,6 @@ class dallasData():
 
     def traAnaObj2DataObj(self):
 
-        tra    = self.traAnaObj.mmTraSmooth[:,0,:]
-        for bodyI in range(1,self.traAnaObj.bodyPartNo):
-            tra = np.hstack((tra,self.traAnaObj.mmTraSmooth[:,bodyI,:]))
-        yaw    = self.traAnaObj.yaw
-        speeds = np.vstack([self.traAnaObj.speeds,self.traAnaObj.speeds[-1,:]])  
-        self.trajectory = np.hstack((np.column_stack((tra,yaw)),speeds))
-
         self.frameNo              = self.traAnaObj.frameNo
         self.bodyPartsNo          = self.traAnaObj.bodyPartNo
         self.coordNo              = self.traAnaObj.coordNo
@@ -57,14 +50,22 @@ class dallasData():
         self.crossedMidLine       = self.traAnaObj.crossedMidLine
         self.reachedTop           = self.traAnaObj.crossedTopLine
         self.pix2mmFactor         = self.traAnaObj.pix2mmObj.pix2mmFactor
-
+    
+    def writeCSVtra(self):
+        tra    = self.traAnaObj.mmTraSmooth[:,0,:]
+        for bodyI in range(1,self.traAnaObj.bodyPartNo):
+            tra = np.hstack((tra,self.traAnaObj.mmTraSmooth[:,bodyI,:]))
+        yaw    = self.traAnaObj.yaw
+        speeds = np.vstack([self.traAnaObj.speeds,self.traAnaObj.speeds[-1,:]])  
+        self.trajectory = np.hstack((np.column_stack((tra,yaw)),speeds))
+        headerStr = "X pos Head [mm],Y pos Head [mm],X pos Abdomen [mm],Y pos Abdomen [mm],Yaw [rad],Thrust [mm/s],Slip [mm/s],Yaw [deg/s],Horiz. Vel. [mm/s],Vert. Vel. [mm/s],Abs. Vel. [mm/s]"
+        np.savetxt(self.traCSVFileName, self.trajectory, delimiter=",",header=headerStr)
 
     
     def writeFly2JSON(self,):
         # output filenames
 
         # write trajectory_away
-        np.savetxt(csvFPos, self.trajectory, delimiter=",")
 
         # dict that shit
         out_dict = { 'movieFileName'       : self.movieFileName       ,
