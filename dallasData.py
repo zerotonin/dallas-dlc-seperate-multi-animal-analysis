@@ -84,7 +84,9 @@ class dallasData():
                      'pix2mmFactor'        : self.pix2mmFactor        ,
                      'anaObjFileName'      : self.anaObjFileName      ,
                      'traCSVFileName'      : self.traCSVFileName      ,
-                     'exampelPictureFN'    : self.exampelPictureFileName}
+                     'exampelPictureFN'    : self.exampelPictureFileName,
+                     'yamlFile'            : self.yamlFileName,
+                     'jsonFile'            : self.jsonFileName}
 
         with open(self.jsonFileName, 'w') as outfile:
             json.dump(out_dict, outfile)
@@ -127,7 +129,9 @@ class dallasData():
                      'pix2mmFactor'        : float(self.pix2mmFactor)        ,
                      'anaObjFileName'      : self.anaObjFileName      ,
                      'traCSVFileName'      : self.traCSVFileName      ,
-                     'exampelPictureFN'    : self.exampelPictureFileName}
+                     'exampelPictureFN'    : self.exampelPictureFileName,
+                     'yamlFile'            : self.yamlFileName,
+                     'jsonFile'            : self.jsonFileName}
 
         with open(self.yamlFileName, 'w') as file:
             documents = yaml.dump(out_dict, file)
