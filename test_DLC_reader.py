@@ -4,7 +4,7 @@ from importlib import reload
 
 #user data
 collection = 'Anka1'
-saveDir    = '/media/dataSSD/testArchive'
+saveDir    = '/media/dataSSD/AnkaArchive'
 sourceDir  = '/media/dataSSD/Anka1/'
 AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
 
@@ -53,7 +53,8 @@ for movieI in tqdm.tqdm(range(15,len(flyPos_files)),desc='detection files '):
             if animalI == 0:
                 dallasPlots.plotForDataArchive(vGUI.frame,optTraObj,200,dataObj.exampelPictureFileName)                  
             dataObj.runStandardOut()
-
+            os.system('clear')
+print('Done!')
 
 
 # old plots
