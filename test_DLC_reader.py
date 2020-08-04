@@ -1,58 +1,65 @@
 import DLC_reader,trajectory_correcter,videoDataGUI,dallasPlots,trajectoryAna,dallasData
 import tqdm,datetime,os
 from importlib import reload 
-import numpy as np
 
+#user data
 collection = 'Anka1'
-flyPos     = '/media/dataSSD/Anka1/B_05_03DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
-movPos     = '/media/dataSSD/Anka1/B_05_03.avi'
-modTime    = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(movPos)),'%Y-%m-%d %H:%M:%S' )   
+saveDir    = '/media/dataSSD/testArchive'
+sourceDir  = '/media/dataSSD/Anka1/'
+AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
 
-# get arena size
-vGUI = videoDataGUI.videoDataGUI(movPos,'movie')  
-arenaCoords = vGUI.run()
-#read in dlc file
-reload(DLC_reader)
-readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
-readObj.readH5()
-# split to 4D trajectory
-readObj.multiAnimal2numpy()
+#get all files that were analysed by this AI in source directory
+flyPos_files = [f for f in os.listdir(sourceDir) if f.endswith(AI_pattern)]
+
+for movieI in tqdm.tqdm(range(15,len(flyPos_files)),desc='detection files '):
+    # get movie position
+    movPos = flyPos_files[movieI].split(AI_pattern)   
+    movPos = os.path.join(sourceDir,movPos[0]+'.avi') 
+    #get result position
+    flyPos = os.path.join(sourceDir, flyPos_files[movieI]  )
+
+    #check if movie exists and go
+    if os.path.exists(movPos):  
+        # get modification time from movie
+        modTime    = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(movPos)),'%Y-%m-%d %H:%M:%S' )   
+
+        # get arena size
+        vGUI = videoDataGUI.videoDataGUI(movPos,'movie')  
+        arenaCoords = vGUI.run()
+        #read in dlc file
+        readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
+        readObj.readH5()
+        # split to 4D trajectory
+        readObj.multiAnimal2numpy()
+
+        # optimize trajectory
+        optTraObj= DLC_reader.multiAnimalEval(readObj.tra,arenaCoords )
+        optTraObj.testForArtifacts()
+        optTraObj.interpOverArtifacts()
+
+        # create pix2mm object
+        p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
+        p2m.getMM_Standard()
+
+        #now to ethology analysis
+        traObjList = list()
+        for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,statistics,writing'):
+            traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
+            traObj.runStandardAnalysis()
+            traObjList.append(traObj)
+            # write to dallas dataObj
+            dataObj = dallasData.dallasData(traObj,animalI,movPos,flyPos,saveDir,collection=collection,
+                                            recordDate=modTime)
+            if animalI == 0:
+                dallasPlots.plotForDataArchive(vGUI.frame,optTraObj,200,dataObj.exampelPictureFileName)                  
+            dataObj.runStandardOut()
 
 
-# optimize trajectory
-optTraObj= DLC_reader.multiAnimalEval(readObj.tra,arenaCoords )
-optTraObj.testForArtifacts()
-optTraObj.interpOverArtifacts()
 
-#now to ethology analysis
-reload(trajectoryAna)
-# create pix2mm object
-p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
-p2m.getMM_Standard()
+# old plots
 
-#now to ethology analysis
-traObjList = list()
-for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,position,statistics'):
-    traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
-    traObj.runStandardAnalysis()
-    traObjList.append(traObj)
-
-# write to dallas dataObj
-reload(dallasData)
-dataObj = dallasData.dallasData(traObj,14)
-dataObj.traAnaObj2DataObj()   
-
-dallasPlots.standardPlot(vGUI.frame,optTraObj,200)
-
-
-# write to dallas dataObj
-reload(dallasData)
-dataObj = dallasData.dallasData(traObj,14,movPos,flyPos,collection=collection,
-                                recordDate=modTime)
-dataObj.traAnaObj2DataObj()   
-
-reload(dallasPlots)
-dallasPlots.plotSingleFeature(np.rad2deg(traObj.yaw),traObj.fps,'yaw [deg]')
-dallasPlots.plotSingleFeature(traObj.speeds,traObj.fps,'yaw [deg]')
-dallasPlots.plotFilterTraTest(traObj.mmTra,traObj.mmTraSmooth)     
-dallasPlots.standardPlotTrajectory(traObj.mmTra,200,(0.5,0.5,0.5))
+#reload(dallasPlots)
+#dallasPlots.plotSingleFeature(np.rad2deg(traObj.yaw),traObj.fps,'yaw [deg]')
+#dallasPlots.plotSingleFeature(traObj.speeds,traObj.fps,'yaw [deg]')
+#dallasPlots.plotFilterTraTest(traObj.mmTra,traObj.mmTraSmooth)     
+#dallasPlots.standardPlotTrajectory(traObj.mmTra,200,(0.5,0.5,0.5))
