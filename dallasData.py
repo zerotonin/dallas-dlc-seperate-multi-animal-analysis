@@ -156,10 +156,11 @@ class dallasData():
             saveFolders[key] = newFolder
             os.makedirs(newFolder, exist_ok=True)
         self.saveFolders = saveFolders
-        self.baseName = os.path.splitext(os.path.basename(self.movieFileName))[0]  
-
-        self.traCSVFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_tra.csv')
+        self.baseName = os.path.splitext(os.path.basename(self.movieFileName))[0] 
         self.exampelPictureFileName = os.path.join(self.saveFolders['examplePic'],self.baseName+'_traOverview.png')
+        self.baseName = self.baseName + '_fly_' + str(self.flyID)
+     
+        self.traCSVFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_tra.csv')
         self.anaObjFileName         = os.path.join(self.saveFolders['objectFolder'],self.baseName+'_dallas.obj')
         self.jsonFileName           = os.path.join(self.saveFolders['jsonsFolder'],self.baseName+'.json')
         self.yamlFileName           = os.path.join(self.saveFolders['yamlFolder'],self.baseName+'.yaml')
