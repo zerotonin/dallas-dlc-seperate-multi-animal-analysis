@@ -49,7 +49,11 @@ class dallasData():
         self.crossedMidLine       = self.traAnaObj.crossedMidLine
         self.reachedTop           = self.traAnaObj.crossedTopLine
         self.pix2mmFactor         = self.traAnaObj.pix2mmObj.pix2mmFactor
-    
+
+        if self.crossedMidLine[0] == False:
+            self.crossedMidLine = (False,self.frameNo/self.framesPerSecond)
+        if self.reachedTop[0] == False:
+            self.reachedTop = (False,self.frameNo/self.framesPerSecond)    
     def runStandardOut(self):
         self.traAnaObj2DataObj()
         self.writeFly2JSON()
@@ -131,7 +135,7 @@ class dallasData():
                      'predominantBodyAngle': float(self.predominantBodyAngle),
                      'dropScore'           : float(self.dropNo)              ,
                      'activityScore'       : float(self.activity)            ,
-                     'crossedMidLineTimeSec'      : float(self.crossedMidLine[1]),  ,
+                     'crossedMidLineTimeSec'      : float(self.crossedMidLine[1]),  
                      'crossedMidLineBool'      : self.crossedMidLine[0],
                      'reachedTopBool'          : self.reachedTop[0]     ,
                      'reachedTopTimeSec'          : float(self.reachedTop[1])     ,
