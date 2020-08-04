@@ -63,14 +63,10 @@ class dallasData():
 
     
     def writeFly2JSON(self,):
-        # output filenames
-
-        # write trajectory_away
-
         # dict that shit
         out_dict = { 'movieFileName'       : self.movieFileName       ,
                      'collection'          : self.collection          ,
-                     'recordingDate'       : self.recordingDate          ,
+                     'recordingDate'       : self.recordingDate       ,
                      'flyID'               : self.flyID               ,
                      'frameNo'             : self.frameNo             ,
                      'animalNo'            : self.animalNo            ,
@@ -81,16 +77,16 @@ class dallasData():
                      'speedSlip'           : self.speedSlip           ,
                      'speedYaw'            : self.speedYaw            ,
                      'predominantBodyAngle': self.predominantBodyAngle,
-                     'dropNo'              : self.dropNo              ,
-                     'activity'            : self.activity            ,
+                     'dropScore'           : self.dropNo              ,
+                     'activityScore'       : self.activity            ,
                      'crossedMidLine'      : self.crossedMidLine      ,
                      'reachedTop'          : self.reachedTop          ,
                      'pix2mmFactor'        : self.pix2mmFactor        ,
                      'anaObjFileName'      : self.anaObjFileName      ,
                      'traCSVFileName'      : self.traCSVFileName      ,
-                     'exampePictureFN'     : self.exampePictureFN     }
+                     'exampelPictureFN'    : self.exampelPictureFileName}
 
-        with open(jsonFPos, 'w') as outfile:
+        with open(self.jsonFileName, 'w') as outfile:
             json.dump(out_dict, outfile)
 
     def autoMakeSavePositions(self):
@@ -109,6 +105,6 @@ class dallasData():
         self.traCSVFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_tra.csv')
         self.exampelPictureFileName = os.path.join(self.saveFolders['examplePic'],self.baseName+'_traOverview.png')
         self.anaObjFileName         = os.path.join(self.saveFolders['traFolder'],self.baseName+'_dallas.obj')
-        self.jsonFileName           = os.path.join(self.saveFolders['traFolder'],self.baseName+'.json')
+        self.jsonFileName           = os.path.join(self.saveFolders['jsonsFolder'],self.baseName+'.json')
 
     
