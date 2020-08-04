@@ -10,6 +10,7 @@ AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
 
 #get all files that were analysed by this AI in source directory
 flyPos_files = [f for f in os.listdir(sourceDir) if f.endswith(AI_pattern)]
+flyPos_files.sort()
 
 for movieI in tqdm.tqdm(range(15,len(flyPos_files)),desc='detection files '):
     # get movie position
