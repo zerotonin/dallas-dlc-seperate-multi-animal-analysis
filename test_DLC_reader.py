@@ -2,58 +2,49 @@ import DLC_reader,trajectory_correcter,videoDataGUI,dallasPlots,trajectoryAna,da
 import tqdm,datetime,os
 from importlib import reload 
 
-#user data
-collection = 'Anka1'
-saveDir    = '/media/dataSSD/AnkaArchive'
-sourceDir  = '/media/dataSSD/Anka1/'
-AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
-
+# get movie position
+movPos = '/media/dataSSD/Anka6/2019-10-01__11_08_49.avi'
+#get result position
+flyPos = '/media/dataSSD/Anka6/2019-10-01__11_08_49DLC_resnet50_AnkaClimbJul29shuffle1_200000_bx.h5'
 #get all files that were analysed by this AI in source directory
-flyPos_files = [f for f in os.listdir(sourceDir) if f.endswith(AI_pattern)]
 
-for movieI in tqdm.tqdm(range(15,len(flyPos_files)),desc='detection files '):
-    # get movie position
-    movPos = flyPos_files[movieI].split(AI_pattern)   
-    movPos = os.path.join(sourceDir,movPos[0]+'.avi') 
-    #get result position
-    flyPos = os.path.join(sourceDir, flyPos_files[movieI]  )
 
-    #check if movie exists and go
-    if os.path.exists(movPos):  
-        # get modification time from movie
-        modTime    = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(movPos)),'%Y-%m-%d %H:%M:%S' )   
+#check if movie exists and go
+if os.path.exists(movPos):  
+# get modification time from movie
+    modTime  = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(movPos)),'%Y-%m-%d %H:%M:%S' )   
 
-        # get arena size
-        vGUI = videoDataGUI.videoDataGUI(movPos,'movie')  
-        arenaCoords = vGUI.run()
-        #read in dlc file
-        readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
-        readObj.readH5()
-        # split to 4D trajectory
-        readObj.multiAnimal2numpy()
+# get arena size
+vGUI = videoDataGUI.videoDataGUI(movPos,'movie')  
+arenaCoords = vGUI.run()
+#read in dlc file
+readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
+readObj.readH5()
+# split to 4D trajectory
+readObj.multiAnimal2numpy()
 
-        # optimize trajectory
-        optTraObj= DLC_reader.multiAnimalEval(readObj.tra,arenaCoords )
-        optTraObj.testForArtifacts()
-        optTraObj.interpOverArtifacts()
+# optimize trajectory
+optTraObj= DLC_reader.multiAnimalEval(readObj.tra,arenaCoords )
+optTraObj.testForArtifacts()
+optTraObj.interpOverArtifacts()
 
-        # create pix2mm object
-        p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
-        p2m.getMM_Standard()
+# create pix2mm object
+p2m = trajectoryAna.pix2mm(optTraObj.arenaCoords,'smallBenzer') 
+p2m.getMM_Standard()
 
-        #now to ethology analysis
-        traObjList = list()
-        for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,statistics,writing'):
-            traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
-            traObj.runStandardAnalysis()
-            traObjList.append(traObj)
-            # write to dallas dataObj
-            dataObj = dallasData.dallasData(traObj,animalI,movPos,flyPos,saveDir,collection=collection,
-                                            recordDate=modTime)
-            if animalI == 0:
-                dallasPlots.plotForDataArchive(vGUI.frame,optTraObj,200,dataObj.exampelPictureFileName)                  
-            dataObj.runStandardOut()
-            os.system('clear')
+#now to ethology analysis
+traObjList = list()
+for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,statistics,writing'):
+    traObj = trajectoryAna.trajectoryAna(optTraObj.tra[:,animalI,:,0:2],vGUI.media.fps,p2m)
+    traObj.runStandardAnalysis()
+    traObjList.append(traObj)
+    # write to dallas dataObj
+    dataObj = dallasData.dallasData(traObj,animalI,movPos,flyPos,saveDir,collection=collection,
+                                    recordDate=modTime)
+    if animalI == 0:
+        dallasPlots.plotForDataArchive(vGUI.frame,optTraObj,200,dataObj.exampelPictureFileName)                  
+    dataObj.runStandardOut()
+    os.system('clear')
 print('Done!')
 
 
