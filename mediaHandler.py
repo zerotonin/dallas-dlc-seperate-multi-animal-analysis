@@ -1,4 +1,4 @@
-import pims,cv2
+import pims,cv2,tqdm
 import numpy as np
 
 class mediaHandler():
@@ -99,8 +99,8 @@ class mediaHandler():
     def get_time(self):
         return self.frameNo/self.fps
     
-    def norpix2seqTranscoding(self,targetFile):
-        if modus == 'norpix':
+    def transcode_seq2avis(self,targetFile):
+        if self.modus == 'norpix':
             # Get information about the norpix file
             sourceFPS = round(self.fps)
             frameShape = self.media.frame_shape  
@@ -111,7 +111,7 @@ class mediaHandler():
             fourcc = cv2.VideoWriter_fourcc('X','V','I','D')
             out = cv2.VideoWriter(targetFile,fourcc, sourceFPS,frameShape) 
 
-            for frameNo in tqdm.tqdm(range(allocatedFrames)):
+            for frameNo in tqdm.tqdm(range(allocatedFrames),desc='trasconding '+self.fileName):
                 frame = self.getFrame(frameNo)
                 gray_3c = cv2.merge([frame, frame, frame])
                 out.write(gray_3c)
