@@ -3,9 +3,10 @@ import tqdm,datetime,os
 from importlib import reload 
 
 #user data
-collection = 'Anka1'
+collection = 'Anka2_19_05_03'
 saveDir    = '/media/dataSSD/AnkaArchive'
-sourceDir  = '/media/dataSSD/Anka1/'
+sourceDir  = '/media/bgeurten/Anka/Anka2/19_05_03'
+
 AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
 startFile  = 0
 
