@@ -98,3 +98,25 @@ class mediaHandler():
     
     def get_time(self):
         return self.frameNo/self.fps
+    
+    def norpix2seqTranscoding(self,targetFile):
+        if modus == 'norpix':
+            # Get information about the norpix file
+            sourceFPS = round(self.fps)
+            frameShape = self.media.frame_shape  
+            frameShape = (frameShape[1],frameShape[0])   
+            allocatedFrames = self.media.header_dict['allocated_frames']    
+
+            # Define the codec and create VideoWriter object 
+            fourcc = cv2.VideoWriter_fourcc('X','V','I','D')
+            out = cv2.VideoWriter(targetFile,fourcc, sourceFPS,frameShape) 
+
+            for frameNo in tqdm.tqdm(range(allocatedFrames)):
+                frame = self.getFrame(frameNo)
+                gray_3c = cv2.merge([frame, frame, frame])
+                out.write(gray_3c)
+                cv2.imshow('frame',gray_3c)
+
+            out.release()
+        else:
+            print('This function only works with norpix movie files')
