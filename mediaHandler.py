@@ -19,8 +19,8 @@ class mediaHandler():
             if len(testFrame.shape) == 3:
                 self.colorDim = testFrame.shape[2]
 
-            self.size   = (self.width, self.height)
-            self.fps    = 25
+            self.fps    = self.media.get(cv2.CAP_PROP_FPS)   
+            self.SR_makeIntParameters()
             
         elif(self.modus == 'norpix'):
             self.media = pims.NorpixSeq(filename)
@@ -30,19 +30,25 @@ class mediaHandler():
             else:
                 self.height, self.width, self.colorDim = self.media.frame_shape
                     
-            self.size   = (self.width, self.height)
             self.fps    = self.media.frame_rate
+            self.SR_makeIntParameters()
         elif(self.modus == 'image'):
             # here the programs for image list should follow
             self.media =  pims.ImageSequence(filename)
             self.length = len(self.media)-1
             self.height, self.width, self.colorDim = self.media.frame_shape
-            self.size   = (self.width, self.height)
-            self.fps    = 25
+            self.fps    = 25   
+            self.SR_makeIntParameters()
         else:
             print('MediaHandler:unknown modus')
             
-    
+    def SR_makeIntParameters(self):
+
+        self.length = int(self.length)
+        self.height = int(self.height)
+        self.width  = int(self.width)
+        self.size   = (self.height,self.width)
+
     def getFrame(self,frameNo):
         
         if (frameNo <0):
@@ -99,29 +105,13 @@ class mediaHandler():
     def get_time(self):
         return self.frameNo/self.fps
     
-    def get_frameShape(self):
-            
-        if (self.modus == 'movie'):
-            self.getFrameMov(frameNo)
-            frameShape = [self.height,self.width]
-        elif(self.modus == 'norpix'):
-            frameShape = self.media.frame_shape  
-            frameShape = (frameShape[1],frameShape[0]) 
-        elif(self.modus == 'image'):
-            self.getFrameImage(frameNo)
-            frameShape = [self.height,self.width] # WARNING untested, might need correction
-        else:
-            print('MediaHandler:unknown modus')
-            frameShape = []
-        
-        return frameShape
-
+  
     
     def transcode_seq2avis(self,targetFile):
         if self.modus == 'norpix':
             # Get information about the norpix file
             sourceFPS = round(self.fps)
-            frameShape = self.get_frameShape()   
+            frameShape = self.size 
             allocatedFrames = self.media.header_dict['allocated_frames']    
 
             # Define the codec and create VideoWriter object 
@@ -142,8 +132,8 @@ class mediaHandler():
 
         # Get information about the norpix file
         sourceFPS = round(self.fps)
-        frameShape = self.get_frameShape() 
-        allocatedFrames = self.media.header_dict['allocated_frames']  
+        frameShape = self.size
+        allocatedFrames = self.length
 
         # Define the codec and create VideoWriter object 
         fourcc = cv2.VideoWriter_fourcc('X','V','I','D')
@@ -154,22 +144,17 @@ class mediaHandler():
 
         for frameNo in tqdm.tqdm(range(allocatedFrames),desc='trasconding '+self.fileName):
             frame = self.getFrame(frameNo)
-            regFrame = registerImage(template,frame)
+            regFrame = self.registerImage(template,frame)
             out.write(regFrame)
 
         out.release()
 
-    def registerImage(template,image2match):
+    def registerImage(self,template,image2match):
         '''
             Image registration based on opbject detection in open cv
             Taken and adapted from: 
             https://www.geeksforgeeks.org/image-registration-using-opencv-python/
         '''
-
-        # Open the image files. 
-        image2match = cv2.imread("im1.jpg") # Image to be aligned. 
-        template = cv2.imread("im22.jpg") # Reference image. 
-
         # Convert to grayscale. 
         img1 = cv2.cvtColor(image2match, cv2.COLOR_BGR2GRAY) 
         img2 = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY) 
