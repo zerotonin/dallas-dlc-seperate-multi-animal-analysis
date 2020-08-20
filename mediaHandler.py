@@ -1,5 +1,8 @@
-import pims,cv2,tqdm
+import pims,tqdm,os
 import numpy as np
+from vidstab import VidStab, layer_overlay, download_ostrich_video
+from cv2 import cv2
+
 
 class mediaHandler():
     def __init__(self,filename,modus,fps=0,bufferSize = 2000):
@@ -11,13 +14,14 @@ class mediaHandler():
         self.bufferSize = bufferSize
         self.fileName = filename
         if (modus == 'movie'):
-            self.media  =  cv2.VideoCapture(filename)
+            self.media    = cv2.VideoCapture(filename)
             self.length   = self.media.get(cv2.CAP_PROP_FRAME_COUNT) 
             self.height   = self.media.get(cv2.CAP_PROP_FRAME_HEIGHT)
             self.width    = self.media.get(cv2.CAP_PROP_FRAME_WIDTH)
-            flag,testFrame = self.media.read()
-            if len(testFrame.shape) == 3:
-                self.colorDim = testFrame.shape[2]
+            if self.media.get(cv2.CAP_PROP_MONOCHROME)   == 0:
+                self.colorDim = 3
+            else:
+                self.colorDim = 1
 
             self.fps    = self.media.get(cv2.CAP_PROP_FPS)   
             self.SR_makeIntParameters()
@@ -47,7 +51,7 @@ class mediaHandler():
         self.length = int(self.length)
         self.height = int(self.height)
         self.width  = int(self.width)
-        self.size   = (self.height,self.width)
+        self.size   = (self.width,self.height)
 
     def getFrame(self,frameNo):
         
@@ -87,11 +91,15 @@ class mediaHandler():
             
     def get_frameNo(self):
         return self.frameNo
+
     def getFrameMov(self,frameNo):
-        
         self.frameNo     = frameNo
         self.media.set(1,frameNo)
         flag,self.activeFrame = self.media.read(frameNo)   
+        if not flag or self.activeFrame is None:
+            raise Exception('Frame ' + str(frameNo) + ' unreadable in ' +self.fileName)
+        #else:
+        #    self.activeFrame = cv2.cvtColor( self.activeFrame, cv2.COLOR_BGR2RGB)
         
     def getFrameNorpix(self,frameNo):
         self.frameNo     = frameNo
@@ -128,76 +136,60 @@ class mediaHandler():
         else:
             print('This function only works with norpix movie files')
     
-    def register_movie(self, targetFile):
+    def register_movie(self,sourceFile, targetFile, border = 50):
+        if self.modus == 'movie':
+            # Initialize object tracker, stabilizer, 
+            object_tracker = cv2.TrackerCSRT_create()
+            stabilizer = VidStab()
 
-        # Get information about the norpix file
-        sourceFPS = round(self.fps)
-        frameShape = self.size
-        allocatedFrames = self.length
+            # Initialize bounding box for drawing rectangle around tracked object
+            object_bounding_box = None
+            
+            # Define the codec and create VideoWriter object 
+            fourcc     = cv2.VideoWriter_fourcc('X','V','I','D')
+            sourceFPS  = round(self.fps)
+            frameShape = (self.size[0]+2*border,self.size[1]+2*border)
+            out        = cv2.VideoWriter(targetFile,fourcc, sourceFPS,frameShape)   
 
-        # Define the codec and create VideoWriter object 
-        fourcc = cv2.VideoWriter_fourcc('X','V','I','D')
-        out = cv2.VideoWriter(targetFile,fourcc, sourceFPS,frameShape)   
+            while True:
+                grabbed_frame, frame = self.media.read()
 
-        # we take the central frame of the movie as a registration template
-        template = self.getFrame(round(allocatedFrames/2))
+                # Pass frame to stabilizer even if frame is None
+                stabilized_frame = stabilizer.stabilize_frame(input_frame=frame, border_size=border)
+            
+                # If stabilized_frame is None then there are no frames left to process
+                if stabilized_frame is None:
+                    break
 
-        for frameNo in tqdm.tqdm(range(allocatedFrames),desc='trasconding '+self.fileName):
-            frame = self.getFrame(frameNo)
-            regFrame = self.registerImage(template,frame)
-            out.write(regFrame)
+                # Draw rectangle around tracked object if tracking has started
+                if object_bounding_box is not None:
+                    success, object_bounding_box = object_tracker.update(stabilized_frame)
 
-        out.release()
+                    if success:
+                        (x, y, w, h) = [int(v) for v in object_bounding_box]
+                        cv2.rectangle(stabilized_frame, (x, y), (x + w, y + h),
+                                    (0, 255, 0), 2)
 
-    def registerImage(self,template,image2match):
-        '''
-            Image registration based on opbject detection in open cv
-            Taken and adapted from: 
-            https://www.geeksforgeeks.org/image-registration-using-opencv-python/
-        '''
-        # Convert to grayscale. 
-        img1 = cv2.cvtColor(image2match, cv2.COLOR_BGR2GRAY) 
-        img2 = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY) 
-        height, width = img2.shape 
+                # Display stabilized output
+                cv2.imshow('Frame', stabilized_frame)
+                out.write(stabilized_frame)
 
-        # Create ORB detector with 5000 features. 
-        orb_detector = cv2.ORB_create(5000) 
+                key = cv2.waitKey(5)
 
-        # Find keypoints and descriptors. 
-        # The first arg is the image, second arg is the mask 
-        # (which is not reqiured in this case). 
-        kp1, d1 = orb_detector.detectAndCompute(img1, None) 
-        kp2, d2 = orb_detector.detectAndCompute(img2, None) 
+                # Select ROI for tracking and begin object tracking
+                # Non-zero frame indicates stabilization process is warmed up
+                if stabilized_frame.sum() > 0 and object_bounding_box is None:
+                    object_bounding_box = cv2.selectROI("Frame",
+                                                        stabilized_frame,
+                                                        fromCenter=False,
+                                                        showCrosshair=True)
+                    object_tracker.init(stabilized_frame, object_bounding_box)
+                elif key == 27:
+                    break
 
-        # Match features between the two images. 
-        # We create a Brute Force matcher with 
-        # Hamming distance as measurement mode. 
-        matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True) 
+            out.release()
+            cv2.destroyAllWindows()
+        else:
+            print('This function only works with opencv compatible movie files')
 
-        # Match the two sets of descriptors. 
-        matches = matcher.match(d1, d2) 
-
-        # Sort matches on the basis of their Hamming distance. 
-        matches.sort(key = lambda x: x.distance) 
-
-        # Take the top 90 % matches forward. 
-        matches = matches[:int(len(matches)*90)] 
-        no_of_matches = len(matches) 
-
-        # Define empty matrices of shape no_of_matches * 2. 
-        p1 = np.zeros((no_of_matches, 2)) 
-        p2 = np.zeros((no_of_matches, 2)) 
-
-        for i in range(len(matches)): 
-            p1[i, :] = kp1[matches[i].queryIdx].pt 
-            p2[i, :] = kp2[matches[i].trainIdx].pt 
-
-        # Find the homography matrix. 
-        homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC) 
-
-        # Use this matrix to transform the 
-        # colored image wrt the reference image. 
-        transformed_img = cv2.warpPerspective(image2match, homography, (width, height)) 
-
-        # return the matched img
-        return transformed_img
+   
