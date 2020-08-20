@@ -99,12 +99,29 @@ class mediaHandler():
     def get_time(self):
         return self.frameNo/self.fps
     
+    def get_frameShape(self):
+            
+        if (self.modus == 'movie'):
+            self.getFrameMov(frameNo)
+            frameShape = [self.height,self.width]
+        elif(self.modus == 'norpix'):
+            frameShape = self.media.frame_shape  
+            frameShape = (frameShape[1],frameShape[0]) 
+        elif(self.modus == 'image'):
+            self.getFrameImage(frameNo)
+            frameShape = [self.height,self.width] # WARNING untested, might need correction
+        else:
+            print('MediaHandler:unknown modus')
+            frameShape = []
+        
+        return frameShape
+
+    
     def transcode_seq2avis(self,targetFile):
         if self.modus == 'norpix':
             # Get information about the norpix file
             sourceFPS = round(self.fps)
-            frameShape = self.media.frame_shape  
-            frameShape = (frameShape[1],frameShape[0])   
+            frameShape = self.get_frameShape()   
             allocatedFrames = self.media.header_dict['allocated_frames']    
 
             # Define the codec and create VideoWriter object 
@@ -122,11 +139,10 @@ class mediaHandler():
             print('This function only works with norpix movie files')
     
     def register_movie(self, targetFile):
-        
+
         # Get information about the norpix file
         sourceFPS = round(self.fps)
-        frameShape = self.media.frame_shape  
-        frameShape = (frameShape[1],frameShape[0]) 
+        frameShape = self.get_frameShape() 
         allocatedFrames = self.media.header_dict['allocated_frames']  
 
         # Define the codec and create VideoWriter object 
