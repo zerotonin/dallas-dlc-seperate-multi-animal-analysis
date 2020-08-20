@@ -1,11 +1,15 @@
 import DLC_reader,trajectory_correcter,videoDataGUI,dallasPlots,trajectoryAna,dallasData
-import tqdm,datetime,os
+import tqdm,datetime,os,copy
+import numpy as np
 from importlib import reload 
 
 # get movie position
+movPos = '/media/dataSSD/Anka2/2019-05-17__07_28_28.avi'
 movPos = '/media/dataSSD/Anka6/2019-10-01__11_08_49.avi'
 #get result position
+flyPos = '/media/dataSSD/Anka2/2019-05-17__07_28_28DLC_resnet50_AnkaClimbJul29shuffle1_200000_bx_filtered.h5'
 flyPos = '/media/dataSSD/Anka6/2019-10-01__11_08_49DLC_resnet50_AnkaClimbJul29shuffle1_200000_bx.h5'
+
 #get all files that were analysed by this AI in source directory
 
 
@@ -46,7 +50,7 @@ for animalI in tqdm.tqdm(range(optTraObj.animalNo),desc='speed,statistics,writin
     dataObj.runStandardOut()
     os.system('clear')
 print('Done!')
-
+dallasPlots.standardPlot(vGUI.frame,optTraObj,200)      
 
 # old plots
 
