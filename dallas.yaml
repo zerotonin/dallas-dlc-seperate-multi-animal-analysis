@@ -17,4 +17,4 @@ dependencies:
 - pandas   
 - pip   
 - pip:
-    -
+    - vidstab[cv2]
