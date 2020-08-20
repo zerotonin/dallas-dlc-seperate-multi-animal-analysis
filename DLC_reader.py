@@ -33,7 +33,7 @@ class DLC_H5_reader:
 class multiAnimalEval:
     def __init__(self,tra3,arenaCoords,slotNo = 15):
         self.tra = tra3
-        self.slotNo = 15
+        self.slotNo = slotNo
         self.arenaCoords = arenaCoords
         self.sortBoxCoordsClockWise()
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
@@ -121,6 +121,41 @@ class multiAnimalEval:
                 if not all(allInPolygon):
                     posCandidates[frameI,animalI] = True 
         return posCandidates
+    
+    def positionSorting(self):
+        self.calculateSlotCoords()
+        for frameI in tqdm.tqdm(range(self.frameNo),desc='position sorting'):
+            headSlotList =  [ [] for _ in range(self.slotNo) ]
+            abdoSlotList =  [ [] for _ in range(self.slotNo) ]
+            pointList = list(self.tra[frameI,:,:,:])
+            for slotPosI in range(self.slotNo):
+                for point in pointList:
+                     if self.pointInPolygon(point[0,0:2],slotCoord):
+                         headSlotList[slotPosI].append(copy.deepcopy(point))
+                         point[0] = -1
+
+                     if self.pointInPolygon(point[1,0:2],slotCoord):
+                         abdoSlotList[slotPosI].append(copy.deepcopy(point))
+                         point[0] = -1
+            
+            pointList = list()
+            for slotPosI in range(self.bodyPartNo,self.coordNo):
+                point = np.zeros(shape=(self.bodyPartNo))
+                if not headSlotList[slotPosI]:
+                    point[0,:] = np.array([np.nan,np.nan,np.nan])
+                else:
+                    temp = np.array(headSlotList[slotPosI])
+                    point[0,:] = temp[temp[:,-1].argmax(),:]      
+
+                if not abdoSlotList[slotPosI]:
+                    point[0,:] = np.array([np.nan,np.nan,np.nan])
+                else:
+                    temp = np.array(abdoSlotList[slotPosI])
+                    point[0,:] = temp[temp[:,-1].argmax(),:]     
+
+
+
+
 
     def sortBoxCoordsClockWise(self):
         arenaC = self.arenaCoords[self.arenaCoords[:, 0].argsort()]   
