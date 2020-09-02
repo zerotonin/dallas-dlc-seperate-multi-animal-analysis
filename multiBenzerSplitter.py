@@ -7,7 +7,7 @@ from cv2 import cv2
 from vidstab import VidStab
 
 class multiBenzerSplitter():
-    def __init__(self,movPos,mediaMode,targetDir='automatic',testFrameNo =10):
+    def __init__(self,movPos,mediaMode,targetDir='automatic',testFrameNo =100):
         self.movPos    = movPos
         self.patternFrame = False
         self.mediaMode   = mediaMode
@@ -349,7 +349,7 @@ class multiBenzerSplitter():
             fliesPerFrame = list()
             #write frames and detect flies
             for laneI in  range(self.MON_NUM*self.LANE_NUM):
-                #detectflies
+                #detect flies
                 fly, markedLane = self.detectFly(lanes[laneI],self.laneBG[laneI],False)
                 fliesPerFrame.append(fly)
                 #write to movie object
