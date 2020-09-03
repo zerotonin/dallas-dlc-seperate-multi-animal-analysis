@@ -350,12 +350,12 @@ class multiBenzerSplitter():
             #write frames and detect flies
             for laneI in  range(self.MON_NUM*self.LANE_NUM):
                 #detect flies
-                fly, markedLane = self.detectFly(lanes[laneI],self.laneBG[laneI],False)
-                fliesPerFrame.append(fly)
+                #fly, markedLane = self.detectFly(lanes[laneI],self.laneBG[laneI],False)
+                #fliesPerFrame.append(fly)
                 #write to movie object
-                writeOutObjectList[laneI].write(markedLane)
-
-            self.allFlies.append(copy.deepcopy(fliesPerFrame))
+                #writeOutObjectList[laneI].write(lanes[laneI]) #markedLane
+                pass
+            #self.allFlies.append(copy.deepcopy(fliesPerFrame))
 
         #release write out object
         for laneI in  range(self.MON_NUM*self.LANE_NUM):

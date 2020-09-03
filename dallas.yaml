@@ -18,3 +18,4 @@ dependencies:
 - pip   
 - pip:
     - vidstab[cv2]
+    - pympler
