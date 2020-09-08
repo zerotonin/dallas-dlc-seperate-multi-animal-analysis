@@ -5,6 +5,8 @@ from pathlib import Path
 from scipy import signal
 from cv2 import cv2
 from vidstab import VidStab
+from pympler import muppy, summary
+import pandas as pd
 
 class multiBenzerSplitter():
     def __init__(self,movPos,mediaMode,targetDir='automatic',testFrameNo =100):
@@ -53,6 +55,19 @@ class multiBenzerSplitter():
 
         self.LANE_HALF_WIDTH  = 23 
         self.LANE_NUM         = 26
+    
+
+    def checkMemory(self):
+        all_objects = muppy.get_objects()
+        sum1 = summary.summarize(all_objects)# Prints out a summary of the large objects
+
+        summary.print_(sum1)# Get references to certain types of objects such as dataframe
+
+        dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
+
+        for d in dataframes:
+            print(d.columns.values)
+            print(len(d))
 
 
     def rectifyMonitor(self,h):
@@ -350,12 +365,14 @@ class multiBenzerSplitter():
             #write frames and detect flies
             for laneI in  range(self.MON_NUM*self.LANE_NUM):
                 #detect flies
-                #fly, markedLane = self.detectFly(lanes[laneI],self.laneBG[laneI],False)
-                #fliesPerFrame.append(fly)
+                fly, markedLane = self.detectFly(lanes[laneI],self.laneBG[laneI],False)
+                fliesPerFrame.append(fly)
                 #write to movie object
-                #writeOutObjectList[laneI].write(lanes[laneI]) #markedLane
+                writeOutObjectList[laneI].write(lanes[laneI]) #markedLane
                 pass
-            #self.allFlies.append(copy.deepcopy(fliesPerFrame))
+            self.allFlies.append(copy.deepcopy(fliesPerFrame))
+            if frameI%10 == 0:
+                self.checkMemory()
 
         #release write out object
         for laneI in  range(self.MON_NUM*self.LANE_NUM):
