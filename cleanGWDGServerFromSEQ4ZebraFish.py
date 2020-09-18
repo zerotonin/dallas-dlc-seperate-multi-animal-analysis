@@ -24,16 +24,16 @@ def transcodeSeqLocally(seqFile,sourceDir,localDir,expectedSize = 0):
             print('Could not handle: ', sourcePos)
     else:
         print('File size too small: ', sourcePos) 
-    #os.system('clear')
+    os.system('clear')
 
 
-sourceDir = '/media/gwdg-backup/BackUp/Bart/AGFiala/LDopA_Benzer/seqFiles/'
+sourceDir = '/media/gwdg-backup/BackUp/Bart/IR28bdBenzer/seqFiles'
 localDir  = '/home/bgeurten/Videos'
 expectedSize = 0 #80000000000 about 80GB
 seq_Files = [f for f in os.listdir(sourceDir) if f.endswith('.seq')]
 seq_Files.sort()
-#os.system('clear')
-print(os.listdir(sourceDir) )
+os.system('clear')
+#print(os.listdir(sourceDir) )
 
 for seqFile in tqdm.tqdm(seq_Files,desc='files seq->avi: '):
     transcodeSeqLocally(seqFile,sourceDir,localDir,expectedSize)
