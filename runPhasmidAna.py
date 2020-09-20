@@ -1,5 +1,5 @@
 
-import DLC_reader,trajectory_correcter,dallasPlots,trajectoryAna,
+import DLC_reader,trajectory_correcter,dallasPlots,trajectoryAna, phasmidAnatomy
 import tqdm,datetime,os,glob
 from importlib import reload
 from os import walk
