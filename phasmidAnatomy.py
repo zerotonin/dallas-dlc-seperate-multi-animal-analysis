@@ -20,6 +20,9 @@ class phasmidAnatomy:
         else:
             return -1
     
+    def getAvailableAxis(self):
+        return list(self.anatomy.keys())
+    
     def getPhasmidAnatomy(self):
         if self.species  == 'Neohirasea maerens':
             self.getAnatomy_Neohirasea()
