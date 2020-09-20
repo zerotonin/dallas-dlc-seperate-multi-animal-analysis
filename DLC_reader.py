@@ -28,6 +28,16 @@ class DLC_H5_reader:
             frameRes = np.reshape(frameRes,[self.animalNo,int(self.areaNo/self.animalNo),3])   
             self.tra.append(frameRes)
         self.tra = np.array(self.tra)
+
+    def singleAnimal2numpy(self):
+        self.tra = list()
+        for frameI in tqdm.tqdm(range(self.frameNo),desc ='reading '+self.fPos):
+            frameRes = self.pandasDF.iloc[frameI].iloc[:] 
+            frameRes = frameRes.to_numpy()  
+            frameRes = np.reshape(frameRes,(self.areaNo,-1))  
+            frameRes = np.reshape(frameRes,[self.areaNo,3])   
+            self.tra.append(frameRes)
+        self.tra = np.array(self.tra)
         
     
 class multiAnimalEval:
