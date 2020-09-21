@@ -18,9 +18,10 @@ class phasmidAnalysis:
 
     def startAnalysis(self):
             # threshold by quality
-            self.qualIDX       = self.readObj.tra[:,:,2] >= qualThresh
+            self.qualIDX       = self.readObj.tra[:,:,2] >= self.qualThreshold
             self.bodyPartList  = self.getBodyPartList()
-            self.mmTra         = self.pixTra2mmTra()   
+            self.mmTra         = self.pixTra2mmTra() 
+            self.mmTra         = self.clearTra()  
 
     def determine_gender(self):
         if 'female' in self.fileName or 'SUfe' in self.fileName:
@@ -88,3 +89,17 @@ class phasmidAnalysis:
                     mmTra[frameI,bodyP,0:2] = self.readObj.tra[frameI,bodyP,0:2]*pix2mm
                     mmTra[frameI,bodyP,2]   = self.readObj.tra[frameI,bodyP,2]
         return mmTra
+    
+    def clearTra(self):
+        neverSeenValue = self.mmTra.shape[0]*-1
+        sumOfQuality   = sum(self.mmTra[:,:,2])
+        newBodyPartList = list()
+        newMMtra = list()
+        for i in range(len(sumOfQuality)):
+            if sumOfQuality[i] != neverSeenValue:
+                print(sumOfQuality[i])
+                newBodyPartList.append(self.bodyPartList[i])
+                newMMtra.append(self.mmTra[:,i,:])
+        print(newMMtra)
+        self.mmTraDetected        = np.dstack(newMMtra)
+        self.bodyPartListDetected = newBodyPartList
