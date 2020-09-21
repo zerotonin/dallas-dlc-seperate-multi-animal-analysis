@@ -1,6 +1,5 @@
-import phasmidAnatomy
+import phasmidAnatomy,indexTools
 import numpy as np
-
 
 class phasmidAnalysis:
 
@@ -21,7 +20,7 @@ class phasmidAnalysis:
             self.qualIDX       = self.readObj.tra[:,:,2] >= self.qualThreshold
             self.bodyPartList  = self.getBodyPartList()
             self.mmTra         = self.pixTra2mmTra() 
-            self.mmTra         = self.clearTra()  
+            self.makeSubTras()  
 
     def determine_gender(self):
         if 'female' in self.fileName or 'SUfe' in self.fileName:
@@ -97,9 +96,24 @@ class phasmidAnalysis:
         newMMtra = list()
         for i in range(len(sumOfQuality)):
             if sumOfQuality[i] != neverSeenValue:
-                print(sumOfQuality[i])
                 newBodyPartList.append(self.bodyPartList[i])
                 newMMtra.append(self.mmTra[:,i,:])
-        print(newMMtra)
-        self.mmTraDetected        = np.dstack(newMMtra)
-        self.bodyPartListDetected = newBodyPartList
+        
+        return (newMMtra,newBodyPartList)
+
+    def makeSubTras(self):
+        self.clearedData = self.clearTra()
+        bodyParts   = self.clearedData[1]
+        tras        = self.clearedData[0] 
+        self.subTras = {}
+        for i in range(len(bodyParts)):
+            tra = tras[i]
+            index=tra[:,2] > 0      
+            startEnd = indexTools.boolSequence2startEndIndices(index) 
+            duration =  indexTools.getDurationFromStartEnd(startEnd)
+            subTras = list()
+            for j in range(len(startEnd)):
+                if duration[j] > 0:
+                    subTras.append((startEnd[j,:],tra[startEnd[j,0]:startEnd[j,1],:]))
+            self.subTras[bodyParts[i]] = subTras
+
