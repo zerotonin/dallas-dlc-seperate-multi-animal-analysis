@@ -1,5 +1,5 @@
 
-import DLC_reader,trajectory_correcter,dallasPlots,trajectoryAna, phasmidAnalysis,pha
+import DLC_reader,trajectory_correcter,dallasPlots,trajectoryAna, phasmidAnalysis
 import tqdm,datetime,os,glob
 import numpy as np
 from importlib import reload
@@ -10,25 +10,25 @@ def list_files(directory, extension):
     fileList.sort()
     return fileList
 
-
-
-
-strainName = 'Sungaya inexpectata'
-strainDir  = '/media/dataSSD/AlexVids/Sungaya_videos'
-qualThresh = 0.5
+strainName              = 'Sungaya inexpectata'
+strainDir               = '/media/dataSSD/AlexVids/Sungaya_videos'
+qualityThreshold        = 0.5
+minimalTrajectoryLength = 100
 
 
 #get file positions
 fPos = list_files(strainDir,'h5')
  
-
+reload(phasmidAnalysis)
 for fileI in tqdm.tqdm(range(len(fPos)),desc='detection files '):
 
-    #read dlc file
-    readObj = DLC_reader.DLC_H5_reader(fPos[fileI],1)  
-    readObj.readH5()
-    readObj.singleAnimal2numpy() 
-    # get phasmid axis data
-    # mmTra
-    pAna = phasmidAnalysis.phasmidAnalysis(fPos[fileI],strainName,qualThresh,readObj)
-    mmTra = pAna.mmTra
+reload(phasmidAnalysis)
+fileI = 55
+#read dlc file
+readObj = DLC_reader.DLC_H5_reader(fPos[fileI],1)  
+readObj.readH5()
+readObj.singleAnimal2numpy() 
+# get phasmid axis data
+# mmTra
+pAna = phasmidAnalysis.phasmidAnalysis(fPos[fileI],strainName,qualityThreshold,readObj,minimalTrajectoryLength)
+mmTra = pAna.mmTra
