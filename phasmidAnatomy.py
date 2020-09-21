@@ -3,10 +3,10 @@ class phasmidAnatomy:
 
         self.knownSpecies = ['Sungaya inexpectata','Medauroidea extradentata','Neohirasea maerens']
         
-        workFlag = True
+        readyFlag = True
         if gender!='f' and gender!='m':
             print('Unknown gender: ' + gender)
-            workFlag = False
+            readyFlag = False
         else:
             self.gender = gender
 
@@ -15,8 +15,8 @@ class phasmidAnatomy:
             self.getPhasmidAnatomy()
         else:
             print('Unknown species: ' +species)
-            workFlag = False
-        return workFlag
+            readyFlag = False
+        self.ready = readyFlag
         
     def getAxisLength(self,axisName):
         if axisName in self.anatomy.keys():
