@@ -5,10 +5,11 @@ class phasmidAnalysis:
     '''
     This class is designed for the 2D analysis of phasmid trajectories of DeepLabCut.
     '''
-    def __init__(self,fileName,strain,qualThreshold,readObj):
+    def __init__(self,fileName,strain,qualThreshold,readObj,minTraLen):
         self.fileName = fileName
         self.gender   = self.determine_gender()
         self.strain   = strain
+        self.minTraLen = minTraLen
         self.pA       = phasmidAnatomy.phasmidAnatomy(self.strain,self.gender)
         if self.pA.ready == True:
             self.qualThreshold = qualThreshold
@@ -131,7 +132,7 @@ class phasmidAnalysis:
             duration =  indexTools.getDurationFromStartEnd(startEnd)
             subTras = list()
             for j in range(len(startEnd)):
-                if duration[j] > 0:
+                if duration[j] > self.minTraLen:
                     subTras.append((startEnd[j,:],tra[startEnd[j,0]:startEnd[j,1],:]))
             self.subTras[bodyParts[i]] = subTras
 
