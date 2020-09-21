@@ -103,7 +103,7 @@ class phasmidAnalysis:
             factorList = self.getPix2mmconverter(self.qualIDX[frameI,:],self.bodyPartList,self.pA,self.readObj.tra[frameI,:,:])
             pix2mm = np.mean(np.array(factorList))
             for bodyP in range(len(self.bodyPartList)):
-                if self.qualIDX[frameI,bodyP] == True:
+                if self.qualIDX[frameI,bodyP] == True and factorList != []:
                     mmTra[frameI,bodyP,0:2] = self.readObj.tra[frameI,bodyP,0:2]*pix2mm
                     mmTra[frameI,bodyP,2]   = self.readObj.tra[frameI,bodyP,2]
         return mmTra
@@ -134,5 +134,6 @@ class phasmidAnalysis:
             for j in range(len(startEnd)):
                 if duration[j] > self.minTraLen:
                     subTras.append((startEnd[j,:],tra[startEnd[j,0]:startEnd[j,1],:]))
-            self.subTras[bodyParts[i]] = subTras
+            if subTras != []:
+                self.subTras[bodyParts[i]] = subTras
 
