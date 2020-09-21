@@ -9,7 +9,7 @@ class phasmidAnalysis:
         self.gender   = self.determine_gender()
         self.strain   = strain
         self.pA       = phasmidAnatomy.phasmidAnatomy(self.strain,self.gender)
-        if self.pA == True:
+        if self.pA.ready == True:
             self.qualThreshold = qualThreshold
             self.readObj       = readObj  
             self.startAnalysis()
