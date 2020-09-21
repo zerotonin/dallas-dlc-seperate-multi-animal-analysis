@@ -34,4 +34,7 @@ def bracket_StartsEndOfSequence(startEndSequenceInd,seqLen):
             returnList[seqI,0] = returnList[seqI,0]-1
             returnList[seqI,1] = returnList[seqI,1]+1
     return returnList
+
+def getDurationFromStartEnd(startEndInd):
+    return np.diff(startEndInd)
     
