@@ -2,7 +2,9 @@ import phasmidAnatomy,indexTools
 import numpy as np
 
 class phasmidAnalysis:
-
+    '''
+    This class is designed for the 2D analysis of phasmid trajectories of DeepLabCut.
+    '''
     def __init__(self,fileName,strain,qualThreshold,readObj):
         self.fileName = fileName
         self.gender   = self.determine_gender()
@@ -16,11 +18,27 @@ class phasmidAnalysis:
             raise ValueError("Gender or Strainname where not correct!")
 
     def startAnalysis(self):
-            # threshold by quality
-            self.qualIDX       = self.readObj.tra[:,:,2] >= self.qualThreshold
-            self.bodyPartList  = self.getBodyPartList()
-            self.mmTra         = self.pixTra2mmTra() 
-            self.makeSubTras()  
+        '''
+        This function transforms all pixel trajectories into mm trajectories
+        self.mmTRA is a mxnx3 matrix where m is the number of frames, n is the
+        number of bodyparts (listed in self.bodyPartList) and the 3rd dimension holds
+        x-coordinate, y-coordinate and quality
+
+        The real output though is the sub-trajectories, self.subTras. Here only those 
+        detections are kept that are above the quality threshold self.qualThreshold
+        and that are detected more than once in a row.
+        The data is saved in form of a dictionary, where the bodyparts are keys and the
+        individual value is a list of tuples. Each tuple consists of the indices and 
+        a numpy array with the x,y-coordinates in mm and the quality. 
+        '''
+        # threshold by quality
+        self.qualIDX       = self.readObj.tra[:,:,2] >= self.qualThreshold
+        # get the body parts available
+        self.bodyPartList  = self.getBodyPartList()
+        # calculate the mmTra for all bodyparts
+        self.mmTra         = self.pixTra2mmTra()
+        # reduce to the sub trajectories that are usable 
+        self.makeSubTras()  
 
     def determine_gender(self):
         if 'female' in self.fileName or 'SUfe' in self.fileName:
