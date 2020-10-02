@@ -10,4 +10,6 @@ fPos = list_files("/media/dataSSD/Vic_Bx/","pickle")
 for pFile in fPos:
     deeplabcut.convert_raw_tracks_to_h5("/media/dataSSD/deepLabCut/FoodColourChoice-Victoria-2020-09-08/config.yaml",pFile) 
 
+#test for git
+
 
