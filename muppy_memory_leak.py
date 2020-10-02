@@ -12,3 +12,5 @@ def checkMemory():
     for d in dataframes:
         print(d.columns.values)
         print(len(d))
+
+        #test for git
