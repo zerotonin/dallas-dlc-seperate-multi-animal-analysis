@@ -15,7 +15,12 @@ name: dallas
 dependencies:   
 - python=3.7
 - pandas   
-- pip   
+- cv2
+- pip
+- ipython   
+- c menpo opencv 
+- tqdm
+- pims
 - pip:
     - vidstab[cv2]
     - pympler
