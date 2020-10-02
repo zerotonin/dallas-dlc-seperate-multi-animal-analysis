@@ -10,3 +10,5 @@ __pycache__/dallasPlots.cpython-37.pyc
 __pycache__/dallasData.cpython-37.pyc
 __pycache__/phasmidAnalysis.cpython-37.pyc
 __pycache__/foodChoiceAna.cpython-37.pyc
+.vscode/settings.json
+.gitignore
