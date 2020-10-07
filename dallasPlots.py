@@ -11,8 +11,6 @@ def standardPlot(frame,traObj,traSteps):
     plotTraPix(traObj,ax,cmap,traSteps)
     plt.show()
    
-
-
 def plotForDataArchive(frame,traObj,traSteps,fname):
     fig = plt.figure(frameon=False)
     fig.set_size_inches(frame.shape[1]/40/2.54,frame.shape[0]/40/2.54)
