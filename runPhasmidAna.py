@@ -82,3 +82,19 @@ for gender in genderList:
         plt.savefig(os.path.join(expDir,'psd.svg'))
         plt.show()
 
+
+# count statistics
+import scipy.stats as stats
+oddsratio, pvalue = stats.fisher_exact([[17, 115], [19, 113]])    
+print(oddsratio, pvalue) 
+oddsratio, pvalue = stats.fisher_exact([[19, 113], [9, 123]])  
+print(oddsratio, pvalue) 
+oddsratio, pvalue = stats.fisher_exact([[17, 115], [9, 123]])   
+print(oddsratio, pvalue)
+
+oddsratio, pvalue = stats.fisher_exact([[13, 4], [1, 18]])    
+print(oddsratio, pvalue) 
+oddsratio, pvalue = stats.fisher_exact([[2, 7], [1, 18]])  
+print(oddsratio, pvalue) 
+oddsratio, pvalue = stats.fisher_exact([[13, 4], [2, 7]])   
+print(oddsratio, pvalue)

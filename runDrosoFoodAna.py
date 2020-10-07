@@ -137,20 +137,28 @@ for exp in data:
             dun[0].append(float(exp[quantifier]))
             dun[colorIDX].append(float(exp[quantifier]))
 
-titleList = ['combined','blue','green','yellow' ]
-
+titleList   = ['combined','blue','green','yellow' ]
+strainTuple = ('Canton S', 'rutabaga','Dunce')
+writeOutData = list()
 for i in range(4):
     freq = [np.sum(np.array(cs[i]),axis=0)/len(cs[i]),np.sum(np.array(rut[i]),axis=0)/len(rut[i]),np.sum(np.array(dun[i]),axis=0)/len(dun[i])]
+    pVal = [scipy.stats.binom_test(np.sum(np.array(cs[i]),axis=0),len(cs[i])),
+            scipy.stats.binom_test(np.sum(np.array(rut[i]),axis=0),len(rut[i])),
+            scipy.stats.binom_test(np.sum(np.array(dun[i]),axis=0),len(dun[i]))]
+    printOutData = list(zip(freq,pVal))
+    writeOutData.append(printOutData)
+    print("experiment strain    frequency             ChiSqaure PValue")
+    for j in range(3):
+        print(titleList[i] + ": " + strainTuple[j] + " "+ str(printOutData[j][0]) + " " + str(printOutData[j][1]) )                                                                                                                                                                                                                                   
     fig,ax   = plt.subplots(nrows=1, ncols=1)
     ax.plot([-0.5,2.5],[0.5,0.5],'k--')
     ax.bar(range(3),freq)
     plt.title('Rearing colour: ' + titleList[i])
     plt.ylabel('binonminal frequency')
-    plt.xticks(range(3), ('Canton S', 'rutabaga','Dunce'))
+    plt.xticks(range(3),strainTuple )
     plt.ylim((0,1))
     plt.savefig(os.path.join('/media/gwdg-backup/BackUp/VicHalim/','binominal_'+str(i)+'.svg'))
 
 
 plt.show() 
-
 
