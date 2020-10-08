@@ -169,6 +169,8 @@ class multiAnimalEval:
                     allInPolygon.append(self.pointInPolygon(self.tra[frameI,animalI,bodyPartI,0:self.coordNo],self.slotCoord[animalI]))
                 if not all(allInPolygon):
                     posCandidates[frameI,animalI] = True 
+                else:
+                     posCandidates[frameI,animalI] = False 
         return posCandidates
     
     #########################################                                         
