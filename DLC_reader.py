@@ -40,14 +40,35 @@ class DLC_H5_reader:
         self.tra = np.array(self.tra)
 
 class DLC_CSV_reader:
-    def __init__(self,filePosition,animalNo):
+    def __init__(self,filePosition,animalNo,bodyPartNo):
         self.fPos = filePosition
         self.animalNo = animalNo
+        self.bodyPartNo = bodyPartNo
         self.csvData  = None
         self.frameNo  = None  
         self.columns  = None
         self.areaNo   = None  
         self.tra      = None
+
+    def readCSV(self):
+        #reads in csv trajectory
+        self.csvData = np.genfromtxt(self.fPos,dtype=float,delimiter=',')
+        self.csvData = self.csvData[3:,:] # gets rid off DLC names
+        self.csvData = self.csvData[:,1:] # gets rid off frame counter
+
+        # now this has to be arranged into a tra structure. A tra numpy matrix has 
+        # in its first dimension the frames, 2nd animals, 3rd bodyparts, 4th x,y-coordinates and quality
+
+        # First built up bodyparts than animals than frames
+
+        self.frameNo  = self.csvData.shape[0]  
+        self.columns  = self.csvData.shape[1]
+        # test if the data is in accordance with the predicted number of animals and bodyparts
+        if self.animalNo =! self.columns/(self.bodyPartNo*self.animalNo):
+            raise ValueError
+        else:
+            self.tra = np.reshape(csvData,(self.frameNo,self.animalNo,self.bodyPartNo,3))
+    
 
         
     
