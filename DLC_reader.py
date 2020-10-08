@@ -64,10 +64,11 @@ class DLC_CSV_reader:
         self.frameNo  = self.csvData.shape[0]  
         self.columns  = self.csvData.shape[1]
         # test if the data is in accordance with the predicted number of animals and bodyparts
-        if self.animalNo =! self.columns/(self.bodyPartNo*self.animalNo):
-            raise ValueError
+        if self.animalNo != self.columns/(self.bodyPartNo*3): # 3 coordinates per bodyPart
+            raise ValueError('The DLC CSV file has a different number of columns than was predicted by animalNo and bodyPartNo!')
         else:
-            self.tra = np.reshape(csvData,(self.frameNo,self.animalNo,self.bodyPartNo,3))
+            self.tra = np.reshape(self.csvData,(self.frameNo,self.animalNo,self.bodyPartNo,3))
+            self.areaNo   = self.animalNo   # to have all fields that the h5 reader has
     
 
         
