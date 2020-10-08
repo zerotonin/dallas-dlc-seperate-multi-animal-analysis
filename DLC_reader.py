@@ -38,6 +38,17 @@ class DLC_H5_reader:
             frameRes = np.reshape(frameRes,[self.areaNo,3])   
             self.tra.append(frameRes)
         self.tra = np.array(self.tra)
+
+class DLC_CSV_reader:
+    def __init__(self,filePosition,animalNo):
+        self.fPos = filePosition
+        self.animalNo = animalNo
+        self.csvData  = None
+        self.frameNo  = None  
+        self.columns  = None
+        self.areaNo   = None  
+        self.tra      = None
+
         
     
 class multiAnimalEval:
