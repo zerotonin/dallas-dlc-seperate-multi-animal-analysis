@@ -173,11 +173,11 @@ class multiAnimalEval:
             pointList = list(self.tra[frameI,:,:,:])
             for slotPosI in range(self.slotNo):
                 for point in pointList:
-                     if self.pointInPolygon(point[0,0:2],slotCoord):
+                     if self.pointInPolygon(point[0,0:2],self.slotCoord[slotPosI]):
                          headSlotList[slotPosI].append(copy.deepcopy(point))
                          point[0] = -1
 
-                     if self.pointInPolygon(point[1,0:2],slotCoord):
+                     if self.pointInPolygon(point[1,0:2],self.slotCoord[slotPosI]):
                          abdoSlotList[slotPosI].append(copy.deepcopy(point))
                          point[0] = -1
             
