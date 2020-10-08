@@ -82,7 +82,7 @@ class multiAnimalEval:
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
         self.coordNo -=1
         self.posSorted= list()
-        self.accuracyThreshold = 0.95
+        self.accuracyThreshold = 0.5
 
     def thresholdAcc(self,areaCoords):
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
@@ -116,15 +116,23 @@ class multiAnimalEval:
         stepThreshold = np.percentile(self.step.flatten(),percentile)
         return self.step > stepThreshold
     
+    def testAccuracy(self):
+        self.accuracyLow= np.zeros(shape=(self.frameNo,self.animalNo))
+        for frameI in tqdm.tqdm(range(1,self.frameNo),desc='accuracy test'):
+            for animalI in range(self.animalNo):
+                acc = self.thresholdAcc(self.tra[frameI,animalI])  
+                if acc.any(0):
+                    self.accuracyLow[frameI,animalI] = 1
+        return self.accuracyLow >1
+
+    
     def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2):
         stepSizeCandidates = self.testStepSize(stepThreshPerc)
         positionCandidates = self.positionTest()
         bodyLenCandidates  = self.testBodyLen(bodyThresh)
+        accuracyCandidates = self.testAccuracy()
 
-        self.artifactCandidates = bodyLenCandidates | stepSizeCandidates | positionCandidates
-
- 
-
+        self.artifactCandidates = bodyLenCandidates | stepSizeCandidates | positionCandidates | accuracyCandidates
 
     def interpOverArtifacts(self):
         for animalI in tqdm.tqdm(range(self.animalNo),desc='trajectory correction'):
@@ -141,8 +149,6 @@ class multiAnimalEval:
         return slotCoord.contains(bodyCoord)
     
     def calculateSlotCoords(self):
-        
-
         upperXCoords = np.linspace(self.arenaCoords[0,0],self.arenaCoords[1,0],self.slotNo+1,endpoint=True)   
         upperYCoords = np.linspace(self.arenaCoords[0,1],self.arenaCoords[1,1],self.slotNo+1,endpoint=True) 
         lowerXCoords = np.linspace(self.arenaCoords[3,0],self.arenaCoords[2,0],self.slotNo+1,endpoint=True)   
@@ -165,6 +171,74 @@ class multiAnimalEval:
                     posCandidates[frameI,animalI] = True 
         return posCandidates
     
+    #########################################                                         
+    #    _                  _               #  
+    #   | |_ ___ ___    ___| |___ _ _ _     #  
+    #   |  _| . | . |  |_ -| | . | | | |    #  
+    #   |_| |___|___|  |___|_|___|_____|    #  
+    #                                       #  
+    ######################################### 
+
+
+    def sortBoxCoordsClockWise(self):
+        arenaC = self.arenaCoords[self.arenaCoords[:, 0].argsort()]   
+        sortedCoordinates = np.zeros(shape = arenaC.shape)
+        if arenaC[0,1] < arenaC[1,1]:
+            sortedCoordinates[0,:] = arenaC[0,:]
+            sortedCoordinates[3,:] = arenaC[1,:]
+        else:
+            sortedCoordinates[0,:] = arenaC[1,:]
+            sortedCoordinates[3,:] = arenaC[0,:]
+
+        if arenaC[2,1] < arenaC[3,1]:
+            sortedCoordinates[1,:] = arenaC[2,:]
+            sortedCoordinates[2,:] = arenaC[3,:]
+        else:
+            sortedCoordinates[1,:] = arenaC[3,:]
+            sortedCoordinates[2,:] = arenaC[2,:]
+        self.arenaCoords = sortedCoordinates
+
+
+
+
+    def swapMisLabels(self):
+        medBodyLen = np.median(self.bodyLength) 
+        bodyLenRange = medBodyLen+(medBodyLen*0.3) 
+        for frameI in  tqdm.tqdm(range(1,self.frameNo),desc='swapping mis Labels'):
+            for animalI in range(self.animalNo):
+                if self.artifactCandidates[frameI,animalI] == True:
+                    swapCoords   = np.zeros(shape=(self.bodyPartNo,2))
+                    applicableSwaps = 0
+                    #positions with which the bodypart could swap
+                    possiblePositions = self.tra[frameI,:,:,0:2]
+                    possiblePositions = np.reshape(possiblePositions,(possiblePositions.shape[0]*possiblePositions.shape[1],2))
+                    # check each bodypart
+                    for bodyPartI in range(self.bodyPartNo):
+                        #get the last bodypart position and  ... 
+                        lastPosition = self.tra[frameI-1,animalI,bodyPartI,0:2]
+                        #...set the minimal distance between possible swap candidates and the last position to infinity
+                        minDistanceLast2Pos = np.inf
+                        # now update the distance and possible candidates
+                        for posPosition in range(len(possiblePositions)):
+                            distance = np.linalg.norm(np.diff(np.vstack((possiblePositions[posPosition,:],lastPosition))))  
+                            if distance < minDistanceLast2Pos:
+                                swapCandidate = copy.deepcopy(posPosition)
+                                minDistanceLast2Pos = distance
+                        # if the distance is not infinity, meaning their were no candidates and it is less than 130% 
+                        # of the median body length this is counted as a swap proposition
+                        if distance != np.inf and distance <= bodyLenRange:
+                            # get the swap candidate
+                            swapCoords[bodyPartI,:] =copy.deepcopy(possiblePositions[swapCandidate,:])
+                            # remember that this functioned
+                            applicableSwaps +=1
+                            # delete this position for the other bodyparts
+                            possiblePositions = np.delete(possiblePositions,swapCandidate,0)
+                    
+                    # after evaluating the swap candidates swap if possible
+                    if applicableSwaps == self.bodyPartNo:
+                        self.tra[frameI,animalI,:,0:2] = swapCoords
+                        self.artifactCandidates[frameI,animalI] = False
+
     def positionSorting(self):
         self.calculateSlotCoords()
         for frameI in tqdm.tqdm(range(self.frameNo),desc='position sorting'):
@@ -195,28 +269,5 @@ class multiAnimalEval:
                 else:
                     temp = np.array(abdoSlotList[slotPosI])
                     point[0,:] = temp[temp[:,-1].argmax(),:]     
-
-
-
-
-
-    def sortBoxCoordsClockWise(self):
-        arenaC = self.arenaCoords[self.arenaCoords[:, 0].argsort()]   
-        sortedCoordinates = np.zeros(shape = arenaC.shape)
-        if arenaC[0,1] < arenaC[1,1]:
-            sortedCoordinates[0,:] = arenaC[0,:]
-            sortedCoordinates[3,:] = arenaC[1,:]
-        else:
-            sortedCoordinates[0,:] = arenaC[1,:]
-            sortedCoordinates[3,:] = arenaC[0,:]
-
-        if arenaC[2,1] < arenaC[3,1]:
-            sortedCoordinates[1,:] = arenaC[2,:]
-            sortedCoordinates[2,:] = arenaC[3,:]
-        else:
-            sortedCoordinates[1,:] = arenaC[3,:]
-            sortedCoordinates[2,:] = arenaC[2,:]
-        self.arenaCoords = sortedCoordinates
-
 
 
