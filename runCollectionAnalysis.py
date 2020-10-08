@@ -1,13 +1,14 @@
 import DLC_reader,trajectory_correcter,videoDataGUI,dallasPlots,trajectoryAna,dallasData
 import tqdm,datetime,os
 from importlib import reload 
-
+reload(DLC_reader)
 #user data
 collection = 'Anka2_19_05_03'
 saveDir    = '/media/dataSSD/AnkaArchive'
 sourceDir  = '/media/bgeurten/Anka/Anka2/19_05_03'
+sourceMode = 'csv' # h5
 
-AI_pattern = 'DeepCut_resnet50_ParalellClimb2Aug22shuffle1_800000.h5'
+AI_pattern = 'DLC_resnet50_ParalellClimb2Aug22shuffle1_800000.' + sourceMode
 startFile  = 0
 
 #get all files that were analysed by this AI in source directory
@@ -29,14 +30,24 @@ for movieI in tqdm.tqdm(range(startFile,len(flyPos_files)),desc='detection files
         # get arena size
         vGUI = videoDataGUI.videoDataGUI(movPos,'movie')  
         arenaCoords = vGUI.run()
-        #read in dlc file
-        readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
-        readObj.readH5()
-        # split to 4D trajectory
-        readObj.multiAnimal2numpy()
+
+        # Read trajectory file
+        if sourceMode == 'h5':
+            #read in dlc H5 file
+            readObj = DLC_reader.DLC_H5_reader(flyPos,15)  
+            readObj.readH5()
+            # split to 4D trajectory
+            readObj.multiAnimal2numpy()
+        elif sourceMode == 'csv':
+            #read in dlc CSV file
+            readObj = DLC_reader.DLC_CSV_reader(flyPos,15,2)
+            readObj.readCSV()
+        else:
+            raise ValueError("Unkown Source Mode: " +str(sourceMode))
 
         # optimize trajectory
         optTraObj= DLC_reader.multiAnimalEval(readObj.tra,arenaCoords )
+        optTraObj.positionSorting()
         optTraObj.testForArtifacts()
         optTraObj.interpOverArtifacts()
 
