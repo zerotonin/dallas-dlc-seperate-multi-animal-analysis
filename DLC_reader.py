@@ -39,6 +39,7 @@ class DLC_H5_reader:
             self.tra.append(frameRes)
         self.tra = np.array(self.tra)
 
+
 class DLC_CSV_reader:
     def __init__(self,filePosition,animalNo,bodyPartNo):
         self.fPos = filePosition
@@ -71,18 +72,24 @@ class DLC_CSV_reader:
             self.areaNo   = self.animalNo   # to have all fields that the h5 reader has
     
 
-        
-    
 class multiAnimalEval:
     def __init__(self,tra3,arenaCoords,slotNo = 15):
-        self.tra = tra3
-        self.slotNo = slotNo
+        self.tra         = tra3
+        self.slotNo      = slotNo
         self.arenaCoords = arenaCoords
         self.sortBoxCoordsClockWise()
         self.frameNo,self.animalNo,self.bodyPartNo,self.coordNo = tra3.shape[:]
-        self.coordNo -=1
-        self.posSorted= list()
+        self.coordNo          -= 1
+        self.posSorted         = list()
         self.accuracyThreshold = 0.5
+
+    def sortByXCoordinate(self):
+        for frameI in tqdm.tqdm(range(self.frameNo),desc = 'sort by X'):
+            for bodyPartI in range(self.bodyPartNo):
+                xCoords = self.tra[frameI,:,bodyPartI,0]
+                indice = np.argsort(xCoords)
+                self.tra[frameI,:,bodyPartI,:] = self.tra[frameI,indice,bodyPartI,:]
+
 
     def thresholdAcc(self,areaCoords):
         idx = np.nonzero(areaCoords[:,2]>=self.accuracyThreshold)
@@ -127,10 +134,10 @@ class multiAnimalEval:
 
     
     def testForArtifacts(self, stepThreshPerc = 99, bodyThresh= 2):
-        stepSizeCandidates = self.testStepSize(stepThreshPerc)
         positionCandidates = self.positionTest()
-        bodyLenCandidates  = self.testBodyLen(bodyThresh)
         accuracyCandidates = self.testAccuracy()
+        stepSizeCandidates = self.testStepSize(stepThreshPerc)
+        bodyLenCandidates  = self.testBodyLen(bodyThresh)
 
         self.artifactCandidates = bodyLenCandidates | stepSizeCandidates | positionCandidates | accuracyCandidates
 
@@ -146,6 +153,7 @@ class multiAnimalEval:
         bodyCoord = Point(bodyCoord[0],bodyCoord[1])
         slotCoord = Polygon([(slotCoord[0,0],slotCoord[0,1]),(slotCoord[1,0],slotCoord[1,1]),
                             (slotCoord[2,0],slotCoord[2,1]),(slotCoord[3,0],slotCoord[3,1])])
+        #print(bodyCoord,slotCoord,slotCoord.contains(bodyCoord))
         return slotCoord.contains(bodyCoord)
     
     def calculateSlotCoords(self):
@@ -172,6 +180,10 @@ class multiAnimalEval:
                 else:
                      posCandidates[frameI,animalI] = False 
         return posCandidates
+    
+    def calculateArtifactFactor(self):
+        self.artifactFactor = np.sum(self.artifactCandidates,axis=0)/self.frameNo
+
     
     #########################################                                         
     #    _                  _               #  
