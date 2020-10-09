@@ -2,9 +2,10 @@ import indexTools
 import matplotlib.pyplot as plt 
 from importlib import reload 
 reload(indexTools)
-fig = plt.figure() 
-ax = fig.add_subplot(211) 
-ax.plot(x[0:10])
-ax2 = fig.add_subplot(212)
-ax2.plot(indexTools.bracket_Bools(x[0:10]))    
+for i in range(15):
+    fig = plt.figure() 
+    ax = fig.add_subplot(211) 
+    ax.plot(optTraObj.artifactCandidates[:,i])
+    ax2 = fig.add_subplot(212)
+    ax2.plot(optTraObj.tra[:,i,0,0])
 plt.show() 
