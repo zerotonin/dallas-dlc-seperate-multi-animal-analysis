@@ -20,6 +20,8 @@ class videoDataGUI():
         imgplot = plt.imshow(frame)
 
         plt.setp(plt.gca(), autoscale_on=False)
+        plt.get_current_fig_manager().full_screen_toggle() 
+     
 
         self.tellme('You will define a box, click to begin')
 

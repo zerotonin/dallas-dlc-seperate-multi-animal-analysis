@@ -53,8 +53,21 @@ class mediaHandler():
         self.width  = int(self.width)
         self.size   = (self.width,self.height)
 
+    def SR_setFrameNoInBounds(self,frameNo):
+        if (frameNo <0):
+            frameNo = 0
+            #print 'frame No was below zero, now set to zero'
+            
+        elif (frameNo > self.length):
+            frameNo = self.length
+            #print 'frame No was larger than media length, now set to media length'
+
+        return frameNo
+
     def getFrame(self,frameNo):
         
+        frameNo = self.SR_setFrameNoInBounds(frameNo)
+
         if (frameNo <0):
             frameNo = 0
             #print 'frame No was below zero, now set to zero'

@@ -6,6 +6,7 @@ class trajectory_corrector:
 
         self.tra     = trajectory
         self.traLen,self.coordNo  = trajectory.shape[:]
+        self.artifactList = artifactList
 
         self.artSequences = indexTools.bracket_Bools(artifactList)
         self.artSequences = indexTools.boolSequence2startEndIndices(self.artSequences)
@@ -18,14 +19,26 @@ class trajectory_corrector:
 
         for i in range(self.artSeqLen):
 
-            if self.artSequences[i,0] == 0:
-                self.interpolateAtStart(self.artSequences[i,1])
-            elif self.artSequences[i,1] == self.traLen:
-                self.interpolateAtEnd(self.artSequences[i,0])
+            start = self.checkStart4Artifact(self.artSequences[i,0])
+            end = self.checkStart4Artifact(self.artSequences[i,1])
+
+            if start == 0:
+                self.interpolateAtStart(end)
+            elif end == self.traLen:
+                self.interpolateAtEnd(start)
             else:
-                self.interpolateTra(self.artSequences[i,0],self.artSequences[i,1])
+                self.interpolateTra(start,end)
 
+    def checkEnd4Artifact(self,index):
+        while self.artifactList[index] == True and index < self.traLen:
+            index += 1
+        return index
 
+    def checkStart4Artifact(self,index):
+        while self.artifactList[index] == True and index > 0:
+            index -= 1
+        return index
+ 
 
     def interpolateAtStart(self, endOfSequence):
         steps = endOfSequence+1

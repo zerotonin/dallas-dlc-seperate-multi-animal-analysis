@@ -11,9 +11,7 @@ def standardPlot(frame,traObj,traSteps):
     plotTraPix(traObj,ax,cmap,traSteps)
     plt.show()
    
-
-
-def plotForDataArchive(frame,traObj,traSteps,fname):
+def plotForDataArchive(frame,traObj,traSteps,fname,artifactFactorThresh):
     fig = plt.figure(frameon=False)
     fig.set_size_inches(frame.shape[1]/40/2.54,frame.shape[0]/40/2.54)
     ax = plt.Axes(fig, [0., 0., 1., 1.])
@@ -22,7 +20,7 @@ def plotForDataArchive(frame,traObj,traSteps,fname):
     cmap = plt.get_cmap('tab20b')  
     ax.imshow(frame,aspect='auto')
     plotSlots(traObj,ax)
-    plotTraPix(traObj,ax,cmap,traSteps)
+    plotTraPixArtifactSensitive(traObj,ax,cmap,traSteps,artifactFactorThresh)
     fig.savefig(fname)
     plt.close(fig)
 
@@ -63,15 +61,18 @@ def getTimeAxis(traLen,fps):
 
 
 def plotSlots(traObj,ax):
-        for animalI in  range(traObj.animalNo):
-            ax.fill(traObj.slotCoord[animalI][:,0],traObj.slotCoord[animalI][:,1],fill=None,edgecolor='salmon') 
+    for animalI in  range(traObj.animalNo):
+        ax.fill(traObj.slotCoord[animalI][:,0],traObj.slotCoord[animalI][:,1],fill=None,edgecolor='salmon') 
 
 def plotTraPix(traObj,ax,cmap,traSteps):
-
     for animalI in  range(traObj.animalNo):
         plotLollipop(traObj.tra[:,animalI,:,0:2],ax,cmap.colors[animalI],traSteps)
             
-            
+def plotTraPixArtifactSensitive(traObj,ax,cmap,traSteps,artifactFactorThresh):
+    for animalI in  range(traObj.animalNo):
+        if traObj.artifactFactor[animalI] <artifactFactorThresh:
+            plotLollipop(traObj.tra[:,animalI,:,0:2],ax,cmap.colors[animalI],traSteps)       
+             
 def plotLollipop(tra,ax,animalColor,traSteps):
     for frameI in np.linspace(0,tra.shape[0],traSteps, endpoint=False, dtype=int ):
         ax.plot(tra[frameI,:,0],tra[frameI,:,1],'-',color=animalColor)        
