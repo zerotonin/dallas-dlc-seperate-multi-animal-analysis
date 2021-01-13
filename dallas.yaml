@@ -15,6 +15,7 @@ name: dallas
 dependencies:   
 - python=3.7
 - pandas   
+- ipython
 - pip   
 - pip:
     - vidstab[cv2]
