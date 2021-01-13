@@ -1,6 +1,6 @@
 # DALLAS - Dlc seperAte muLti animaL AnalysiS
 
-Divide and conquer to analyse the trajectory file
+## Divide and conquer to analyse the trajectory file
 
 1. read in data frame wise
 1.1. read in text file row wise
