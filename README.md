@@ -29,17 +29,17 @@ Divide and conquer to analyse the trajectory file
 
 
 
-#Trajectory file of the food choice assay
+# Trajectory file of the food choice assay
 
-##frame anatomy
+## frame anatomy
 
 frameNumber: >object< >object<
 
 
-##object anatomy
+## object anatomy
 
 
-> name, quality, x0,y0,x1,y1< 
+\> name, quality, x0,y0,x1,y1< 
 
 x0: X-coordinate of the upper left corner of the bounding box normalised to image width
 y0: Y-coordinate of the upper left corner of the bounding box normalised to image height
@@ -54,7 +54,7 @@ y0: Y-coordinate of the lower right of the bounding box
 
 ## example animal tracing
 
->fly,1.0,0.0314725823700428,0.7674427628517151,0.07034310698509216,0.7858083248138428< 
+\>fly,1.0,0.0314725823700428,0.7674427628517151,0.07034310698509216,0.7858083248138428< 
 
         x0,y0------
         |         |
