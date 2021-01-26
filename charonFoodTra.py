@@ -14,9 +14,18 @@ def getFrameNumberFromLine(line):
     return frameNumber
 
 def readImageObject(imageObjectString):
-    pass
+    objectValList=imageObjectString.split(',')
+    objectValList[5]= objectValList[5][0:-2]
+    for i in range(1,6):
+        objectValList[i]= float(objectValList[i])
+
+    return objectValList
+
+
 
 
 data = readFoodRecResult('foodTestTra.tra') 
-imageObjects = splitLineIntoImageObjects(data[5])  
-frameNumber  = getFrameNumberFromLine(data[5])       
+imageObjects  = splitLineIntoImageObjects(data[5])  
+frameNumber   = getFrameNumberFromLine(data[5])
+for imObj in imageObjects:
+    objectValList = readImageObject(imObj)       
