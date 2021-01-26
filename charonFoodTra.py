@@ -3,6 +3,7 @@ class readCharonFood54():
 
         self.filePosition = filePosition
         self.rawTextData  = []
+        #self.readFile()
 
     def readFoodRecResult(self):
         file1 = open(self.filePosition, 'r') 
@@ -39,7 +40,7 @@ class readCharonFood54():
         y = (boundingBoxCoordinates[1]+boundingBoxCoordinates[3])/2.0
         return x,y
     
-    def readImObjPerFrame(self,line): 
+    def readImObjPerLine(self,line): 
         imageObjects  = self.splitLineIntoImageObjects(line)  
         frameNumber   = self.getFrameNumberFromLine(line)
         imObjList = [frameNumber]
@@ -49,9 +50,14 @@ class readCharonFood54():
             imObjList.append(imObjDict)       
         return imObjList
 
+    def convertRecordingtoListDict(self):
+        self.imObjData = list()
+        for line in self.rawTextData:
+            self.imObjData.append(self.readImObjPerLine(line))
 
-
+    def readFile(self):
+        self.readFoodRecResult()
+        self.convertRecordingtoListDict()
     
 paul= readCharonFood54('foodTestTra.tra') 
-paul.readFoodRecResult()
-imObjLineList = paul.readImObjPerFrame(paul.rawTextData[2])
+paul.readFile()
