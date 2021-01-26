@@ -21,11 +21,24 @@ def readImageObject(imageObjectString):
 
     return objectValList
 
+def imObjectVal2imObjDict(objectValList):
+    imObjName = objectValList[0]
+    quality   = objectValList[1]
+    boundingBoxCoordinates = tuple(objectValList[2::])   
+    x,y = boundingBox2centerOfMass(boundingBoxCoordinates)
+    return {'name':imObjName,'centerOfMass': (x,y), 'quality': quality, 'boundingBox': boundingBoxCoordinates}
+
+def boundingBox2centerOfMass(boundingBoxCoordinates):
+    x = (boundingBoxCoordinates[0]+boundingBoxCoordinates[2])/2.0
+    y = (boundingBoxCoordinates[1]+boundingBoxCoordinates[3])/2.0
+    return x,y
 
 
 
 data = readFoodRecResult('foodTestTra.tra') 
 imageObjects  = splitLineIntoImageObjects(data[5])  
 frameNumber   = getFrameNumberFromLine(data[5])
+
 for imObj in imageObjects:
-    objectValList = readImageObject(imObj)       
+    objectValList = readImageObject(imObj)
+    imObjDict  = imObjectVal2imObjDict(objectValList)       
