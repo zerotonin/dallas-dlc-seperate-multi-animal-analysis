@@ -74,4 +74,4 @@ y0: Y-coordinate of the lower right of the bounding box
 
 
 ## ssh for mac users
-ssh-add -K .ssh/id_rsa
+ssh-add -K /Users/test/.ssh/id_rsa
