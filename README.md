@@ -69,3 +69,9 @@ y0: Y-coordinate of the lower right of the bounding box
         | (_/^\_) |
         |         |
         |-----x1,y1
+
+
+
+
+## ssh for mac users
+ssh-add -K .ssh/id_rsa
