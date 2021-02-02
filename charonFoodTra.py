@@ -81,4 +81,4 @@ class readCharonFood54():
     
 
 paul= readCharonFood54('foodTestTra.tra') 
-paul.readFile()
+paul.readFile() #
