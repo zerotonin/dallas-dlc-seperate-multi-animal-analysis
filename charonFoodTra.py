@@ -59,7 +59,7 @@ class readCharonFood54():
         self.readFoodRecResult()
         self.convertRecordingtoListDict()
 
-    def assingFly2Arena(self):
+    def assingFly2Arena(self): #
         #imObjectVal2imObjDict.get('name')
         imObjName = objectValList[0]
         flyId=0
