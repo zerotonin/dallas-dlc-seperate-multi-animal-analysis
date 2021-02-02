@@ -65,7 +65,7 @@ class readCharonFood54():
         boundingBoxCoordinates = tuple(objectValList[2::])   # a Tupel is a finite ordered list of elements
         # caclulate center of mass
         x,y = self.boundingBox2centerOfMass(boundingBoxCoordinates)
-        centerOfMass = tuple(x,y) # make tuple to avoid permutation
+        centerOfMass = (x,y) # make tuple to avoid permutation
 
         # define a dictionary with the data and return it
         return {'name':imObjName,'centerOfMass': centerOfMass, 'quality': quality, 'boundingBox': boundingBoxCoordinates} #dictionary{key:value pairs}
@@ -101,7 +101,7 @@ class readCharonFood54():
         Convert the raw text data into a list in which each element is the data of a frame.
         Each frame consists of a list, which first element is the frame number as an integer. All following
         elements are dictionaries in the following format:
-        
+
         keys         : values
         =============:======================================================================
         name         : a string with the identifier of the object, e.g. 'fly','arena','marker'
@@ -152,6 +152,17 @@ class readCharonFood54():
             return flyId, ArenaId 
     
 
-import readCharonFood54 from charonFoodTra
-paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
-paul.readFile()  # read data from file into memory
+#from charonFoodTra import readCharonFood54
+#paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
+#paul.readFile()  # read data from file into memory
+
+# how to adresse data in the imObjData
+#
+# readClass.resultList[frameNumber][objectNumber][objectParameter]
+# paul.imObjData[3][22]['centerOfMass']
+
+# frameList = paul.imObjData[3][1::] # get objects in frame and ignore frame number
+# for imgObj in frameList:
+#     if imgObj["name"] == 'fly':
+#         print("found a fly @ " + str(imgObj['centerOfMass'][0]) + ", " + str(imgObj['centerOfMass'][1]))
+
