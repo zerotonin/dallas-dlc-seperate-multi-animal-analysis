@@ -53,7 +53,7 @@ class readCharonFood54():
     def convertRecordingtoListDict(self):
         self.imObjData = list()
         for line in self.rawTextData:
-            self.imObjData.append(self.readImObjPerLine(line))
+            self.imObjData.append(self.readImObjPerLine(line)) 
 
     def readFile(self):
         self.readFoodRecResult()
@@ -81,4 +81,4 @@ class readCharonFood54():
     
 
 paul= readCharonFood54('foodTestTra.tra') 
-paul.readFile() #
+paul.readFile() 
