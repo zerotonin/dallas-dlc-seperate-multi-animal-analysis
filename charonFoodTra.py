@@ -131,23 +131,23 @@ class readCharonFood54():
         # convert text data 2 img object dictionaries
         self.convertRecordingtoListDict()
 
-    def assingFly2Arena(self): #
+    #def assingFly2Arena(self): #
         #imObjectVal2imObjDict.get('name')
-        imObjName = objectValList[0]
-        flyId=0
-        for flyId in imObjectVal2imObjDict:
-            if imObjName == 'fly':
-                flyPosition = imObjectVal2imObjDict.get('centerOfMass')
-            flyId += 1
-            return flyPosition
+     #   imObjName = objectValList[0]
+      #  flyId=0
+       # for flyId in imObjectVal2imObjDict:
+        #    if imObjName == 'fly':
+         #       flyPosition = imObjectVal2imObjDict.get('centerOfMass')
+          #  flyId += 1
+           # return flyPosition
             
-        ArenaId=0
-        for ArenaId in imObjectVal2imObjDict:
-            if imObjName == 'Arena':
-                ArenaPosition = imObjectVal2imObjDict.get('boundingBoxCoordinates')
-            ArenaId += 1
-            return ArenaPosition
+        #ArenaId=0
+        #for ArenaId in imObjectVal2imObjDict:
+        #    if imObjName == 'Arena':
+         #       ArenaPosition = imObjectVal2imObjDict.get('boundingBoxCoordinates')
+          #  ArenaId += 1
+           # return ArenaPosition
         
-        if flyPosition >= boundingBoxCoordinates[0,1] and flyPosition <= boundingBoxCoordinates[2,3]:
-            return flyId, ArenaId 
+       # if flyPosition >= boundingBoxCoordinates[0,1] and flyPosition <= boundingBoxCoordinates[2,3]:
+        #    return flyId, ArenaId 
     

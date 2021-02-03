@@ -62,8 +62,21 @@ def assignFlies2Arenas(flyList,arenaList):
             arenaC +=1
         #increase fly counter
         flyC+=1
-    
     return a2f_assignment,f2a_assignment
+
+middle    = list()
+leftSide  = list()
+rightSide = list()
+for side in f2a_assignment:
+    arena_xCM = arena ['centerOfMass'][0]
+    if fly_x < (arena_xCM/2.0):
+        leftSide.append(side)
+    elif fly_x > (arena_xCM/2.0):
+        rightSide.append(side)
+    elif fly_x == (arena_xCM/2.0):
+        middle.append(side)
+    else: 
+        raise ValueError("Found unexpected Position: " + [f2a_assignment])
 
 
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
