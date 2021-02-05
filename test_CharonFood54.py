@@ -1,6 +1,6 @@
 from charonFoodTra import readCharonFood54
 import numpy as np
-from importlib import reload 
+#from importlib import reload 
 
 
 
@@ -27,6 +27,9 @@ def splitImgObjectTypes(frameListWOframeNumber):
     
     return arenaList,flyList,markerList
 
+for fly in f2a_assignment:
+    for fly in a2f_assignment:
+        if 'center'
 def assignFlies2Arenas(flyList,arenaList):
     '''
     This function creates two lists one with the assignment fly to arena and
@@ -40,7 +43,7 @@ def assignFlies2Arenas(flyList,arenaList):
     #transverse all flies
     for fly in flyList:
         #initialize arena counter
-        arenaC =0
+        arenaC = 0
         # transverse all arenas
         for arena in arenaList:
             # shorthands
@@ -64,20 +67,69 @@ def assignFlies2Arenas(flyList,arenaList):
         flyC+=1
     return a2f_assignment,f2a_assignment
 
+'''
 middle    = list()
-leftSide  = list()
-rightSide = list()
-for side in f2a_assignment:
-    arena_xCM = arena ['centerOfMass'][0]
-    if fly_x < (arena_xCM/2.0):
-        leftSide.append(side)
-    elif fly_x > (arena_xCM/2.0):
-        rightSide.append(side)
-    elif fly_x == (arena_xCM/2.0):
-        middle.append(side)
-    else: 
-        raise ValueError("Found unexpected Position: " + [f2a_assignment])
+leftSite  = list()
+rightSite = list()
+for fly in f2a_assignment:
+    for arena in f2a_assignment:
+        fly_x     = fly['centerOfMass'][0]
+        arena_xCM = arena['centerOfMass'][0]
+        if fly_x < (arena_xCM/2.0):
+            leftSite.append(imObj)
+        elif fly_x > (arena_xCM/2.0):
+            rightSite.append(imObj)
+        elif fly_x == (arena_xCM/2.0):
+            middle.append(imObj)
+'''
+'''
+def site(flyList, f2a_assignment):
 
+    middle    = list()
+    leftSide  = list()
+    rightSide = list()
+    fly_x        = fly['centerOfMass'][0]
+    arena_x0     = arena['boundingBox'][0]
+    arena_x1     = arena['boundingBox'][2]
+    arena_xCM    = arena['centerOfMass'][0]
+    arena_middle = (arena_xCM)/2.0
+    
+    for a in f2a_assignment:
+        extracted_elements = [flyList[index] for index in f2a_assignment[0]] # extract info from flyList for the first fly in f2a_assignmentList
+        a = [extracted_elements[fly_x], extracted_elements[arena_middle]]
+
+        if a[0] < a[1]:
+            leftSide.append(flyList[index])
+        elif a[0] > a[1]:
+            rightSide.append(flyList[index])
+        elif a[0] == a[1]:
+            middle.append(flyList[index])
+    
+    return middle,rightSite,leftSite
+ 
+
+
+def site(flyList, f2a_assignment):
+
+    middle    = list()
+    leftSite  = list()
+    rightSite = list()
+    fly_x        = fly['centerOfMass'][0]
+    arena_x0     = arena['boundingBox'][0]
+    arena_x1     = arena['boundingBox'][2]
+    arena_xCM    = arena['centerOfMass'][0]
+    arena_middle = (arena_xCM)/2.0
+    
+    for a in f2a_assignment:
+        if fly_x < arena_middle:
+            leftSite.append(a)
+        elif fly_x > arena_middle:
+            rightSite.append(a)
+        elif fly_x == arena_middle:
+            middle.append(a)
+    
+    return middle,rightSite,leftSite
+'''
 
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
 paul.readFile()  # read data from file into memory
@@ -85,4 +137,5 @@ paul.readFile()  # read data from file into memory
 # readClass.resultList[frameNumber][objectNumber][objectParameter]
 # paul.imObjData[3][22]['centerOfMass']
 
- 
+# arenaList,flyList,markerList = splitImgObjectTypes(paul.imObjData[1][0::])
+# a2f_assignment,f2a_assignment = assignFlies2Arenas(flyList,arenaList)
