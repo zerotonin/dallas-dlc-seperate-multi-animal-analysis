@@ -20,17 +20,17 @@ def boundingBox2MPLrect(boundingBox,edgeColor, labelStr = ""):
                               ec = edgeColor, fc = None,label=labelStr)
     return rect
 
-def mplRects4ImgObjList(imgObjList, edgeColor='g',labelTag='imgObj'):
+def mplRects4ImgObjList(imgObjList, edgeColor='g', labelTag='imgObj'):
     imgObjRects = list()
     imgObjC = 0
     for imgObj in imgObjList:
-        imgObjRects.append(boundingBox2MPLrect(imgObj['boundingBox'],edgeColor, labelTag +'_'+str(imgObjC))
+        imgObjRects.append(boundingBox2MPLrect(imgObj['boundingBox'],edgeColor, labelTag +'_'+str(imgObjC)))
         imgObjC += 1
     return imgObjRects
 
 def plotRecognisedImgObjBoundBoxes(flyList,arenaList):
-    flyRects = mplRects4ImgObjList(flyList,edgeColor='b',lableTag ='fly')
-    arenaRects = mplRects4ImgObjList(arenaList,edgeColor='g',lableTag ='arena')
+    flyRects = mplRects4ImgObjList(flyList,edgeColor='b',labelTag ='fly')
+    arenaRects = mplRects4ImgObjList(arenaList,edgeColor='g', labelTag ='arena')
     
     fig, ax = plt.subplots()
 
@@ -106,7 +106,21 @@ def assignFlies2Arenas(flyList,arenaList):
     return a2f_assignment,f2a_assignment
 
 
-
+'''
+middle    = list()
+leftSite  = list()
+rightSite = list()
+for fly in f2a_assignment:
+    for arena in f2a_assignment:
+        fly_x     = fly['centerOfMass'][0]
+        arena_xCM = arena['centerOfMass'][0]
+        if fly_x < (arena_xCM/2.0):
+            leftSite.append(imObj)
+        elif fly_x > (arena_xCM/2.0):
+            rightSite.append(imObj)
+        elif fly_x == (arena_xCM/2.0):
+            middle.append(imObj)
+'''
 '''
 def site(flyList, f2a_assignment):
 
