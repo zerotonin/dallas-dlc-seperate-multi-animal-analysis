@@ -169,7 +169,7 @@ def site(flyList, f2a_assignment):
     
     return middle,rightSite,leftSite
 '''
-
+#collect boundingBoxes from Arenas for all Frames and sort the List by the Framenumber
 def collectArenasFromAllFrames (imObjData):
     allArenas=[]
     ArenaC = 0 
@@ -180,11 +180,19 @@ def collectArenasFromAllFrames (imObjData):
             ymin = imObjData.get('boundingBox')[1]
             xmax = imObjData.get('boundingBox')[2]
             ymax = imObjData.get('boundingBox')[3]
-            boundingBoxes = ((xmin, ymin, xmax, ymax))
-            allArenas.append(frameNumber + str (ArenaC) + boundingBoxes)
+            boundingBox = ((xmin, ymin, xmax, ymax))
+            allArenas.append(frameNumber + str (ArenaC) + boundingBox)
         ArenaC += 1
-    sorted (allArenas)
+    allArenas.sort(key = attrgetter(frameNumber), reverse = True)
     return allArenas
+
+'''
+# split 'allArenas' List in Lists of Arenas per Frame and sort boundingBoxes by size
+# select in each iteration of the for loop the smallest boundingBox from each List, put it in List and delet it from previous List
+def ArenasPerFrame (allArenas):
+
+
+'''
 '''
 def getSameArenaFromAllFrames (allArenas):
     for arenas in allArenas:
