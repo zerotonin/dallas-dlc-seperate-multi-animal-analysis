@@ -17,7 +17,7 @@ def boundingBox2MPLrect(boundingBox,edgeColor, labelStr = ""):
 
     # add a rectangle
     rect = mpatches.Rectangle((boundingBox[0],boundingBox[1]),boundingBox[2]-boundingBox[0],boundingBox[3]-boundingBox[1],
-                              ec = edgeColor, fc = None,label=labelStr)
+                              ec = edgeColor, fc = 'None',label=labelStr)
     return rect
 
 def mplRects4ImgObjList(imgObjList, edgeColor='g', labelTag='imgObj'):
@@ -29,7 +29,7 @@ def mplRects4ImgObjList(imgObjList, edgeColor='g', labelTag='imgObj'):
     return imgObjRects
 
 def plotRecognisedImgObjBoundBoxes(flyList,arenaList):
-    flyRects = mplRects4ImgObjList(flyList,edgeColor='b',labelTag ='fly')
+    flyRects = []#mplRects4ImgObjList(flyList,edgeColor='b',labelTag ='fly')
     arenaRects = mplRects4ImgObjList(arenaList,edgeColor='g', labelTag ='arena')
     
     fig, ax = plt.subplots()
@@ -170,11 +170,35 @@ def site(flyList, f2a_assignment):
     return middle,rightSite,leftSite
 '''
 
+def collectArenasFromAllFrames (imObjData):
+    allArenas=[]
+    ArenaC = 0 
+    for imgObj in imObjData:
+        if imgObj["name"] == 'arena':
+            frameNumber = int(imObjData[0][0:-3])
+            xmin = imObjData.get('boundingBox')[0]
+            ymin = imObjData.get('boundingBox')[1]
+            xmax = imObjData.get('boundingBox')[2]
+            ymax = imObjData.get('boundingBox')[3]
+            boundingBoxes = ((xmin, ymin, xmax, ymax))
+            allArenas.append(frameNumber + str (ArenaC) + boundingBoxes)
+        ArenaC += 1
+    sorted (allArenas)
+    return allArenas
+'''
+def getSameArenaFromAllFrames (allArenas):
+    for arenas in allArenas:
+        if 
+
+
+'''
+
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
 paul.readFile()  # read data from file into memory
 # how to adresse data in the imObjData
 # readClass.resultList[frameNumber][objectNumber][objectParameter]
 # paul.imObjData[3][22]['centerOfMass']
+# paul.imObjData[0::][0::] # lists all image objects in all frames
 
 arenaList,flyList,markerList = splitImgObjectTypes(paul.imObjData[1][1::])
 a2f_assignment,f2a_assignment = assignFlies2Arenas(flyList,arenaList)
