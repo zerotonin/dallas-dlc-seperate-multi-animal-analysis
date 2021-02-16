@@ -169,37 +169,43 @@ def site(flyList, f2a_assignment):
     
     return middle,rightSite,leftSite
 '''
-#collect boundingBoxes from Arenas for all Frames and sort the List by the Framenumber
+'''
+#collect center of Mass from Arenas for all Frames and sort the List by the Framenumber
 def collectArenasFromAllFrames (imObjData):
     allArenas=[]
     ArenaC = 0 
     for imgObj in imObjData:
         if imgObj["name"] == 'arena':
             frameNumber = int(imObjData[0][0:-3])
-            xmin = imObjData.get('boundingBox')[0]
-            ymin = imObjData.get('boundingBox')[1]
-            xmax = imObjData.get('boundingBox')[2]
-            ymax = imObjData.get('boundingBox')[3]
-            boundingBox = ((xmin, ymin, xmax, ymax))
-            allArenas.append(frameNumber + str (ArenaC) + boundingBox)
+            x_CM = arenaList[arenaC]['centerOfMass'][0]
+            y_CM = arenaList[arenaC]['centerOfMass'][1]
+            Arena_centerOfMass = ((x_CM, y_CM))
+            allArenas.append(frameNumber + str (ArenaC) + Arena_centerOfMass)
         ArenaC += 1
     allArenas.sort(key = attrgetter(frameNumber), reverse = True)
     return allArenas
-
-'''
-# split 'allArenas' List in Lists of Arenas per Frame and sort boundingBoxes by size
-# select in each iteration of the for loop the smallest boundingBox from each List, put it in List and delet it from previous List
-def ArenasPerFrame (allArenas):
-
-
 '''
 '''
-def getSameArenaFromAllFrames (allArenas):
-    for arenas in allArenas:
-        if 
+# 1. split 'allArenas' List in Lists of Arenas per Frame
+
+i=0
+Frame(i)=list() 
+for FirstFrame in allArenas:
+    if frameNumber==0:
+        Frame1.append(FirstFrame)
+    i += 1
+return Frame(i)
+
+
+
+# 2. sort the first frame by x and y coordniates: 
+# 2.1 select in each iteration of the for loop the smallest centerofMass from each List, put it in List and delet it from previous List
+
+
 
 
 '''
+
 
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
 paul.readFile()  # read data from file into memory
@@ -208,7 +214,7 @@ paul.readFile()  # read data from file into memory
 # paul.imObjData[3][22]['centerOfMass']
 # paul.imObjData[0::][0::] # lists all image objects in all frames
 
-arenaList,flyList,markerList = splitImgObjectTypes(paul.imObjData[1][1::])
+arenaList,flyList,markerList = splitImgObjectTypes(paul.imObjData[1][0::])
 a2f_assignment,f2a_assignment = assignFlies2Arenas(flyList,arenaList)
 # middle    = list()
 # leftSite  = list()
@@ -224,9 +230,11 @@ for assignedFlies in f2a_assignment:
         elif fly_x > (arena_xCM/2.0):
             outputStr += "The fly is on the right side."
         elif fly_x == (arena_xCM/2.0):
-            outputStr += "The fly isin the middle side."
+            outputStr += "The fly is in the middle."
         
         print(outputStr)
         arenaC +=1
 
 plotRecognisedImgObjBoundBoxes(flyList,arenaList)
+
+
