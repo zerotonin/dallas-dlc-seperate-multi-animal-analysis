@@ -172,7 +172,7 @@ def site(flyList, f2a_assignment):
 '''
 #collect center of Mass from Arenas for all Frames and sort the List by the Framenumber
 def collectArenasFromAllFrames (imObjData):
-    allArenas=[]
+    allArenas=list()
     ArenaC = 0 
     for imgObj in imObjData:
         if imgObj["name"] == 'arena':
@@ -188,13 +188,14 @@ def collectArenasFromAllFrames (imObjData):
 '''
 # 1. split 'allArenas' List in Lists of Arenas per Frame
 
+ArenasInFrame_= [[] for a in allArenas]
 i=0
-Frame(i)=list() 
-for FirstFrame in allArenas:
-    if frameNumber==0:
-        Frame1.append(FirstFrame)
+for Frame in allArenas:
+    if frameNumber==i:
+        ArenasInFrame_[i].append(Frame)
+    allArenas.remove(Frame) # remove entry from List after appending it to the new List
     i += 1
-return Frame(i)
+return ArenasInFrame_[i]
 
 
 
