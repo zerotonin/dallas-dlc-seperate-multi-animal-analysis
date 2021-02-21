@@ -177,8 +177,8 @@ def collectArenasFromAllFrames (imObjData):
     for imgObj in imObjData:
         if imgObj["name"] == 'arena':
             frameNumber = int(imObjData[0][0:-3])
-            x_CM = arenaList[arenaC]['centerOfMass'][0]
-            y_CM = arenaList[arenaC]['centerOfMass'][1]
+            x_CM = arenaList[ArenaC]['centerOfMass'][0]
+            y_CM = arenaList[ArenaC]['centerOfMass'][1]
             Arena_centerOfMass = ((x_CM, y_CM))
             allArenas.append(frameNumber + str (ArenaC) + Arena_centerOfMass)
         ArenaC += 1
@@ -215,11 +215,17 @@ paul.readFile()  # read data from file into memory
 # paul.imObjData[3][22]['centerOfMass']
 # paul.imObjData[0::][0::] # lists all image objects in all frames
 
-arenaList,flyList,markerList = splitImgObjectTypes(paul.imObjData[1][0::])
-a2f_assignment,f2a_assignment = assignFlies2Arenas(flyList,arenaList)
+arenaList1,flyList1,markerList1 = splitImgObjectTypes(paul.imObjData[0][1::])
+arenaList2,flyList2,markerList2 = splitImgObjectTypes(paul.imObjData[1][1::])
+a2f_assignment1,f2a_assignment1 = assignFlies2Arenas(flyList1,arenaList1)
+a2f_assignment2,f2a_assignment2 = assignFlies2Arenas(flyList2,arenaList2)
 # middle    = list()
 # leftSite  = list()
 # rightSite = list()
+
+
+
+'''
 arenaC    = 0
 for assignedFlies in f2a_assignment:
     for fly in assignedFlies:
@@ -237,5 +243,5 @@ for assignedFlies in f2a_assignment:
         arenaC +=1
 
 plotRecognisedImgObjBoundBoxes(flyList,arenaList)
-
+'''
 
