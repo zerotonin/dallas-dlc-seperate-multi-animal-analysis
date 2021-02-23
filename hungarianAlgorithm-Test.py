@@ -17,18 +17,16 @@ def getVectorNorm (arenaList):
 # Step 1: sort Frame 1 by its x and y coordinates ...
 # The Distances between Arenas in Frame 1 and Arenas in Frame 2 will be calculated using the euclidian distance
 
-def VN_multipleFrames (sortedArenaList1, arenaList2):
+def getArenaAdjMat (sortedArenaList1, arenaList2):
     # pre-allocation of a 54 by 54 matrix
     adjMat = np.zeros(shape=(54,54))
     Frame1ArenaC = 0
     for arena in sortedArenaList1:
         CMx1,CMy1 = arena['centerOfMass']
-        
-
         Frame2ArenaC = 0
         for arena in arenaList2:
-            CMx2 = arena['centerOfMass'][0]
-            CMy2 = arena['centerOfMass'][1]
+            CMx2, CMy2 = arena['centerOfMass']
+        
             vectorNorm = np.sqrt((CMx1-CMx2)**2+(CMy1-CMy2)**2)
             # returns a List of Distances between Arenas in Frame 1 and each Arena in Frame 2
             adjMat[Frame1ArenaC, Frame2ArenaC] = vectorNorm
@@ -75,3 +73,10 @@ sorted(VN_ArenaList1)
  
 VN_ArenaList1
 '''
+# sort Arena list by its x and y coordinates
+def sortArenaListByXandY (arenaList):
+    for CM in arenaList:
+        CMx, CMy = CM ['centerOfMass']
+        # s = sorted(s, key = lambda x: (x[1], x[2]))
+        sortedList = sorted(arenaList, key=lambda CM:(CM[0], CM[1]))
+    return sortedList
