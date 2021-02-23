@@ -1,6 +1,7 @@
 # vectorNorm = getVectorNorm(arenaList1[0],arenaList2[2])
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+from operator import attrgetter
 '''
 def getVectorNorm (arenaList):
     VN = list()
@@ -15,6 +16,19 @@ def getVectorNorm (arenaList):
     return (sorted(VN))
 '''
 # Step 1: sort Frame 1 by its x and y coordinates ...
+# sort Arena list by its x and y coordinates
+def sortArenaListByXcoordinate (arenaList):
+    func = lambda x:(x['centerOfMass'])
+    sortedList = sorted (arenaList, key =func)
+    return sortedList
+
+def test (sortedList):
+    for i in range (0:5):
+        func = lambda x:(x['centerOfMass'][1])
+        sortedList = sorted (arenaList, key=func)
+
+
+
 # The Distances between Arenas in Frame 1 and Arenas in Frame 2 will be calculated using the euclidian distance
 
 def getArenaAdjMat (sortedArenaList1, arenaList2):
@@ -33,16 +47,11 @@ def getArenaAdjMat (sortedArenaList1, arenaList2):
             Frame2ArenaC += 1
         Frame1ArenaC += 1
     return adjMat
-
+adjMat = getArenaAdjMat(arenaList1,arenaList2)
+print(adjMat)
 row_ind, col_ind = linear_sum_assignment(adjMat)
+print(row_ind,col_ind)
 
-
-# distMat = getAdjacencyMatrix(arenaList1,arenaList2)
-def ConvertList2AdjacencyMatrix(VN_List):
-    Matrix = np.array(VN_List)
-    shape = (54, 54) 
-    Matrix.reshape(shape)
-    return Matrix  
 
 
 '''
@@ -73,10 +82,3 @@ sorted(VN_ArenaList1)
  
 VN_ArenaList1
 '''
-# sort Arena list by its x and y coordinates
-def sortArenaListByXandY (arenaList):
-    for CM in arenaList:
-        CMx, CMy = CM ['centerOfMass']
-        # s = sorted(s, key = lambda x: (x[1], x[2]))
-        sortedList = sorted(arenaList, key=lambda CM:(CM[0], CM[1]))
-    return sortedList
