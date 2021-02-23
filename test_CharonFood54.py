@@ -7,6 +7,7 @@ import matplotlib.path as mpath
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
+from scipy.optimize import linear_sum_assignment
 #from importlib import reload 
 
 
@@ -105,6 +106,40 @@ def assignFlies2Arenas(flyList,arenaList):
         flyC+=1
     return a2f_assignment,f2a_assignment
 
+
+
+
+def getArenaAdjMat(sortedArenaList1, arenaList2):
+    # pre-allocation of a 54 by 54 matrix
+    adjMat = np.zeros(shape=(54,54))
+    Frame1ArenaC = 0
+    for arena in sortedArenaList1:
+        CMx1,CMy1 = arena['centerOfMass']
+        
+
+        Frame2ArenaC = 0
+        for arena in arenaList2:
+            CMx2 = arena['centerOfMass'][0]
+            CMy2 = arena['centerOfMass'][1]
+            vectorNorm = np.sqrt((CMx1-CMx2)**2+(CMy1-CMy2)**2)
+            # returns a List of Distances between Arenas in Frame 1 and each Arena in Frame 2
+            adjMat[Frame1ArenaC, Frame2ArenaC] = vectorNorm
+            Frame2ArenaC += 1
+        Frame1ArenaC += 1
+    return adjMat
+
+paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
+paul.readFile()  # read data from file into memory
+
+arenaList1,flyList1,markerList1 = splitImgObjectTypes(paul.imObjData[0][1::])
+arenaList2,flyList2,markerList2 = splitImgObjectTypes(paul.imObjData[1][1::])
+a2f_assignment1,f2a_assignment1 = assignFlies2Arenas(flyList1,arenaList1)
+a2f_assignment2,f2a_assignment2 = assignFlies2Arenas(flyList2,arenaList2)# vectorNorm = getVectorNorm(ar
+
+adjMat = getArenaAdjMat(arenaList1,arenaList2)
+print(adjMat)
+row_ind, col_ind = linear_sum_assignment(adjMat)
+print(row_ind,col_ind)
 
 '''
 middle    = list()
@@ -207,18 +242,6 @@ return ArenasInFrame_[i]
 
 '''
 
-
-paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
-paul.readFile()  # read data from file into memory
-# how to adresse data in the imObjData
-# readClass.resultList[frameNumber][objectNumber][objectParameter]
-# paul.imObjData[3][22]['centerOfMass']
-# paul.imObjData[0::][0::] # lists all image objects in all frames
-
-arenaList1,flyList1,markerList1 = splitImgObjectTypes(paul.imObjData[0][1::])
-arenaList2,flyList2,markerList2 = splitImgObjectTypes(paul.imObjData[1][1::])
-a2f_assignment1,f2a_assignment1 = assignFlies2Arenas(flyList1,arenaList1)
-a2f_assignment2,f2a_assignment2 = assignFlies2Arenas(flyList2,arenaList2)
 # middle    = list()
 # leftSite  = list()
 # rightSite = list()

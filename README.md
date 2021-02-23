@@ -5,6 +5,13 @@ These scripts are meant to work together with the charon script system. They can
 The scripts can be installed using conda and the dallas.yaml file
 
 
+## Troubleshooting 
+
+The bounding box has the following succession
+
+
+For any newcomers, the order of the box coordinates have changed to: [ymin, xmin, ymax, xmax] – Gregory Saldanha Mar 12 '18 at 0:08
+
 ## Divide and conquer to analyse the trajectory file
 
 1. read in data frame wise
