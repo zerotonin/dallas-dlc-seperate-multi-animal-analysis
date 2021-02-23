@@ -13,8 +13,8 @@ def getVectorNorm (arenaList):
         VN.append(vectorNorm)
     return (sorted(VN))
 '''
-# Step 1: sort Frame 1 by its x and y coordinates 
-# The Distances between Arenas from Frame 1 and Arenas from Frame 2 will be calculated using the euclidian distance
+# Step 1: sort Frame 1 by its x and y coordinates ...
+# The Distances between Arenas in Frame 1 and Arenas in Frame 2 will be calculated using the euclidian distance
 
 def VN_multipleFrames (sortedArenaList1, arenaList2):
     VN_List = list()
@@ -29,19 +29,39 @@ def VN_multipleFrames (sortedArenaList1, arenaList2):
             CMy2 = arena['centerOfMass'][1]
             vectorNorm = np.sqrt(np.square(CMx1-CMx2)+np.square(CMy1-CMy2))
             # returns a List of Distances between Arenas in Frame 1 and each Arena in Frame 2
-            VN_List.append('The Distance between the CM of Arena ' + str(Frame1ArenaC) + ' in Frame 1 and the CM of Arena ' + str(Frame2ArenaC) + ' in Frame 2 is: ' + str(vectorNorm))
+            VN_List.append((Frame1ArenaC, Frame2ArenaC, vectorNorm))
             Frame2ArenaC += 1
         Frame1ArenaC += 1
     return (VN_List)
 
 # distMat = getAdjacencyMatrix(arenaList1,arenaList2)
-   
+def ConvertList2AdjacencyMatrix (VN_List):
+    Matrix = np.array(VN_List)
+    shape = (54, 54) 
+    Matrix.reshape(shape)
+    return Matrix  
+
+
+'''
+# Row Reduction
+def RowReduction (VN_List):
+    minVal=list()
+    for VN in VN_List:
+        F1AN = VN [0] # Frame1ArenaNumber
+        F2AN = VN [1] # Frame2ArenaNumber
+        VeNo = VN [2] # Distance
+        if F1AN == 1:
+            a = min(VN[2])
+            minVal.append(a)
+        return minVal
+        
+'''   
 
 #VN_ArenaList1 = getVectorNorm(arenaList1)
 #VN_ArenaList1 = getVectorNorm(arenaList2)
 #FirstFrameSorted = sorted(VN_ArenaList1)
 
-#FirstFrameSorted
+#print(FirstFrameSorted)
 
 '''
 VN_ArenaList1 = getVectorNorm(arenaList1)   #warum wird hier nach dem letzten attribut gesorted und bei dem oberen nach dem ersten?
