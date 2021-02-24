@@ -18,7 +18,7 @@ def boundingBox2MPLrect(boundingBox,edgeColor, labelStr = ""):
 
     # add a rectangle
     rect = mpatches.Rectangle((boundingBox[1],boundingBox[0]),boundingBox[3]-boundingBox[1],boundingBox[2]-boundingBox[0],
-                              ec = edgeColor, fc = 'None',label=labelStr)
+                              edgecolor = edgeColor, fill=False,label=labelStr,linewidth=1)
     return rect
 
 def mplRects4ImgObjList(imgObjList, edgeColor='g', labelTag='imgObj'):
@@ -29,19 +29,15 @@ def mplRects4ImgObjList(imgObjList, edgeColor='g', labelTag='imgObj'):
         imgObjC += 1
     return imgObjRects
 
-def plotRecognisedImgObjBoundBoxes(flyList,arenaList):
-    flyRects = []#mplRects4ImgObjList(flyList,edgeColor='b',labelTag ='fly')
-    arenaRects = mplRects4ImgObjList(arenaList,edgeColor='g', labelTag ='arena')
+def plotRecognisedImgObjBoundBoxes(arenaList,flyList):
+    objectRects  = mplRects4ImgObjList(flyList,edgeColor=[0, 0, 1],labelTag ='fly')
+    objectRects += mplRects4ImgObjList(arenaList,edgeColor= [1,0,0], labelTag ='arena')
     
     fig, ax = plt.subplots()
 
-    collection = PatchCollection(flyRects+arenaRects)
-    ax.add_collection(collection)
-    
+    for patch in objectRects:
+        ax.add_patch(patch)
     plt.axis('equal')
-   # plt.axis('off')
-    #plt.tight_layout()
-
     plt.show()
 
 
