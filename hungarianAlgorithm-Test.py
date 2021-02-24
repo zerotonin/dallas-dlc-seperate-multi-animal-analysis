@@ -16,16 +16,31 @@ def getVectorNorm (arenaList):
     return (sorted(VN))
 '''
 # Step 1: sort Frame 1 by its x and y coordinates ...
-# sort Arena list by its x and y coordinates
-def sortArenaListByXcoordinate (arenaList):
+# sort Arena list by its x coordinates
+def sortArenaListByXcoordinates (arenaList):
     func = lambda x:(x['centerOfMass'])
     sortedList = sorted (arenaList, key =func)
     return sortedList
 
-def test (sortedList):
-    for i in range (0:5):
+# sort Arena list by its y coordinates
+def sortArenaListByYcoordinates (sortedList):
         func = lambda x:(x['centerOfMass'][1])
-        sortedList = sorted (arenaList, key=func)
+        newList = sorted (sortedList, key=func)
+        return newList
+
+# for the 6 similar x values sort after y coordinate
+def sortList (sortedList):
+    newList2 = list()
+    s = sortedList[0:6]
+    func = lambda x:(x['centerOfMass'][1])
+    s2 = sorted (s, key=func)
+    newList2.append(s2)
+    return newList2
+
+
+
+
+
 
 
 
