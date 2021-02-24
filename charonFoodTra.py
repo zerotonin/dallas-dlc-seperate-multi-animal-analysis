@@ -109,7 +109,7 @@ class readCharonFood54():
                        image size 
         quality      : a float with the normalized quality of detection 0->1
         boundingBox  : a tuple of four float with the minimum and maximum coordinates of the 
-                       bounding box in the succession (x0,y0,x1,y1)
+                       bounding box in the succession (ymin,xmin,ymax,ymin)
 
         '''
         # preallocation of an empty list

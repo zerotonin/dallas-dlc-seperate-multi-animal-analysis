@@ -12,12 +12,12 @@ from scipy.optimize import linear_sum_assignment
 
 
 def boundingBox2MPLrect(boundingBox,edgeColor, labelStr = ""):
-    # Bounding box of an image object is xmin,ymin,xmax,ymax
+    # Bounding box of an image object is ymin,xmin,ymax,xmax
     # also the y axis is inverse
     # matplotlib patches expects xmin and ymin plus width and height of the box
 
     # add a rectangle
-    rect = mpatches.Rectangle((boundingBox[0],boundingBox[1]),boundingBox[2]-boundingBox[0],boundingBox[3]-boundingBox[1],
+    rect = mpatches.Rectangle((boundingBox[1],boundingBox[0]),boundingBox[3]-boundingBox[1],boundingBox[2]-boundingBox[0],
                               ec = edgeColor, fc = 'None',label=labelStr)
     return rect
 
@@ -69,7 +69,7 @@ def splitImgObjectTypes(frameListWOframeNumber):
     
     return arenaList,flyList,markerList
 
-def assignFlies2Arenas(flyList,arenaList):
+def assignFlies2Arenas(arenaList,flyList):
     '''
     This function creates two lists one with the assignment fly to arena and
     the inverse arena to fly.
@@ -86,12 +86,8 @@ def assignFlies2Arenas(flyList,arenaList):
         # transverse all arenas
         for arena in arenaList:
             # shorthands
-            fly_x    = fly['centerOfMass'][0]
-            fly_y    = fly['centerOfMass'][1]
-            arena_x0 = arena['boundingBox'][0]
-            arena_x1 = arena['boundingBox'][2]
-            arena_y0 = arena['boundingBox'][1]
-            arena_y1 = arena['boundingBox'][3]
+            fly_y,fly_x = fly['centerOfMass']
+            arena_y0, arena_x0, arena_y1, arena_x1 = arena['boundingBox']
             # check if flys center of mass is inside the arena bounding box
             if  fly_x >= arena_x0 and fly_x <= arena_x1 and fly_y >= arena_y0 and fly_y <= arena_y1:
                 # append the correct fly indice to the arena list
@@ -114,13 +110,13 @@ def getArenaAdjMat(sortedArenaList1, arenaList2):
     adjMat = np.zeros(shape=(54,54))
     Frame1ArenaC = 0
     for arena in sortedArenaList1:
-        CMx1,CMy1 = arena['centerOfMass']
+        CMy1,CMx1 = arena['centerOfMass']
         
 
         Frame2ArenaC = 0
         for arena in arenaList2:
-            CMx2 = arena['centerOfMass'][0]
-            CMy2 = arena['centerOfMass'][1]
+            CMy2 = arena['centerOfMass'][0]
+            CMx2 = arena['centerOfMass'][1]
             vectorNorm = np.sqrt((CMx1-CMx2)**2+(CMy1-CMy2)**2)
             # returns a List of Distances between Arenas in Frame 1 and each Arena in Frame 2
             adjMat[Frame1ArenaC, Frame2ArenaC] = vectorNorm
@@ -131,10 +127,14 @@ def getArenaAdjMat(sortedArenaList1, arenaList2):
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
 paul.readFile()  # read data from file into memory
 
+
+
 arenaList1,flyList1,markerList1 = splitImgObjectTypes(paul.imObjData[0][1::])
 arenaList2,flyList2,markerList2 = splitImgObjectTypes(paul.imObjData[1][1::])
 a2f_assignment1,f2a_assignment1 = assignFlies2Arenas(flyList1,arenaList1)
 a2f_assignment2,f2a_assignment2 = assignFlies2Arenas(flyList2,arenaList2)# vectorNorm = getVectorNorm(ar
+
+plotRecognisedImgObjBoundBoxes(arenaList2,flyList2)
 
 adjMat = getArenaAdjMat(arenaList1,arenaList2)
 print(adjMat)
