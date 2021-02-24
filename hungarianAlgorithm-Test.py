@@ -64,9 +64,16 @@ def hungarianSort4Arenas(templateArenaList, list2sort):
     return hungarianSort(sortedTemplate,list2sort)   
 
 def find54ArenaFrame(allFrames):
-    #return template
-    pass
+    for frame in allFrames:
+        a=splitImgObjectTypes(allFrames[frame][1::])
+        return arenaList
+        for arenas in arenaList:
+            if len(arenaList) == 54:
+                arenaList = template
+    return template
 
+
+    
 def sortAllArenas(allFramers,template):
     '''
     if len(currentArenaList) < 54:
@@ -77,7 +84,6 @@ def sortAllArenas(allFramers,template):
     '''
 
     pass
-
 
 
 '''
