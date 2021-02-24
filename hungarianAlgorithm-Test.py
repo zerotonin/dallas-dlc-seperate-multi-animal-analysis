@@ -18,13 +18,13 @@ def getVectorNorm (arenaList):
 # Step 1: sort Frame 1 by its x and y coordinates ...
 # sort Arena list by its x coordinates
 def sortArenaListByXcoordinates (arenaList):
-    func = lambda x:(x['centerOfMass'])
+    func = lambda x:(x['centerOfMass'][1])
     sortedList = sorted (arenaList, key =func)
     return sortedList
 
 # sort Arena list by its y coordinates
 def sortArenaListByYcoordinates (sortedList):
-        func = lambda x:(x['centerOfMass'][1])
+        func = lambda x:(x['centerOfMass'][0])
         newList = sorted (sortedList, key=func)
         return newList
 
@@ -62,6 +62,7 @@ def getArenaAdjMat (sortedArenaList1, arenaList2):
             Frame2ArenaC += 1
         Frame1ArenaC += 1
     return adjMat
+
 adjMat = getArenaAdjMat(arenaList1,arenaList2)
 print(adjMat)
 row_ind, col_ind = linear_sum_assignment(adjMat)
