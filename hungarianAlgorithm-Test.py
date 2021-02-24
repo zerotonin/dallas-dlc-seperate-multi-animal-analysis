@@ -2,19 +2,7 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from operator import attrgetter
-'''
-def getVectorNorm (arenaList):
-    VN = list()
-    ArenaC = 0
-    for arena in arenaList:
-        CMx = arena['centerOfMass'][0]
-        CMy = arena['centerOfMass'][1]
-        vectorNorm = np.sqrt(np.square(CMx)+np.square(CMy))
-        ArenaC += 1
-        #VN.append('The Vector Norm for ' + str (ArenaC) + 'is: ' + str(vectorNorm))
-        VN.append(vectorNorm)
-    return (sorted(VN))
-'''
+
 # Step 1: sort Frame 1 by its x and y coordinates ...
 # sort Arena list by its x coordinates
 def sortArenaListByXcoordinates (arenaList):
@@ -29,19 +17,17 @@ def sortArenaListByYcoordinates (sortedList):
         return newList
 
 # for the 6 similar x values sort after y coordinate
-def sortList (sortedList):
-    newList2 = list()
-    s = sortedList[0:6]
-    func = lambda x:(x['centerOfMass'][1])
-    s2 = sorted (s, key=func)
-    newList2.append(s2)
-    return newList2
+def sortArenaList (list2sort):
+    # this delivers 9 groups with 6 members as we have 6 rows and 9 columns
+    sortedY    = sortArenaListByYcoordinates(list2sort)
+    # pre allocate
+    sortedList = list()
+    # run through each of the 9 groups ....
+    for i in range(0,54,6):
+        # ...sort them and add them to the sorted list
+        sortedList += sortArenaListByXcoordinates(sortedY[i:i+6])
 
-
-
-
-
-
+    return sortedList
 
 
 # The Distances between Arenas in Frame 1 and Arenas in Frame 2 will be calculated using the euclidian distance
@@ -63,10 +49,34 @@ def getArenaAdjMat (sortedArenaList1, arenaList2):
         Frame1ArenaC += 1
     return adjMat
 
-adjMat = getArenaAdjMat(arenaList1,arenaList2)
-print(adjMat)
-row_ind, col_ind = linear_sum_assignment(adjMat)
-print(row_ind,col_ind)
+def hungarianSort(templateList,list2sort):
+    #get adjency matrix
+    adjMat = getArenaAdjMat(templateList,list2sort)
+    # run min cost perfect matching -> Hungarian
+    row_ind, col_ind = linear_sum_assignment(adjMat)
+    # return  sorted list2 sort
+    return [list2sort[int(x)] for x in list(col_ind)]
+
+def hungarianSort4Arenas(templateArenaList, list2sort):
+    # This function sorts the arenas in western reading direction
+    sortedTemplate = sortArenaList(templateArenaList)
+    # now sort candidate list
+    return hungarianSort(sortedTemplate,list2sort)   
+
+def find54ArenaFrame(allFrames):
+    #return template
+    pass
+
+def sortAllArenas(allFramers,template):
+    '''
+    if len(currentArenaList) < 54:
+        (np.inf,np.inf)
+
+        sortedArenas = hungarianSort4Arenas(template,currentArenaList)
+    return sortedList
+    '''
+
+    pass
 
 
 
