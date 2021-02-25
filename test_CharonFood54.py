@@ -71,7 +71,6 @@ def assignFlies2Arenas(arenaList,flyList):
 
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
 plotObj = plotCharonFood()
-plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
 reload(foodArenaAnalysis)
 
@@ -80,4 +79,6 @@ for frame in paul.imObjData:
     arenaList,flyList,markerList = splitImgObjectTypes(frame[1::])
     video_arena.append(arenaList)
 
-fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)         
+fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)
+fAA.getMedianArenas()         
+plotObj.plotRecognisedImgObjBoundBoxes(fAA.medArenaList,flyList)

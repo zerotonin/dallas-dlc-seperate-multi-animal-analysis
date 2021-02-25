@@ -81,17 +81,39 @@ class foodArenaAnalysis:
                     # This function sorts the arenas in western reading direction
                     self.templateArenaList = self.sortArenaList(template)
                     return
-
         
     def sortAllArenas(self):
 
-        template = self.templateArenaList
-        self.sortedArenasList = list()
+        self.sortedArenaList = list()
         for frame in self.frameObjectList:
-            self.sortedArenaList.append(hungarianSort(template, frame))
-        return self.sortedArenaList
+            self.sortedArenaList.append(self.hungarianSort4Arenas(frame))
+    
+    def runSorter(self):
+        self.createTemplate()
+        self.sortAllArenas()
+        
+    def getMedianArenas(self):
+        self.runSorter()
+        self.medArenaList = list()
+        for arenaNum in range(54):
 
-        #     #hungarianSort
+            quality = list()
+            centerOfMass = list()
+            boundingBox  = list()
+            arenaMedDict = dict()
+            for frameList in self.sortedArenaList:
+                quality.append(frameList[arenaNum]['quality'])
+                centerOfMass.append(frameList[arenaNum]['centerOfMass'])
+                boundingBox.append(frameList[arenaNum]['boundingBox'])
+
+            arenaMedDict['name'] = 'arena'
+            arenaMedDict['centerOfMass'] = np.median(np.array(centerOfMass),0)
+            arenaMedDict['quality'] = np.median(np.array(quality),0)
+            arenaMedDict['boundingBox'] = np.median(np.array(boundingBox),0)
+
+            self.medArenaList.append(arenaMedDict)
+
+
 
 
         '''  
