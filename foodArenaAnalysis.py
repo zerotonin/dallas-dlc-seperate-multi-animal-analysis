@@ -40,7 +40,7 @@ class foodArenaAnalysis:
         return sortedList
 
 
-    # The Distances between Arenas in Frame 1 and Arenas in Frame 2 will be calculated using the euclidian distance
+    # The Distances between Arenas in Frame 1 and Arenas in Frame 2 are calculated using the euclidian distance
 
     def getArenaAdjMat(self,sortedArenaList1, arenaList2):
         # pre-allocation of a 54 by 54 matrix
@@ -83,10 +83,14 @@ class foodArenaAnalysis:
                     return
 
         
-    def sortAllArenas(self,frameListWOframeNumber,template):
-        pass
-        # self.sortedArenasList = list()
-        # for frame in self.frameObjectList:
+    def sortAllArenas(self):
+
+        template = self.templateArenaList
+        self.sortedArenasList = list()
+        for frame in self.frameObjectList:
+            self.sortedArenaList.append(hungarianSort(template, frame))
+        return self.sortedArenaList
+
         #     #hungarianSort
 
 
