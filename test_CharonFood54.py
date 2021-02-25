@@ -1,44 +1,13 @@
 from charonFoodTra import readCharonFood54
+from charonFoodTra import plotCharonFood
+import foodArenaAnalysis
+from importlib import reload
 import numpy as np
-
-import matplotlib.pyplot as plt
+import foodArenaAnalysis
 import numpy as np
-import matplotlib.path as mpath
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
 from scipy.optimize import linear_sum_assignment
 #from importlib import reload 
 
-
-def boundingBox2MPLrect(boundingBox,edgeColor, labelStr = ""):
-    # Bounding box of an image object is ymin,xmin,ymax,xmax
-    # also the y axis is inverse
-    # matplotlib patches expects xmin and ymin plus width and height of the box
-
-    # add a rectangle
-    rect = mpatches.Rectangle((boundingBox[1],boundingBox[0]),boundingBox[3]-boundingBox[1],boundingBox[2]-boundingBox[0],
-                              edgecolor = edgeColor, fill=False,label=labelStr,linewidth=1)
-    return rect
-
-def mplRects4ImgObjList(imgObjList, edgeColor='g', labelTag='imgObj'):
-    imgObjRects = list()
-    imgObjC = 0
-    for imgObj in imgObjList:
-        imgObjRects.append(boundingBox2MPLrect(imgObj['boundingBox'],edgeColor, labelTag +'_'+str(imgObjC)))
-        imgObjC += 1
-    return imgObjRects
-
-def plotRecognisedImgObjBoundBoxes(arenaList,flyList):
-    objectRects  = mplRects4ImgObjList(flyList,edgeColor=[0, 0, 1],labelTag ='fly')
-    objectRects += mplRects4ImgObjList(arenaList,edgeColor= [1,0,0], labelTag ='arena')
-    
-    fig, ax = plt.subplots()
-
-    for patch in objectRects:
-        ax.add_patch(patch)
-    plt.axis('equal')
-    plt.show()
 
 
 
@@ -100,167 +69,15 @@ def assignFlies2Arenas(arenaList,flyList):
 
 
 
-
-def getArenaAdjMat(sortedArenaList1, arenaList2):
-    # pre-allocation of a 54 by 54 matrix
-    adjMat = np.zeros(shape=(54,54))
-    Frame1ArenaC = 0
-    for arena in sortedArenaList1:
-        CMy1,CMx1 = arena['centerOfMass']
-        
-
-        Frame2ArenaC = 0
-        for arena in arenaList2:
-            CMy2 = arena['centerOfMass'][0]
-            CMx2 = arena['centerOfMass'][1]
-            vectorNorm = np.sqrt((CMx1-CMx2)**2+(CMy1-CMy2)**2)
-            # returns a List of Distances between Arenas in Frame 1 and each Arena in Frame 2
-            adjMat[Frame1ArenaC, Frame2ArenaC] = vectorNorm
-            Frame2ArenaC += 1
-        Frame1ArenaC += 1
-    return adjMat
-
 paul= readCharonFood54('foodTestTra.tra') # init of reader object with file position
+plotObj = plotCharonFood()
+plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
+reload(foodArenaAnalysis)
 
+video_arena = list()
+for frame in paul.imObjData:
+    arenaList,flyList,markerList = splitImgObjectTypes(frame[1::])
+    video_arena.append(arenaList)
 
-
-arenaList1,flyList1,markerList1 = splitImgObjectTypes(paul.imObjData[0][1::])
-arenaList2,flyList2,markerList2 = splitImgObjectTypes(paul.imObjData[1][1::])
-a2f_assignment1,f2a_assignment1 = assignFlies2Arenas(flyList1,arenaList1)
-a2f_assignment2,f2a_assignment2 = assignFlies2Arenas(flyList2,arenaList2)# vectorNorm = getVectorNorm(ar
-
-plotRecognisedImgObjBoundBoxes(arenaList2,flyList2)
-
-adjMat = getArenaAdjMat(arenaList1,arenaList2)
-print(adjMat)
-row_ind, col_ind = linear_sum_assignment(adjMat)
-print(row_ind,col_ind)
-
-'''
-middle    = list()
-leftSite  = list()
-rightSite = list()
-for fly in f2a_assignment:
-    for arena in f2a_assignment:
-        fly_x     = fly['centerOfMass'][0]
-        arena_xCM = arena['centerOfMass'][0]
-        if fly_x < (arena_xCM/2.0):
-            leftSite.append(imObj)
-        elif fly_x > (arena_xCM/2.0):
-            rightSite.append(imObj)
-        elif fly_x == (arena_xCM/2.0):
-            middle.append(imObj)
-'''
-'''
-def site(flyList, f2a_assignment):
-
-    middle    = list()
-    leftSide  = list()
-    rightSide = list()
-    fly_x        = fly['centerOfMass'][0]
-    arena_x0     = arena['boundingBox'][0]
-    arena_x1     = arena['boundingBox'][2]
-    arena_xCM    = arena['centerOfMass'][0]
-    arena_middle = (arena_xCM)/2.0
-    
-    for a in f2a_assignment:
-        extracted_elements = [flyList[index] for index in f2a_assignment[0]] # extract info from flyList for the first fly in f2a_assignmentList
-        a = [extracted_elements[fly_x], extracted_elements[arena_middle]]
-
-        if a[0] < a[1]:
-            leftSide.append(flyList[index])
-        elif a[0] > a[1]:
-            rightSide.append(flyList[index])
-        elif a[0] == a[1]:
-            middle.append(flyList[index])
-    
-    return middle,rightSite,leftSite
- 
-
-
-def site(flyList, f2a_assignment):
-
-    middle    = list()
-    leftSite  = list()
-    rightSite = list()
-    fly_x        = fly['centerOfMass'][0]
-    arena_x0     = arena['boundingBox'][0]
-    arena_x1     = arena['boundingBox'][2]
-    arena_xCM    = arena['centerOfMass'][0]
-    arena_middle = (arena_xCM)/2.0
-    
-    for a in f2a_assignment:
-        if fly_x < arena_middle:
-            leftSite.append(a)
-        elif fly_x > arena_middle:
-            rightSite.append(a)
-        elif fly_x == arena_middle:
-            middle.append(a)
-    
-    return middle,rightSite,leftSite
-'''
-'''
-#collect center of Mass from Arenas for all Frames and sort the List by the Framenumber
-def collectArenasFromAllFrames (imObjData):
-    allArenas=list()
-    ArenaC = 0 
-    for imgObj in imObjData:
-        if imgObj["name"] == 'arena':
-            frameNumber = int(imObjData[0][0:-3])
-            x_CM = arenaList[ArenaC]['centerOfMass'][0]
-            y_CM = arenaList[ArenaC]['centerOfMass'][1]
-            Arena_centerOfMass = ((x_CM, y_CM))
-            allArenas.append(frameNumber + str (ArenaC) + Arena_centerOfMass)
-        ArenaC += 1
-    allArenas.sort(key = attrgetter(frameNumber), reverse = True)
-    return allArenas
-'''
-'''
-# 1. split 'allArenas' List in Lists of Arenas per Frame
-
-ArenasInFrame_= [[] for a in allArenas]
-i=0
-for Frame in allArenas:
-    if frameNumber==i:
-        ArenasInFrame_[i].append(Frame)
-    allArenas.remove(Frame) # remove entry from List after appending it to the new List
-    i += 1
-return ArenasInFrame_[i]
-
-
-
-# 2. sort the first frame by x and y coordniates: 
-# 2.1 select in each iteration of the for loop the smallest centerofMass from each List, put it in List and delet it from previous List
-
-
-
-
-'''
-
-# middle    = list()
-# leftSite  = list()
-# rightSite = list()
-
-
-
-'''
-arenaC    = 0
-for assignedFlies in f2a_assignment:
-    for fly in assignedFlies:
-        fly_x     = flyList[fly]['centerOfMass'][0]
-        arena_xCM = arenaList[arenaC]['centerOfMass'][0]
-        outputStr = "Arena No " + str(arenaC) + " encompasses fly No " + str(fly) + '. The fly is @ x = ' + str(fly_x) + '. The arena mid line is @ x= ' + str(arena_xCM) +"."
-        if fly_x < (arena_xCM/2.0):
-            outputStr += "The fly is on the left side."
-        elif fly_x > (arena_xCM/2.0):
-            outputStr += "The fly is on the right side."
-        elif fly_x == (arena_xCM/2.0):
-            outputStr += "The fly is in the middle."
-        
-        print(outputStr)
-        arenaC +=1
-
-plotRecognisedImgObjBoundBoxes(flyList,arenaList)
-'''
-
+fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)         

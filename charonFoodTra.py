@@ -131,23 +131,40 @@ class readCharonFood54():
         # convert text data 2 img object dictionaries
         self.convertRecordingtoListDict()
 
-    #def assingFly2Arena(self): #
-        #imObjectVal2imObjDict.get('name')
-     #   imObjName = objectValList[0]
-      #  flyId=0
-       # for flyId in imObjectVal2imObjDict:
-        #    if imObjName == 'fly':
-         #       flyPosition = imObjectVal2imObjDict.get('centerOfMass')
-          #  flyId += 1
-           # return flyPosition
-            
-        #ArenaId=0
-        #for ArenaId in imObjectVal2imObjDict:
-        #    if imObjName == 'Arena':
-         #       ArenaPosition = imObjectVal2imObjDict.get('boundingBoxCoordinates')
-          #  ArenaId += 1
-           # return ArenaPosition
+import matplotlib.path as mpath
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+from matplotlib.collections import PatchCollection
+class plotCharonFood:
+    def __init__(self):
+        pass
+
+    def boundingBox2MPLrect(self,boundingBox,edgeColor, labelStr = ""):
+        # Bounding box of an image object is ymin,xmin,ymax,xmax
+        # also the y axis is inverse
+        # matplotlib patches expects xmin and ymin plus width and height of the box
+
+        # add a rectangle
+        rect = mpatches.Rectangle((boundingBox[1],boundingBox[0]),boundingBox[3]-boundingBox[1],boundingBox[2]-boundingBox[0],
+                                edgecolor = edgeColor, fill=False,label=labelStr,linewidth=1)
+        return rect
+
+    def mplRects4ImgObjList(self,imgObjList, edgeColor='g', labelTag='imgObj'):
+        imgObjRects = list()
+        imgObjC = 0
+        for imgObj in imgObjList:
+            imgObjRects.append(self.boundingBox2MPLrect(imgObj['boundingBox'],edgeColor, labelTag +'_'+str(imgObjC)))
+            imgObjC += 1
+        return imgObjRects
+
+    def plotRecognisedImgObjBoundBoxes(self,arenaList,flyList):
+        objectRects  = self.mplRects4ImgObjList(flyList,edgeColor=[0, 0, 1],labelTag ='fly')
+        objectRects += self.mplRects4ImgObjList(arenaList,edgeColor= [1,0,0], labelTag ='arena')
         
-       # if flyPosition >= boundingBoxCoordinates[0,1] and flyPosition <= boundingBoxCoordinates[2,3]:
-        #    return flyId, ArenaId 
-    
+        fig, ax = plt.subplots()
+
+        for patch in objectRects:
+            ax.add_patch(patch)
+        plt.axis('equal')
+        plt.show()
