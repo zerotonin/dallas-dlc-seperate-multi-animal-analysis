@@ -101,7 +101,6 @@ def sortAllArenas(frameListWOframeNumber,template):
     return sortedList
     '''
 
-    pass
 
 
 '''
