@@ -109,4 +109,4 @@ fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)
 fAA.getMedianArenas()
 
 sortedFlies = sortFlies2Arena4Video(video_fly,fAA.medArenaList)
-plotObj.plotRecognisedImgObjBoundBoxes(fAA.medArenaList,flyList)
+plotObj.plotFlyAssignmentControll(fAA.medArenaList,sortedFlies)
