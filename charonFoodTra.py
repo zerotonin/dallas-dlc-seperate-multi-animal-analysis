@@ -136,6 +136,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
+from matplotlib import cm
 class plotCharonFood:
     def __init__(self):
         pass
@@ -166,5 +167,25 @@ class plotCharonFood:
 
         for patch in objectRects:
             ax.add_patch(patch)
+        plt.axis('equal')
+        plt.show()
+
+    def plotFlyAssignmentControll(self,arenaList,videoFly):
+        # colormap
+        plasmaCM  = cm.get_cmap('plasma', 54)
+        plasmaCol = plasmaCM.colors
+        # make arenas
+        objectRects = self.mplRects4ImgObjList(arenaList,edgeColor= [0.5,0.5,0.5], labelTag ='arena')
+        # figure window
+        fig, ax = plt.subplots()
+        # add arena patches
+        for patch in objectRects:
+            ax.add_patch(patch)
+        # add flies
+        for flyList in videoFly:
+            for i in range(54):
+                if flyList[i] is not None:
+                    ax.add_patch(self.boundingBox2MPLrect(flyList[i]['boundingBox'],edgeColor=plasmaCol[i], labelStr = "fly"))
+
         plt.axis('equal')
         plt.show()

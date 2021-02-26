@@ -67,6 +67,35 @@ def assignFlies2Arenas(arenaList,flyList):
         flyC+=1
     return a2f_assignment,f2a_assignment
 
+def sortFlies2Arena4Frame(flyList,f2a_assignment):
+    temp = list()
+    for assignment in f2a_assignment:
+        print(assignment)
+        if assignment == []:
+            temp.append(None)
+        else:
+            temp.append(flyList[assignment[0]])
+    return temp
+
+def sortFlies2Arena4Video(video_fly,medArenaList):
+    sortedFlyList = list()
+    for flyList in video_fly:         
+        a2f_assignment,f2a_assignment =assignFlies2Arenas(medArenaList,flyList)
+        sortedFlyList.append(sortFlies2Arena4Frame(flyList,f2a_assignment))
+    return sortedFlyList
+
+        
+
+def splitImgObjTypes4Video(imObjData):
+    video_arena  = list()
+    video_fly    = list()
+    video_marker = list()
+    for frame in paul.imObjData:
+        arenaList,flyList,markerList = splitImgObjectTypes(frame[1::])
+        video_arena.append(arenaList)
+        video_fly.append(flyList)
+        video_marker.append(markerList)
+    return video_arena,video_fly,video_marker
 
 
 paul= readCharonFood54('2020-10-27__14_52_10_blueCS8g6d_greenblue_Light.tra') # init of reader object with file position
@@ -74,11 +103,10 @@ plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
 reload(foodArenaAnalysis)
 
-video_arena = list()
-for frame in paul.imObjData:
-    arenaList,flyList,markerList = splitImgObjectTypes(frame[1::])
-    video_arena.append(arenaList)
+video_arena,video_fly,video_marker = splitImgObjTypes4Video(paul.imObjData)
 
 fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)
-fAA.getMedianArenas()         
-plotObj.plotRecognisedImgObjBoundBoxes(fAA.medArenaList,flyList)
+fAA.getMedianArenas()
+
+sortedFlies = sortFlies2Arena4Video(video_fly,fAA.medArenaList)
+plotObj.plotFlyAssignmentControll(fAA.medArenaList,sortedFlies)
