@@ -1,113 +1,69 @@
 from charonFoodTra import readCharonFood54
 from charonFoodTra import plotCharonFood
-from tqdm          import tqdm
-import foodArenaAnalysis
-from importlib import reload
-import numpy as np
-import foodArenaAnalysis
-import numpy as np
-from scipy.optimize import linear_sum_assignment
-#from importlib import reload 
-
-
-
-
-def splitImgObjectTypes(frameListWOframeNumber):
-    '''
-    This function splits the arena, markers, and flies into 3 different lists.
-
-    !WARNING! The frameList must not include the frameNumber
-    '''
-    #preallocation
-    flyList    = list()
-    arenaList  = list()
-    markerList = list()
-    # transverse all image objects and append to according list
-    for imgObj in frameListWOframeNumber:
-        if imgObj["name"] == 'fly':
-            flyList.append(imgObj)
-        elif imgObj["name"] == 'arena':
-            arenaList.append(imgObj)
-        elif imgObj["name"] == 'marker':
-            markerList.append(imgObj)
-        else:
-            raise ValueError("Found unexpected name in image object: " + str(imgObj["name"] ))
-    
-    return arenaList,flyList,markerList
-
-def assignFlies2Arenas(arenaList,flyList):
-    '''
-    This function creates two lists one with the assignment fly to arena and
-    the inverse arena to fly.
-    '''
-    #initialize fly counter
-    flyC = 0
-    # initialize return values as lists of empty lists with the respective length
-    a2f_assignment = [[] for a in flyList]
-    f2a_assignment = [[] for a in arenaList]
-    #transverse all flies
-    for fly in flyList:
-        #initialize arena counter
-        arenaC = 0
-        # transverse all arenas
-        for arena in arenaList:
-            # shorthands
-            fly_y,fly_x = fly['centerOfMass']
-            arena_y0, arena_x0, arena_y1, arena_x1 = arena['boundingBox']
-            # check if flys center of mass is inside the arena bounding box
-            if  fly_x >= arena_x0 and fly_x <= arena_x1 and fly_y >= arena_y0 and fly_y <= arena_y1:
-                # append the correct fly indice to the arena list
-                f2a_assignment[arenaC].append(flyC)
-                # append the arena indice to the fly list
-                a2f_assignment[flyC].append(arenaC)
-                
-                break
-            #increase arena counter
-            arenaC +=1
-        #increase fly counter
-        flyC+=1
-    return a2f_assignment,f2a_assignment
-
-def sortFlies2Arena4Frame(flyList,f2a_assignment):
-    temp = list()
-    for assignment in f2a_assignment:
-        if assignment == []:
-            temp.append(None)
-        else:
-            temp.append(flyList[assignment[0]])
-    return temp
-
-def sortFlies2Arena4Video(video_fly,medArenaList):
-    sortedFlyList = list()
-    for flyList in tqdm(video_fly,desc='assign flies to arenas'):         
-        a2f_assignment,f2a_assignment =assignFlies2Arenas(medArenaList,flyList)
-        sortedFlyList.append(sortFlies2Arena4Frame(flyList,f2a_assignment))
-    return sortedFlyList
-
-        
-
-def splitImgObjTypes4Video(imObjData):
-    video_arena  = list()
-    video_fly    = list()
-    video_marker = list()
-    for frame in paul.imObjData:
-        arenaList,flyList,markerList = splitImgObjectTypes(frame[1::])
-        video_arena.append(arenaList)
-        video_fly.append(flyList)
-        video_marker.append(markerList)
-    return video_arena,video_fly,video_marker
+from foodArenaAnalysis import flyAnalysis
+from importlib import reload 
+from tqdm import tqdm
+import numpy as np 
 
 
 paul= readCharonFood54('2020-10-27__14_52_10_blueCS8g6d_greenblue_Light.tra') # init of reader object with file position
 plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
-reload(foodArenaAnalysis)
-print('reading done')
-video_arena,video_fly,video_marker = splitImgObjTypes4Video(paul.imObjData)
 
-fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)
-fAA.getMedianArenas()
-print('arena sorting done')
+#reload(flyAnalysis)
+fA = flyAnalysis(paul.imObjData)
+fA.run()
 
-sortedFlies = sortFlies2Arena4Video(video_fly,fAA.medArenaList)
-plotObj.plotFlyAssignmentControll(fAA.medArenaList,sortedFlies,1000)
+sortedFlyList = fA.sortedFlyList
+medArenaList  = fA.medArenaList
+
+
+def getRelativePos(pos,arenaBox):
+    posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
+    posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
+    return np.array((posY,posX)) 
+
+frameNo = len(sortedFlyList)
+trajectories = list()
+sides  = list()
+for flyI in range(54):
+    flyTraj  = np.ones(shape=(frameNo,2))
+    flySides =  np.ones(shape=(frameNo,1))
+    arenaBox = np.array(medArenaList[flyI]['boundingBox'])
+    arenaCenter = np.array(medArenaList[flyI]['centerOfMass'])
+    for frameI in tqdm(range(frameNo),desc='analyse descisions'):
+        if sortedFlyList[frameI][flyI] != None:
+            pos    = np.array(sortedFlyList[frameI][flyI]['centerOfMass'])
+            relPos = getRelativePos(pos,arenaBox)
+            flyTraj[frameI,:] = relPos
+            if relPos[1] > 0.55:
+                flySides[frameI] = 1
+            elif relPos[1] < 0.45:
+                flySides[frameI] = -1
+            else:
+                flySides[frameI] = 0
+        else:
+            flyTraj[frameI,:] = np.array((np.nan,np.nan))
+            flySides[frameI]  = np.nan
+
+    trajectories.append(flyTraj)
+    sides.append(flySides)
+
+fig = plt.figure()
+plt.scatter(trajectories[23][:,1],trajectories[23][:,0],c= np.arange(36002))   
+plt.plot([0.45,0.45],[0,1],'k--')    
+plt.plot([0.55,0.55],[0,1],'k--')  
+plt.colorbar() 
+
+fig = plt.figure()
+plt.plot(sides[23])
+plt.scatter(np.arange(36002),sides[23],c= np.arange(36002)) 
+ax = plt.gca()
+ax.set_yticks([-1,0,1])
+ax.set_yticklabels(['left','middle','right'])
+plt.colorbar() 
+
+plt.show() 
+plt.set<_
+plotObj.plotFlyAssignmentControll(fA.medArenaList,fA.sortedFlyList,1000)
+
