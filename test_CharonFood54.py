@@ -1,5 +1,6 @@
 from charonFoodTra import readCharonFood54
 from charonFoodTra import plotCharonFood
+from tqdm          import tqdm
 import foodArenaAnalysis
 from importlib import reload
 import numpy as np
@@ -70,7 +71,6 @@ def assignFlies2Arenas(arenaList,flyList):
 def sortFlies2Arena4Frame(flyList,f2a_assignment):
     temp = list()
     for assignment in f2a_assignment:
-        print(assignment)
         if assignment == []:
             temp.append(None)
         else:
@@ -79,7 +79,7 @@ def sortFlies2Arena4Frame(flyList,f2a_assignment):
 
 def sortFlies2Arena4Video(video_fly,medArenaList):
     sortedFlyList = list()
-    for flyList in video_fly:         
+    for flyList in tqdm(video_fly,desc='assign flies to arenas'):         
         a2f_assignment,f2a_assignment =assignFlies2Arenas(medArenaList,flyList)
         sortedFlyList.append(sortFlies2Arena4Frame(flyList,f2a_assignment))
     return sortedFlyList
@@ -102,11 +102,12 @@ paul= readCharonFood54('2020-10-27__14_52_10_blueCS8g6d_greenblue_Light.tra') # 
 plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
 reload(foodArenaAnalysis)
-
+print('reading done')
 video_arena,video_fly,video_marker = splitImgObjTypes4Video(paul.imObjData)
 
 fAA = foodArenaAnalysis.foodArenaAnalysis(video_arena)
 fAA.getMedianArenas()
+print('arena sorting done')
 
 sortedFlies = sortFlies2Arena4Video(video_fly,fAA.medArenaList)
-plotObj.plotFlyAssignmentControll(fAA.medArenaList,sortedFlies)
+plotObj.plotFlyAssignmentControll(fAA.medArenaList,sortedFlies,1000)

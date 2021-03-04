@@ -1,3 +1,4 @@
+from tqdm import tqdm
 class readCharonFood54():
     def __init__(self,filePosition):
 
@@ -115,7 +116,7 @@ class readCharonFood54():
         # preallocation of an empty list
         self.imObjData = list()
         # for loop transverses each line of the file
-        for line in self.rawTextData:
+        for line in tqdm(self.rawTextData,desc = 'converting text to dict'):
             # each line is read and converted into an image object dictionary list and appended to self.imgObjData
             self.imObjData.append(self.readImObjPerLine(line))
 
@@ -137,6 +138,7 @@ import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib import cm
+import itertools
 class plotCharonFood:
     def __init__(self):
         pass
@@ -170,7 +172,7 @@ class plotCharonFood:
         plt.axis('equal')
         plt.show()
 
-    def plotFlyAssignmentControll(self,arenaList,videoFly):
+    def plotFlyAssignmentControll(self,arenaList,videoFly,step =1):
         # colormap
         plasmaCM  = cm.get_cmap('plasma', 54)
         plasmaCol = plasmaCM.colors
@@ -182,7 +184,7 @@ class plotCharonFood:
         for patch in objectRects:
             ax.add_patch(patch)
         # add flies
-        for flyList in videoFly:
+        for flyList in itertools.islice(videoFly,0,None,step):
             for i in range(54):
                 if flyList[i] is not None:
                     ax.add_patch(self.boundingBox2MPLrect(flyList[i]['boundingBox'],edgeColor=plasmaCol[i], labelStr = "fly"))

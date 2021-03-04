@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from operator import attrgetter
-
+from tqdm import tqdm
 class foodArenaAnalysis:
     def __init__(self,videoFrameObjects):
         # This is a list of charonfood54  arena 
@@ -65,6 +65,13 @@ class foodArenaAnalysis:
         # run min cost perfect matching -> Hungarian
         row_ind, col_ind = linear_sum_assignment(adjMat)
         # return  sorted list2 sort
+        if len(list2sort) != 54:
+            costList = adjMat[row_ind, col_ind]
+            # checking the arena that could not have been assigned as it was not detected in the first place
+            ind = np.where(costList == 0.)
+            dummy = {'name': 'arenaDummy', 'centerOfMass': (0., 0.), 'quality': 0.0, 'boundingBox': (np.nan,np.nan,np.nan,np.nan)}
+            for index in ind[0]:
+                list2sort.insert(index,dummy)
         return [list2sort[int(x)] for x in list(col_ind)]
 
     def hungarianSort4Arenas(self,list2sort):
@@ -85,7 +92,7 @@ class foodArenaAnalysis:
     def sortAllArenas(self):
 
         self.sortedArenaList = list()
-        for frame in self.frameObjectList:
+        for frame in tqdm(self.frameObjectList,desc='sorting arenas'):
             self.sortedArenaList.append(self.hungarianSort4Arenas(frame))
     
     def runSorter(self):
@@ -107,67 +114,9 @@ class foodArenaAnalysis:
                 boundingBox.append(frameList[arenaNum]['boundingBox'])
 
             arenaMedDict['name'] = 'arena'
-            arenaMedDict['centerOfMass'] = np.median(np.array(centerOfMass),0)
-            arenaMedDict['quality'] = np.median(np.array(quality),0)
-            arenaMedDict['boundingBox'] = np.median(np.array(boundingBox),0)
+            arenaMedDict['centerOfMass'] = np.nanmedian(np.array(centerOfMass),0)
+            arenaMedDict['quality'] = np.nanmedian(np.array(quality),0)
+            arenaMedDict['boundingBox'] = np.nanmedian(np.array(boundingBox),0)
 
             self.medArenaList.append(arenaMedDict)
 
-
-
-
-        '''  
-        frame = 0
-        for frame in frameListWOframeNumber:
-            currentArenaList,flyList,markerList = splitImgObjectTypes(frameListWOframeNumber[frame][1::])
-            #return currentArenaList
-
-            for arenas in currentArenaList:
-                if len(currentArenaList) < 54:
-                    newList = currentArenaList.append(np.inf,np.inf)
-                    sortedList = self.hungarianSort4Arenas(template, newList)
-                    return sortedList
-
-                elif len(currentArenaList) == 54:
-                    sortedList = hungarianSort4Arenas(template, currentArenaList)
-                    return sortedList
-        '''
-
-    '''
-    if len(currentArenaList) < 54:
-        (np.inf,np.inf)
-
-        sortedArenas = hungarianSort4Arenas(template,currentArenaList)
-    return sortedList
-    '''
-
-
-
-'''
-# Row Reduction
-def RowReduction (VN_List):
-    minVal=list()
-    for VN in VN_List:
-        F1AN = VN [0] # Frame1ArenaNumber
-        F2AN = VN [1] # Frame2ArenaNumber
-        VeNo = VN [2] # Distance
-        if F1AN == 1:
-            a = min(VN[2])
-            minVal.append(a)
-        return minVal
-        
-'''   
-
-#VN_ArenaList1 = getVectorNorm(arenaList1)
-#VN_ArenaList1 = getVectorNorm(arenaList2)
-#FirstFrameSorted = sorted(VN_ArenaList1)
-
-#print(FirstFrameSorted)
-
-'''
-VN_ArenaList1 = getVectorNorm(arenaList1)   #warum wird hier nach dem letzten attribut gesorted und bei dem oberen nach dem ersten?
-VN_ArenaList1 = getVectorNorm(arenaList2)
-sorted(VN_ArenaList1)
- 
-VN_ArenaList1
-'''
