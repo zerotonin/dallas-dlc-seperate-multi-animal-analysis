@@ -235,10 +235,10 @@ class decisionAnalysis:
         self.sigmaGauss      = 10
         self.relTrajectories = list()
         self.sides           = list()
-        self.arenaHeightM    = 20
-        self.arenaWidthMM    = 10
+        self.arenaHeightM    = 14
+        self.arenaWidthMM    = 17
 
-   def getRelativePos(self,pos,arenaBox):
+    def getRelativePos(self,pos,arenaBox):
         posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
         posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
         return np.array((posY,posX))
@@ -299,5 +299,7 @@ class decisionAnalysis:
             tra[:,coordI] = gaussian_filter1d(tra[:,coordI], self.sigmaGauss)
         return tra
     
-    def pixel2mm(tra)
+    def pixel2mm(tra):
+        pass
+
 
