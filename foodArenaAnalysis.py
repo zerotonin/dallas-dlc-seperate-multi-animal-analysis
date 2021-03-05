@@ -222,3 +222,82 @@ class flyAnalysis:
             self.video_marker.append(markerList)
         
 
+from scipy.ndimage import gaussian_filter1d
+from trajectory_correcter import trajectory_corrector
+
+class decisionAnalysis:
+    def __init__(self,sortedFlyList,medArenaList):
+        self.neutralZone     = (0.45,.55)
+        self.sortedFlyList   = sortedFlyList
+        self.medArenaList    = medArenaList
+        self.frameNo         = len(self.sortedFlyList)
+        self.arenaNo         = 54
+        self.sigmaGauss      = 10
+        self.relTrajectories = list()
+        self.sides           = list()
+        self.arenaHeightM    = 20
+        self.arenaWidthMM    = 10
+
+   def getRelativePos(self,pos,arenaBox):
+        posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
+        posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
+        return np.array((posY,posX))
+    
+    def getSide(self,flyX):
+        if flyX < self.neutralZone[0]:
+            return -1
+        elif flyX > self.neutralZone[1]:
+            return 1
+        else:
+            return 0
+
+    def compileTra(self,fly,arenaBox):
+        flyTraj  = np.ones(shape=(self.frameNo,2))
+        for frameI in range(self.frameNo):
+            if fly[frameI] != None:
+                pos    = np.array(fly[frameI]['centerOfMass'])
+                relPos = self.getRelativePos(pos,arenaBox)
+                flyTraj[frameI,:] = relPos
+            else:
+                flyTraj[frameI,:] = np.array((np.nan,np.nan))
+        
+        return flyTraj
+        
+     
+    def flyWiseAna(self):
+        self.relTrajectories = list()
+        self.sides  = list()
+        for flyI in tqdm(range(self.arenaNo),desc='analyse descisions'): 
+            # compile the trajectory and fill in nan for none detection
+            flyTraj = self.compileTra([x[flyI] for x in self.sortedFlyList],np.array(self.medArenaList[flyI]['boundingBox']))
+            # interpolate non detections and smooth trajectory
+            flyTraj = self.flyWisePostHoc(flyTraj)
+            # save trajectory
+            self.relTrajectories.append(flyTraj)
+            # calculate side signal and save
+            self.sides.append(self.sideAnaFlyWise(flyTraj))
+    
+    def sideAnaFlyWise(self,flyTra):
+        sides = list()
+        for pos in flyTra:
+            sides.append(self.getSide(pos[1]))
+        return sides
+
+    
+    def flyWisePostHoc(self, trajectory):
+        # make trajectory corrector object
+        TC = trajectory_corrector(trajectory,np.isnan(np.sum(trajectory,1))) 
+        # interpolate artifacts
+        TC.interpolateOverArtifacts()
+        # smooth trajectory
+        trajectory = self.smoothTraGauss(TC.tra)
+        
+        return trajectory
+
+    def smoothTraGauss(self,tra,):
+        for coordI in range(tra.shape[1]):
+            tra[:,coordI] = gaussian_filter1d(tra[:,coordI], self.sigmaGauss)
+        return tra
+    
+    def pixel2mm(tra)
+

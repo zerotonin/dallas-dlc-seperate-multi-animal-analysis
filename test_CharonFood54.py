@@ -1,53 +1,24 @@
 from charonFoodTra import readCharonFood54
 from charonFoodTra import plotCharonFood
-from foodArenaAnalysis import flyAnalysis
+import foodArenaAnalysis
 from importlib import reload 
 from tqdm import tqdm
 import numpy as np 
-
+import matplotlib.pyplot as plt             
 
 paul= readCharonFood54('2020-10-27__14_52_10_blueCS8g6d_greenblue_Light.tra') # init of reader object with file position
 plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
 
 #reload(flyAnalysis)
-fA = flyAnalysis(paul.imObjData)
+fA = foodArenaAnalysis.flyAnalysis(paul.imObjData)
 fA.run()
+reload(foodArenaAnalysis)
+dA = foodArenaAnalysis.decisionAnalysis(fA.sortedFlyList,fA.medArenaList)
+dA.flyWiseAna()
 
-sortedFlyList = fA.sortedFlyList
-medArenaList  = fA.medArenaList
-
-
-def getRelativePos(pos,arenaBox):
-    posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
-    posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
-    return np.array((posY,posX)) 
-
-frameNo = len(sortedFlyList)
-trajectories = list()
-sides  = list()
-for flyI in range(54):
-    flyTraj  = np.ones(shape=(frameNo,2))
-    flySides =  np.ones(shape=(frameNo,1))
-    arenaBox = np.array(medArenaList[flyI]['boundingBox'])
-    arenaCenter = np.array(medArenaList[flyI]['centerOfMass'])
-    for frameI in tqdm(range(frameNo),desc='analyse descisions'):
-        if sortedFlyList[frameI][flyI] != None:
-            pos    = np.array(sortedFlyList[frameI][flyI]['centerOfMass'])
-            relPos = getRelativePos(pos,arenaBox)
-            flyTraj[frameI,:] = relPos
-            if relPos[1] > 0.55:
-                flySides[frameI] = 1
-            elif relPos[1] < 0.45:
-                flySides[frameI] = -1
-            else:
-                flySides[frameI] = 0
-        else:
-            flyTraj[frameI,:] = np.array((np.nan,np.nan))
-            flySides[frameI]  = np.nan
-
-    trajectories.append(flyTraj)
-    sides.append(flySides)
+trajectories = dA.relTrajectories
+sides        = dA.sides 
 
 fig = plt.figure()
 plt.scatter(trajectories[23][:,1],trajectories[23][:,0],c= np.arange(36002))   
@@ -64,6 +35,6 @@ ax.set_yticklabels(['left','middle','right'])
 plt.colorbar() 
 
 plt.show() 
-plt.set<_
+plt.set
 plotObj.plotFlyAssignmentControll(fA.medArenaList,fA.sortedFlyList,1000)
 
