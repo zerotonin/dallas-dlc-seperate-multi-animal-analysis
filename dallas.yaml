@@ -16,6 +16,7 @@ dependencies:
 - python=3.7
 - pandas   
 - ipython
+- tqdm
 - pip   
 - pip:
     - vidstab[cv2]
