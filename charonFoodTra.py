@@ -190,4 +190,4 @@ class plotCharonFood:
                     ax.add_patch(self.boundingBox2MPLrect(flyList[i]['boundingBox'],edgeColor=plasmaCol[i], labelStr = "fly"))
 
         plt.axis('equal')
-        plt.show()
+        #plt.show()
