@@ -233,10 +233,11 @@ class decisionAnalysis:
         self.frameNo         = len(self.sortedFlyList)
         self.arenaNo         = 54
         self.sigmaGauss      = 10
-        self.relTrajectories = list()
-        self.sides           = list()
-        self.arenaHeightM    = 14
+        self.arenaHeightMM   = 14
         self.arenaWidthMM    = 17
+        self.relTrajectories = list()
+        self.mmTrajectories  = list()
+        self.sides           = list()
 
     def getRelativePos(self,pos,arenaBox):
         posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
@@ -266,6 +267,7 @@ class decisionAnalysis:
      
     def flyWiseAna(self):
         self.relTrajectories = list()
+        self.mmTrajectories = list()
         self.sides  = list()
         for flyI in tqdm(range(self.arenaNo),desc='analyse descisions'): 
             # compile the trajectory and fill in nan for none detection
@@ -276,6 +278,8 @@ class decisionAnalysis:
             self.relTrajectories.append(flyTraj)
             # calculate side signal and save
             self.sides.append(self.sideAnaFlyWise(flyTraj))
+            # convert from pixel to mm | pixelTra is in tensorFlow format (y,x) | mmTra is (x,y)
+            self.mmTrajectories.append(self.pixel2mm(flyTraj))
     
     def sideAnaFlyWise(self,flyTra):
         sides = list()
@@ -299,7 +303,13 @@ class decisionAnalysis:
             tra[:,coordI] = gaussian_filter1d(tra[:,coordI], self.sigmaGauss)
         return tra
     
-    def pixel2mm(tra):
-        pass
+    def pixel2mm(self,pixTra): 
+        # pixelTra is in tensorFlow format (y,x) 
+        # mmTra is (x,y)
+        mmTra = np.copy(pixTra)
+        mmTra[:,1] = mmTra[:,1]*self.arenaWidthMM
+        mmTra[:,0] = mmTra[:,0]*self.arenaHeightMM
+        return np.fliplr(mmTra)
+    
 
 
