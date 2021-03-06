@@ -18,23 +18,41 @@ dA = foodArenaAnalysis.decisionAnalysis(fA.sortedFlyList,fA.medArenaList)
 dA.flyWiseAna()
 
 trajectories = dA.relTrajectories
+mmTra        = dA.mmTrajectories
 sides        = dA.sides 
+flyI         = 5
 
+
+titleStr = 'fly #'+str(flyI)+": "
 fig = plt.figure()
-plt.scatter(trajectories[23][:,1],trajectories[23][:,0],c= np.arange(36002))   
-plt.plot([0.45,0.45],[0,1],'k--')    
-plt.plot([0.55,0.55],[0,1],'k--')  
+
+plt.scatter(trajectories[flyI][:,1],trajectories[flyI][:,0],c= np.arange(36002))   
+plt.plot([dA.neutralZone[0],dA.neutralZone[0]],[0,1],'k--')    
+plt.plot([dA.neutralZone[1],dA.neutralZone[1]],[0,1],'k--')  
+ax = plt.gca()
+ax.set_title(titleStr+'relative trajectory', fontsize=10)
 plt.colorbar() 
 
 fig = plt.figure()
-plt.plot(sides[23])
-plt.scatter(np.arange(36002),sides[23],c= np.arange(36002)) 
+plt.scatter(mmTra[flyI][:,0],mmTra[flyI][:,1],c= np.arange(36002))   
+plt.plot([dA.neutralZone[0]*dA.arenaWidthMM,dA.neutralZone[0]*dA.arenaWidthMM],[0,dA.arenaHeightMM],'k--')    
+plt.plot([dA.neutralZone[1]*dA.arenaWidthMM,dA.neutralZone[1]*dA.arenaWidthMM],[0,dA.arenaHeightMM],'k--')  
+ax = plt.gca()
+ax.set_aspect('equal', 'box')
+ax.set_title(titleStr+'mm trajectory', fontsize=10)
+plt.colorbar() 
+
+fig = plt.figure()
+plt.plot(sides[flyI])
+plt.scatter(np.arange(36002),sides[flyI],c= np.arange(36002)) 
 ax = plt.gca()
 ax.set_yticks([-1,0,1])
 ax.set_yticklabels(['left','middle','right'])
+ax.set_title(titleStr+'decisions', fontsize=10)
 plt.colorbar() 
 
-plt.show() 
-plt.set
-plotObj.plotFlyAssignmentControll(fA.medArenaList,fA.sortedFlyList,1000)
+plotObj.plotFlyAssignmentControll(fA.medArenaList,fA.sortedFlyList,2000)
+ax = plt.gca()
+ax.set_title('entire movie every 2000th frame', fontsize=10)
 
+plt.show()
