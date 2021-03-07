@@ -233,8 +233,8 @@ class decisionAnalysis:
         self.frameNo         = len(self.sortedFlyList)
         self.arenaNo         = 54
         self.sigmaGauss      = 10
-        self.arenaHeightMM   = 14
-        self.arenaWidthMM    = 17
+        self.arenaHeightMM   = 8
+        self.arenaWidthMM    = 18
         self.relTrajectories = list()
         self.mmTrajectories  = list()
         self.sides           = list()
@@ -245,8 +245,15 @@ class decisionAnalysis:
         return np.array((posY,posX))
     
     def getSide(self,flyX):
+        #  0 ->  1: -1
+        #  1 ->  0:  1
+        #  0 -> -2:  2
+        # -2 ->  0: -2
+        # -2 ->  1: -3
+        #  1 -> -2:  3
+
         if flyX < self.neutralZone[0]:
-            return -1
+            return -2
         elif flyX > self.neutralZone[1]:
             return 1
         else:
@@ -311,5 +318,12 @@ class decisionAnalysis:
         mmTra[:,0] = mmTra[:,0]*self.arenaHeightMM
         return np.fliplr(mmTra)
     
+    def countSides(self,sides):
+       left   = len([num for num in sides if num == -2])
+       middle = len([num for num in sides if num ==  0])
+       right  = len([num for num in sides if num ==  1])
+       return (left,middle,right)
+
+    def sideAnalysis()
 
 
