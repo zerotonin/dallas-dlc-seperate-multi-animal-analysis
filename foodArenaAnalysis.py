@@ -65,14 +65,19 @@ class arenaAnalysis:
         adjMat = self.getArenaAdjMat(templateList,list2sort)
         # run min cost perfect matching -> Hungarian
         row_ind, col_ind = linear_sum_assignment(adjMat)
-        # return  sorted list2 sort
+        # return sorted list2 sort
+        # for frames with numbers of arenas that are not 54 the adjMat is converted to a list 
+        # to identify the missing arena by its index number
         if len(list2sort) != 54:
             costList = adjMat[row_ind, col_ind]
             # checking the arena that could not have been assigned as it was not detected in the first place
+            # checking the list for indices of 0. . np.where returns indices where the entry is 0.
             ind = np.where(costList == 0.)
             dummy = {'name': 'arenaDummy', 'centerOfMass': (0., 0.), 'quality': 0.0, 'boundingBox': (np.nan,np.nan,np.nan,np.nan)}
+            # iterating through each index of the list where ind is 0 and appending a DummyArena with 0.0 and NaN as values for Cm,q and BB
             for index in ind[0]:
                 list2sort.insert(index,dummy)
+            # warum col_ind???
         return [list2sort[int(x)] for x in list(col_ind)]
 
     def hungarianSort4Arenas(self,list2sort):
@@ -88,11 +93,12 @@ class arenaAnalysis:
                     template = currentArenaList
                     # This function sorts the arenas in western reading direction
                     self.templateArenaList = self.sortArenaList(template)
-                    return
+                    return # muss hier nicht return self.templateArenaList hin?
         
     def sortAllArenas(self):
 
         self.sortedArenaList = list()
+        # tqdm is used to show a progress meter which is labeled by assigning a name to 'desc'
         for frame in tqdm(self.frameObjectList,desc='sorting arenas'):
             self.sortedArenaList.append(self.hungarianSort4Arenas(frame))
     
@@ -113,7 +119,7 @@ class arenaAnalysis:
                 quality.append(frameList[arenaNum]['quality'])
                 centerOfMass.append(frameList[arenaNum]['centerOfMass'])
                 boundingBox.append(frameList[arenaNum]['boundingBox'])
-
+# warum steht überall eine 0 dahinter?
             arenaMedDict['name'] = 'arena'
             arenaMedDict['centerOfMass'] = np.nanmedian(np.array(centerOfMass),0)
             arenaMedDict['quality'] = np.nanmedian(np.array(quality),0)
@@ -195,6 +201,10 @@ class flyAnalysis:
         return a2f_assignment,f2a_assignment
 
     def sortFlies2Arena4Frame(self,flyList,f2a_assignment):
+        '''
+        This function returns a list with 'None' for all empty 
+        Arenas and othwise the correct previous assignment
+        '''
         temp = list()
         for assignment in f2a_assignment:
             if assignment == []:
@@ -204,6 +214,9 @@ class flyAnalysis:
         return temp
 
     def sortFlies2Arena4Video(self):
+        '''
+        This function returns a List with assigned flies to the medArena of a Video 
+        '''
         self.sortedFlyList = list()
         for flyList in tqdm(self.video_fly,desc='assign flies to arenas'):         
             a2f_assignment,f2a_assignment =self.assignFlies2Arenas(self.medArenaList,flyList)
@@ -212,6 +225,9 @@ class flyAnalysis:
             
 
     def splitImgObjTypes4Video(self):
+        '''
+        This function splits the image Objects of a video into 3 lists
+        '''
         self.video_arena  = list()
         self.video_fly    = list()
         self.video_marker = list()
@@ -240,6 +256,9 @@ class decisionAnalysis:
         self.sides           = list()
 
     def getRelativePos(self,pos,arenaBox):
+        '''
+        
+        '''
         posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
         posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
         return np.array((posY,posX))
@@ -324,6 +343,7 @@ class decisionAnalysis:
        right  = len([num for num in sides if num ==  1])
        return (left,middle,right)
 
-    def sideAnalysis()
+    def sideAnalysis():
+        pass
 
 
