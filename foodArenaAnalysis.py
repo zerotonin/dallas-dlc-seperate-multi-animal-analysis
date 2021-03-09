@@ -77,7 +77,6 @@ class arenaAnalysis:
             # iterating through each index of the list where ind is 0 and appending a DummyArena with 0.0 and NaN as values for Cm,q and BB
             for index in ind[0]:
                 list2sort.insert(index,dummy)
-            # warum col_ind???
         return [list2sort[int(x)] for x in list(col_ind)]
 
     def hungarianSort4Arenas(self,list2sort):
@@ -118,7 +117,6 @@ class arenaAnalysis:
                 quality.append(frameList[arenaNum]['quality'])
                 centerOfMass.append(frameList[arenaNum]['centerOfMass'])
                 boundingBox.append(frameList[arenaNum]['boundingBox'])
-# warum steht überall eine 0 dahinter?
             arenaMedDict['name'] = 'arena'
             arenaMedDict['centerOfMass'] = np.nanmedian(np.array(centerOfMass),0)
             arenaMedDict['quality'] = np.nanmedian(np.array(quality),0)
@@ -171,7 +169,7 @@ class flyAnalysis:
         This function creates two lists one with the assignment fly to arena and
         the inverse arena to fly.
         '''
-        #initialize fly counter
+        # initialize fly counter
         flyC = 0
         # initialize return values as lists of empty lists with the respective length
         a2f_assignment = [[] for a in flyList]
@@ -258,7 +256,7 @@ class decisionAnalysis:
         '''
         
         '''
-        posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) #woher kommt arenaBox?
+        posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
         posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
         return np.array((posY,posX))
     
@@ -271,7 +269,7 @@ class decisionAnalysis:
         #  1 -> -2:  3
 
         if flyX < self.neutralZone[0]:
-            return -2   # warum -2?
+            return -2   
         elif flyX > self.neutralZone[1]:
             return 1
         else:
@@ -286,7 +284,7 @@ class decisionAnalysis:
         for frameI in range(self.frameNo):
             if fly[frameI] != None:
                 pos    = np.array(fly[frameI]['centerOfMass'])
-                relPos = self.getRelativePos(pos,arenaBox) #arenaBox?
+                relPos = self.getRelativePos(pos,arenaBox) 
                 flyTraj[frameI,:] = relPos
             else:
                 flyTraj[frameI,:] = np.array((np.nan,np.nan))
@@ -340,7 +338,7 @@ class decisionAnalysis:
         return np.fliplr(mmTra)
     
     def countSides(self,sides):
-       left   = len([num for num in sides if num == -2]) # -1??
+       left   = len([num for num in sides if num == -2]) 
        middle = len([num for num in sides if num ==  0])
        right  = len([num for num in sides if num ==  1])
        return (left,middle,right)
@@ -350,5 +348,6 @@ class decisionAnalysis:
 
     def PI (self, left, middle, right):
         if left
+        pass
 
 
