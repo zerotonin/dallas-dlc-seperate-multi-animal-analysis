@@ -93,7 +93,6 @@ class arenaAnalysis:
                     template = currentArenaList
                     # This function sorts the arenas in western reading direction
                     self.templateArenaList = self.sortArenaList(template)
-                    return # muss hier nicht return self.templateArenaList hin?
         
     def sortAllArenas(self):
 
@@ -226,7 +225,7 @@ class flyAnalysis:
 
     def splitImgObjTypes4Video(self):
         '''
-        This function splits the image Objects of a video into 3 lists
+        This function splits the image Objects of one video into 3 lists
         '''
         self.video_arena  = list()
         self.video_fly    = list()
@@ -259,7 +258,7 @@ class decisionAnalysis:
         '''
         
         '''
-        posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) 
+        posY = (pos[0]-arenaBox[0]) / (arenaBox[2]-arenaBox[0]) #woher kommt arenaBox?
         posX = (pos[1]-arenaBox[1]) / (arenaBox[3]-arenaBox[1])
         return np.array((posY,posX))
     
@@ -272,22 +271,25 @@ class decisionAnalysis:
         #  1 -> -2:  3
 
         if flyX < self.neutralZone[0]:
-            return -2
+            return -2   # warum -2?
         elif flyX > self.neutralZone[1]:
             return 1
         else:
             return 0
 
     def compileTra(self,fly,arenaBox):
+        '''
+        This function returns a list with the relative Position of each fly in one frame
+        '''
+        # a list of ones in the shape of: number of rows = number of frame numbers seperated into 2 columns?
         flyTraj  = np.ones(shape=(self.frameNo,2))
         for frameI in range(self.frameNo):
             if fly[frameI] != None:
                 pos    = np.array(fly[frameI]['centerOfMass'])
-                relPos = self.getRelativePos(pos,arenaBox)
+                relPos = self.getRelativePos(pos,arenaBox) #arenaBox?
                 flyTraj[frameI,:] = relPos
             else:
                 flyTraj[frameI,:] = np.array((np.nan,np.nan))
-        
         return flyTraj
         
      
@@ -338,12 +340,15 @@ class decisionAnalysis:
         return np.fliplr(mmTra)
     
     def countSides(self,sides):
-       left   = len([num for num in sides if num == -2])
+       left   = len([num for num in sides if num == -2]) # -1??
        middle = len([num for num in sides if num ==  0])
        right  = len([num for num in sides if num ==  1])
        return (left,middle,right)
 
     def sideAnalysis():
         pass
+
+    def PI (self, left, middle, right):
+        if left
 
 
