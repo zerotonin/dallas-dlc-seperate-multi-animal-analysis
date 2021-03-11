@@ -347,7 +347,8 @@ class decisionAnalysis:
         pass
 
     def PI (self, left, middle, right):
-        if left
         pass
+
+
 
 
