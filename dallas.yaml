@@ -17,6 +17,7 @@ dependencies:
 - pandas   
 - ipython
 - tqdm
+- openpyxl
 - pip   
 - pip:
     - vidstab[cv2]
