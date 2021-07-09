@@ -2,6 +2,7 @@ import cv2,os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from houghDetector import houghDetector 
 
 def getBaseName(filePos):
     fileName = os.path.basename(filePos)
@@ -23,26 +24,36 @@ def getMetaDataDF(fileList):
   
     return pd.DataFrame(metaData,columns=['FilePosition','Date','Time_h','Genotype','Orientation_int','Orientation_str','light'])  
 
-
 # data Path
 path2data = '/media/gwdg-backup/BackUp/Paul_Funnel'
-# get all image files
-fileList = list() 
-for (dirpath, dirnames, filenames) in os. walk(path2data):
-    fileList += [os.path. join(dirpath, file) for file in filenames]
-# derive meta data from file name
-df = getMetaDataDF(fileList)
+newData = False
+if newData:
 
+    # get all image files
+    fileList = list() 
+    for (dirpath, dirnames, filenames) in os. walk(path2data):
+        fileList += [os.path. join(dirpath, file) for file in filenames]
+    # derive meta data from file name
+    df = getMetaDataDF(fileList)
+    df.to_csv(f'{path2data}/imgData.csv',index=False)
+else:
+    df = pd.read_csv(f'{path2data}/imgData.csv')
 
 
 img = cv2.imread(df.iloc[0,0])
+img_blurred= cv2.medianBlur(img,27)
 # color filtering
 darkBlue = (np.array([0,0,70]),np.array([70,70,200]))
-mask = cv2.inRange(img,darkBlue[0],darkBlue[1])
+mask = cv2.inRange(img_blurred,darkBlue[0],darkBlue[1])
 # image erosion-dialation
-kernel = np.ones((7,7), np.uint8)
-mask = cv2.erode(mask, kernel, iterations=1)
-mask = cv2.dilate(mask, kernel, iterations=1)
+kernel = np.ones((10,10), np.uint8)
+maskE = cv2.erode(mask, kernel, iterations=2)
+maskD = cv2.dilate(maskE, kernel, iterations=2)
 
-plt.imshow(mask)
+fig, axList = plt.subplots(2, 2)
+axList = axList.flatten()
+axList[3].imshow(maskD,cmap='gray')
+axList[0].imshow(img)
+axList[1].imshow(img_blurred)
+axList[2].imshow(mask,cmap='gray')
 plt.show()
