@@ -16,19 +16,20 @@ def areYouDoneYet():
             return answer
 
 #%% Read data
-folderName = 'constantLight_noWind_waterAt10_20secDur'
+folderName = 'constantDark_noWind'
 parentPath = '/media/gwdg-backup/BackUp/Bjoern/Experiments/'+folderName
 saveFile   = './'+folderName+'.h5'
 data = list()
 fileList = [x for x in Path(parentPath).rglob('*.h5')]
 for path in tqdm(fileList,desc='analysing...'):
-    done = False
+    done = Falsey
     while done == False:
         bag = BjornAnaGUI.BjornAnaGUI(str(path))
-        data.append(bag.main())
         answer = areYouDoneYet()
         if answer == 'n':
             done = True
+        else:
+            data.append(bag.main())
 
 
 df = pd.DataFrame(data)
