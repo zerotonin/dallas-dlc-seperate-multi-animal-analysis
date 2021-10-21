@@ -22,7 +22,7 @@ saveFile   = './'+folderName+'.h5'
 data = list()
 fileList = [x for x in Path(parentPath).rglob('*.h5')]
 for path in tqdm(fileList,desc='analysing...'):
-    done = Falsey
+    done = False
     while done == False:
         bag = BjornAnaGUI.BjornAnaGUI(str(path))
         answer = areYouDoneYet()
