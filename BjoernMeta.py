@@ -287,6 +287,64 @@ columns=['species', 'adult', 'sex', 'light', 'wind', 'water','id', 'dataType','m
 dfLong = pd.DataFrame(dict(zip(columns,listOLists)))
 dfLong.to_hdf('./BjoernDataMedianCILongInd.h5',key = 'df')
 
+#%%
+df = pd.read_hdf('./BjoernDataMedianCI.h5',key = 'df')
+dataStr = ['psd_H_preStim','psd_H_stim', 'psd_H_resp', 'psd_H_postStim', 
+           'psd_V_preStim','psd_V_stim', 'psd_V_resp', 'psd_V_postStim']
+
+
+speciesList = list() 
+adultList = list()
+sexList = list()
+lightList = list()
+windList = list()
+waterList = list()
+idList = list()
+dataTypeList = list()
+nList = list()
+moveDirList = list()
+frequencyList = np.array([])
+psdMedianList = np.array([])
+upperCIList = np.array([])
+lowerCIList = np.array([])   
+for ind,row in df.iterrows():
+    for dataType in dataStr:
+        dataShortF, direction,dataShortE = dataType.split('_')
+        if direction == 'H':
+            direction = 'horizontal'
+        else:
+            direction = 'vertcial'
+        dataShort = dataShortF+' '+dataShortE
+        if row[dataType+'_medData'] is not None:
+            rowN = row[dataType+'_n']
+            data = row[dataType+'_rawData']
+            index = (data[:,0,0] >=1) & (data[:,0,0] <= 4) 
+            data = data[index,:,:]
+            maxI = np.argmax(data,axis=0)
+            psd  = data[maxI[1,:],1,range(rowN)]   
+            freq = data[maxI[1,:],0,range(rowN)] 
+
+            speciesList += [row['species'] for i in range(rowN)] 
+            adultList += [row['adult'] for i in range(rowN)]
+            sexList += [row['sex'] for i in range(rowN)]
+            lightList += [row['light'] for i in range(rowN)]
+            windList += [row['wind'] for i in range(rowN)]
+            waterList += [row['water'] for i in range(rowN)]
+            idList  += [i for i in range(rowN)]
+            dataTypeList += [dataShort for i in range(rowN)]
+            moveDirList += [direction for i in range(rowN)]
+            nList += [row[dataType+'_n'] for i in range(rowN)]
+            frequencyList = np.append(frequencyList,freq,axis=0)
+            psdMedianList = np.append(psdMedianList,psd,axis=0)
+
+
+listOLists =[speciesList, adultList, sexList, lightList, windList, waterList, 'id',dataTypeList, 
+             moveDirList, nList, frequencyList, psdMedianList] 
+columns=['species', 'adult', 'sex', 'light', 'wind', 'water','id', 'dataType','movement direction',
+         'n', 'best frequency','power spectral density']
+
+dfLong = pd.DataFrame(dict(zip(columns,listOLists)))
+dfLong.to_hdf('./BjoernDataMedianCILongInd4BoxPlotBest.h5',key = 'df')
 
 
 #%%
@@ -309,3 +367,8 @@ const_dark-const_wind:
 2. 2021-09-15__13-13-04 (Med-male)
 '''
 
+#%%
+df = pd.read_hdf('./BjoernDataMedianCI.h5',key = 'df')
+df2 = df[['species', 'adult', 'sex', 'light', 'wind', 'water', 'psd_V_postStim_n']]
+df2 = df2.rename(columns={'psd_V_postStim_n':'n'})
+df2.to_csv('/media/gwdg-backup/BackUp/Bjoern/conditions_n_number.csv')      

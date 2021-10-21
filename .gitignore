@@ -1,14 +1,5 @@
 .gitignore
-__pycache__/videoDataGUI.cpython-37.pyc
-__pycache__/trajectoryAna.cpython-37.pyc
-__pycache__/trajectory_correcter.cpython-37.pyc
-__pycache__/phasmidAnatomy.cpython-37.pyc
-__pycache__/mediaHandler.cpython-37.pyc
-__pycache__/indexTools.cpython-37.pyc
-__pycache__/DLC_reader.cpython-37.pyc
-__pycache__/dallasPlots.cpython-37.pyc
-__pycache__/dallasData.cpython-37.pyc
-__pycache__/phasmidAnalysis.cpython-37.pyc
-__pycache__/foodChoiceAna.cpython-37.pyc
+__pycache__/*
 .vscode/settings.json
-.gitignore
+figures/*
+*.h5
