@@ -271,7 +271,7 @@ for ind,row in df.iterrows():
             lightList += [row['light'] for i in range(rowN)]
             windList += [row['wind'] for i in range(rowN)]
             waterList += [row['water'] for i in range(rowN)]
-            idList  += [[i for x in range(100)] for i in range(row[dataType+'_n'])]
+            idList  += [item for sublist in [[i for x in range(100)] for i in range(row[dataType+'_n'])] for item in sublist]
             dataTypeList += [dataShort for i in range(rowN)]
             moveDirList += [direction for i in range(rowN)]
             nList += [row[dataType+'_n'] for i in range(rowN)]
@@ -279,7 +279,7 @@ for ind,row in df.iterrows():
             psdMedianList = np.append(psdMedianList,indData[:,1],axis=0)
 
 
-listOLists =[speciesList, adultList, sexList, lightList, windList, waterList, 'id',dataTypeList, 
+listOLists =[speciesList, adultList, sexList, lightList, windList, waterList, idList,dataTypeList, 
              moveDirList, nList, frequencyList, psdMedianList] 
 columns=['species', 'adult', 'sex', 'light', 'wind', 'water','id', 'dataType','movement direction',
          'n', 'frequency','power spectral density']
@@ -318,7 +318,7 @@ for ind,row in df.iterrows():
         if row[dataType+'_medData'] is not None:
             rowN = row[dataType+'_n']
             data = row[dataType+'_rawData']
-            index = (data[:,0,0] >=1) & (data[:,0,0] <= 4) 
+            index = (data[:,0,0] > 0) # & (data[:,0,0] <= 4) 
             data = data[index,:,:]
             maxI = np.argmax(data,axis=0)
             psd  = data[maxI[1,:],1,range(rowN)]   
@@ -338,7 +338,7 @@ for ind,row in df.iterrows():
             psdMedianList = np.append(psdMedianList,psd,axis=0)
 
 
-listOLists =[speciesList, adultList, sexList, lightList, windList, waterList, 'id',dataTypeList, 
+listOLists =[speciesList, adultList, sexList, lightList, windList, waterList, idList,dataTypeList, 
              moveDirList, nList, frequencyList, psdMedianList] 
 columns=['species', 'adult', 'sex', 'light', 'wind', 'water','id', 'dataType','movement direction',
          'n', 'best frequency','power spectral density']
@@ -369,6 +369,6 @@ const_dark-const_wind:
 
 #%%
 df = pd.read_hdf('./BjoernDataMedianCI.h5',key = 'df')
-df2 = df[['species', 'adult', 'sex', 'light', 'wind', 'water', 'psd_V_postStim_n']]
+df2 = df[['species', 'adult', 'sex', 'light', 'wind', 'water', 'psd_V_preStim_n']]
 df2 = df2.rename(columns={'psd_V_postStim_n':'n'})
 df2.to_csv('/media/gwdg-backup/BackUp/Bjoern/conditions_n_number.csv')      
