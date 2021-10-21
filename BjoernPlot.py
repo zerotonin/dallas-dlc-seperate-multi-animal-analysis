@@ -72,7 +72,7 @@ def plotPSD(df,metaDict,savepath='./figures/psds/',hueStr='dataType'):
     f.savefig(savepath+fName+'.svg')
 
 
-def plotBox(df,metaDict,savepath='./figures/boxplots/'):
+def plotBox(df,metaDict,savepath='./figures/boxplots/',y = 'power spectral density'):
     subset = getExpSubSet(df, metaDict)
     windList = list(subset['wind'])
     lightList = list(subset['light'])
@@ -91,7 +91,7 @@ def plotBox(df,metaDict,savepath='./figures/boxplots/'):
     subset['conditions'] = combList
     
     f = plt.figure()
-    ax = sns.boxplot(x="conditions", y="power spectral density", hue="sex", data=subset, linewidth=2,notch = True)
+    ax = sns.boxplot(x="conditions", y=y, hue="sex", data=subset, linewidth=2,notch = True)
     ax.set_yscale('log')
     titleStr = getTitleString(metaDict)
     ax.set_title(titleStr)
@@ -173,6 +173,7 @@ metaDict = {'species' : 'Medauroidea extradentata',
         'movement direction' :None,
         'dataType': 'psd preStim'}
 plotBox(df,metaDict)
+plotBox(df,metaDict,y='frequency')
 plt.show()
 
 #%% single test
