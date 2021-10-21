@@ -46,14 +46,14 @@ def getTitleString(metaDict):
         
     if metaDict['water'] is not None:
         if metaDict['water'] == True:
-            titleStr += '  water stimulus'
+            titleStr += ' and a water stimulus'
 
     if metaDict['dataType'] is not None:
         titleStr += ' ' + metaDict['dataType'] + ' comparisson'
         
     return titleStr
 
-def plotPSD(df,metaDict,savepath='./figures/psds/',hueStr='dataType'):
+def plotPSD(df,metaDict,savepath='./figures/psds/',hueStr='dataType',yLim=None):
     temp = getExpSubSet(df,metaDict)
 
     f = plt.figure()
@@ -63,6 +63,9 @@ def plotPSD(df,metaDict,savepath='./figures/psds/',hueStr='dataType'):
                 hue = hueStr, style='movement direction',
                 data=temp)
     x.set_xscale('log')
+    #x.set_yscale('log')
+    if yLim is not None:
+        x.set_ylim(yLim)
     x.legend(loc='upper left')
     titleStr = getTitleString(metaDict)
     x.set_title(titleStr)
@@ -110,11 +113,15 @@ for dtype in['psd preStim', 'psd postStim']:
             metaDict = {'species' : 'Medauroidea extradentata',
                         'adult'   : True,
                         'sex'     : sex,
-                        'light'   : False,
-                        'wind'    : None,
+                        'light'   : None,
+                        'wind'    : False,
                         'water'   : True,
                         'dataType': dtype}
-            plotPSD(df,metaDict,savepath='./figures/comparisons/',hueStr='wind')
+            if sex == 'female':
+                yLim = [0,0.05]
+            else:
+                yLim = [0,0.08]
+            plotPSD(df,metaDict,savepath='./figures/comparisons/',hueStr='light',yLim=yLim)
 plt.show()
 
 
@@ -164,6 +171,7 @@ for species in ['Medauroidea extradentata', 'Sungaya inexpectata']:
 plt.show()
 #%%
 
+df =  pd.read_hdf('./BjoernDataMedianCILongInd4BoxPlotBest.h5',key = 'df')
 metaDict = {'species' : 'Medauroidea extradentata',
         'adult'   : True,
         'sex'     : None,
@@ -173,7 +181,7 @@ metaDict = {'species' : 'Medauroidea extradentata',
         'movement direction' :None,
         'dataType': 'psd preStim'}
 plotBox(df,metaDict)
-plotBox(df,metaDict,y='frequency')
+#plotBox(df,metaDict,y='best frequency')
 plt.show()
 
 #%% single test
