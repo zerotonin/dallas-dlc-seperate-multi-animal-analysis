@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np 
 import matplotlib.pyplot as plt             
 
-paul= readCharonFood54('2020-10-27__14_52_10_blueCS8g6d_greenblue_Light.tra') # init of reader object with file position
+paul= readCharonFood54('/media/gwdg-backup/BackUp/Yegi/2020-11-19__14_34_03.tra') # init of reader object with file position
 plotObj = plotCharonFood()
 paul.readFile()  # read data from file into memory
 
