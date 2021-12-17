@@ -65,8 +65,8 @@ class readCharonFood54():
         # combine coordinates into a tuple to avoid permutation of coordinates
         boundingBoxCoordinates = tuple(objectValList[2::])   # a Tupel is a finite ordered list of elements
         # caclulate center of mass
-        x,y = self.boundingBox2centerOfMass(boundingBoxCoordinates)
-        centerOfMass = (x,y) # make tuple to avoid permutation
+        y,x = self.boundingBox2centerOfMass(boundingBoxCoordinates)
+        centerOfMass = (y,x) # make tuple to avoid permutation
 
         # define a dictionary with the data and return it
         return {'name':imObjName,'centerOfMass': centerOfMass, 'quality': quality, 'boundingBox': boundingBoxCoordinates} #dictionary{key:value pairs}
@@ -76,9 +76,9 @@ class readCharonFood54():
         To get the middle or center of mass of a bounding box you need to
         calculate the mean of the x-coordinates and y-coordinates respectively.
         '''
-        x = (boundingBoxCoordinates[0]+boundingBoxCoordinates[2])/2.0
-        y = (boundingBoxCoordinates[1]+boundingBoxCoordinates[3])/2.0
-        return x,y
+        y = (boundingBoxCoordinates[0]+boundingBoxCoordinates[2])/2.0
+        x = (boundingBoxCoordinates[1]+boundingBoxCoordinates[3])/2.0
+        return y,x
     
     def readImObjPerLine(self,line): 
         # get image objects as list of strings from line
