@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import shape
 from charonFoodTra import readCharonFood54
 from tqdm import tqdm
 import numpy as np
@@ -126,11 +127,12 @@ class analyseSingleArenaTra:
         return  np.linspace(startDateTime.value,endDateTime.value,self.traLen)
     
     def convert2pandas(self):
-        data = np.column_stack((self.timeVector,self.rel_image,self.rel_arena,self.mm_arena,self.absSpeedMMperSec,self.sides))
-        self.data = pd.DataFrame(data,columns=['time_epoch','Y_relImage','X_relImage','Y_relArena','X_relArena','Y_mmArena','X_mmArena','absSpeed_mmPsec','sides'])
+        data = np.column_stack((self.timeVector,self.rel_image,self.rel_arena,self.mm_arena,self.absSpeedMMperSec,self.sides,np.ones(shape=(self.traLen,))*self.arenaNum))
+        self.data = pd.DataFrame(data,columns=['time_epoch','Y_relImage','X_relImage','Y_relArena','X_relArena','Y_mmArena','X_mmArena','absSpeed_mmPsec','sides','arenaNo'])
 
     def run(self):
         self.reduceToBestDetections()
+        self.getOverallDetectionSuccess()
         self.calcAvgArena()
         self.calcFlyTrajectories()
         self.calcSpeed()
