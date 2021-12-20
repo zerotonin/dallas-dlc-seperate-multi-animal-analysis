@@ -114,6 +114,7 @@ class analyseSingleArenaTra:
         # reformat to numpy date format
         dateStr,timeStr = dateTimeStr.split('_')
         timeStr = timeStr.replace('-',':')
+        timeStr += '.000000'
         #get numpy time obkecet
         startDateTime = np.datetime64(f'{dateStr}T{timeStr}')
         # calculate the length of the trajectory in millisecods
