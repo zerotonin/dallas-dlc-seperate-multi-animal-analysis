@@ -9,15 +9,15 @@ import os
 
 class analyseSingleArena:
 
-    def __init__(self,imgObjData,arenaNo,fps =10,objectNameList = ['arena','fly']):
+    def __init__(self,imgObjData,filePos,fps =10,objectNameList = ['arena','fly'],neutralZone=(0.45,.55)):
         self.imgObjData = imgObjData
-        self.arenaNo = arenaNo
+        self.filePos = filePos
         self.objectNameList = objectNameList
         self.traLen  = len(self.imgObjData)
         self.fps = fps
+        self.neutralZone     = neutralZone
         self.arenaHeightMM   = 8
         self.arenaWidthMM    = 18
-        self.neutralZone     = (0.45,.55)
     
     def reduceToBestDetections(self):
         
@@ -67,6 +67,10 @@ class analyseSingleArena:
         # -2 ->  1: -3 from left to right
         #  1 -> -2:  3 from right to left
 
+        # 0 on neutral ground
+        # 1 right of the neutral zone
+        # -2 left of the neutral zone
+
         if flyX < self.neutralZone[0]:
             return -2   
         elif flyX > self.neutralZone[1]:
@@ -92,6 +96,10 @@ class analyseSingleArena:
                 self.mm_arena[c,1]  = self.rel_arena[c,1]*self.arenaWidthMM
                 self.sides[c]          = self.getSide(self.rel_arena[c,1])
 
+    def calcSpeed(self):
+        absSpeedPerFrame = np.sqrt(np.sum(np.square(np.diff(self.mm_arena,axis=0)),axis=1)) 
+        absSpeedPerFrame = np.insert(absSpeedPerFrame,0,absSpeedPerFrame[0]) # to make this the same length as the coordinates
+        self.absSpeedMMperSec = absSpeedPerFrame*self.fps
         
     def getMetaInfo(self):
         fileName = os.path.basename(self.filePos).split('.')[0]   
@@ -100,7 +108,7 @@ class analyseSingleArena:
         #get arena number
         self.arenaNum = int(arenaStr.split('_')[1])
         #get absolute time vector
-        timeVector = self.getTimeVector(dateTimeStr)
+        self.timeVector = self.getTimeVector(dateTimeStr)
 
 
     def getTimeVector(self,dateTimeStr):
@@ -117,15 +125,26 @@ class analyseSingleArena:
         startDateTime = pd.Timestamp(startDateTime)
         endDateTime   = pd.Timestamp(endDateTime)
         # return linspace vector
-        return  np.linspace(startDateTime.value,endDateTime.value,asa.traLen)
+        return  np.linspace(startDateTime.value,endDateTime.value,self.traLen)
+    
+    def convert2pandas(self):
+        data = np.column_stack((self.timeVector,self.rel_image,self.rel_arena,self.mm_arena,self.absSpeedMMperSec,self.sides))
+        self.data = pd.DataFrame(data,columns=['time_epoch','Y_relImage','X_relImage','Y_relArena','X_relArena','Y_mmArena','X_mmArena','absSpeed_mmPsec','sides'])
+
+    def run(self):
+        self.reduceToBestDetections()
+        self.calcAvgArena()
+        self.calcFlyTrajectories()
+        self.calcSpeed()
+        self.getMetaInfo()
+        self.convert2pandas()
 
 
-
-reader = readCharonFood54('/media/dataSSD/LennartSplitMovies/2021-10-03_10-19-27__arena_09.tra')
+filePos = '/media/dataSSD/LennartSplitMovies/2021-10-03_10-19-27__arena_09.tra'
+reader = readCharonFood54(filePos)
 reader.readFile()
 imgObjData = reader.imObjData
-asa = analyseSingleArena(imgObjData,2)
-asa.reduceToBestDetections()
-asa.calcAvgArena()
-asa.calcFlyTrajectories()
+asa = analyseSingleArena(imgObjData,filePos)
+asa.run()
+
 
