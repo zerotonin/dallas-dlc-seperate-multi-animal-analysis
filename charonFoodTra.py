@@ -132,6 +132,9 @@ class readCharonFood54():
         # convert text data 2 img object dictionaries
         self.convertRecordingtoListDict()
 
+
+        
+
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
