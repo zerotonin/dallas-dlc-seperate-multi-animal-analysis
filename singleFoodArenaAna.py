@@ -3,15 +3,18 @@ from numpy.testing._private.nosetester import _numpy_tester
 from charonFoodTra import readCharonFood54
 from tqdm import tqdm
 import numpy as np
+import pandas as pd
+import os
 
 
 class analyseSingleArena:
 
-    def __init__(self,imgObjData,arenaNo,objectNameList = ['arena','fly']):
+    def __init__(self,imgObjData,arenaNo,fps =10,objectNameList = ['arena','fly']):
         self.imgObjData = imgObjData
         self.arenaNo = arenaNo
         self.objectNameList = objectNameList
         self.traLen  = len(self.imgObjData)
+        self.fps = fps
         self.arenaHeightMM   = 8
         self.arenaWidthMM    = 18
         self.neutralZone     = (0.45,.55)
@@ -56,6 +59,7 @@ class analyseSingleArena:
         return np.array((posY,posX))
     
     def getSide(self,flyX):
+        # staying : will result in a zero
         #  0 ->  1: -1 from neutral to right
         #  1 ->  0:  1 from right to neutral
         #  0 -> -2:  2 from neutral to left
@@ -89,14 +93,39 @@ class analyseSingleArena:
                 self.sides[c]          = self.getSide(self.rel_arena[c,1])
 
         
+    def getMetaInfo(self):
+        fileName = os.path.basename(self.filePos).split('.')[0]   
+        dateTimeStr,arenaStr = fileName.split('__')
+        
+        #get arena number
+        self.arenaNum = int(arenaStr.split('_')[1])
+        #get absolute time vector
+        timeVector = self.getTimeVector(dateTimeStr)
+
+
+    def getTimeVector(self,dateTimeStr):
+        # reformat to numpy date format
+        dateStr,timeStr = dateTimeStr.split('_')
+        timeStr = timeStr.replace('-',':')
+        #get numpy time obkecet
+        startDateTime = np.datetime64(f'{dateStr}T{timeStr}')
+        # calculate the length of the trajectory in millisecods
+        traLen_ms = int(np.round(self.traLen*1000/self.fps))
+        # caclulate the end of the trajectory as date and time
+        endDateTime   = startDateTime + np.timedelta64(traLen_ms,'ms') 
+        # transfrom into pandas date time to get the time as Unix epochs
+        startDateTime = pd.Timestamp(startDateTime)
+        endDateTime   = pd.Timestamp(endDateTime)
+        # return linspace vector
+        return  np.linspace(startDateTime.value,endDateTime.value,asa.traLen)
 
 
 
-
-reader = readCharonFood54('/media/gwdg-backup/BackUp/Lennart/2021-10-03_10-19-27/2021-10-03_10-19-27__arena_02.tra')
+reader = readCharonFood54('/media/dataSSD/LennartSplitMovies/2021-10-03_10-19-27__arena_09.tra')
 reader.readFile()
 imgObjData = reader.imObjData
 asa = analyseSingleArena(imgObjData,2)
 asa.reduceToBestDetections()
 asa.calcAvgArena()
 asa.calcFlyTrajectories()
+
