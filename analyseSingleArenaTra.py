@@ -7,7 +7,7 @@ import pandas as pd
 import os
 
 
-class analyseSingleArena:
+class analyseSingleArenaTra:
 
     def __init__(self,imgObjData,filePos,fps =10,objectNameList = ['arena','fly'],neutralZone=(0.45,.55)):
         self.imgObjData = imgObjData
@@ -138,13 +138,5 @@ class analyseSingleArena:
         self.calcSpeed()
         self.getMetaInfo()
         self.convert2pandas()
-
-
-filePos = '/media/dataSSD/LennartSplitMovies/2021-10-03_10-19-27__arena_09.tra'
-reader = readCharonFood54(filePos)
-reader.readFile()
-imgObjData = reader.imObjData
-asa = analyseSingleArena(imgObjData,filePos)
-asa.run()
 
 
