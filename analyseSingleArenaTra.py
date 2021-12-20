@@ -1,5 +1,3 @@
-from numpy.lib.function_base import average
-from numpy.testing._private.nosetester import _numpy_tester
 from charonFoodTra import readCharonFood54
 from tqdm import tqdm
 import numpy as np
