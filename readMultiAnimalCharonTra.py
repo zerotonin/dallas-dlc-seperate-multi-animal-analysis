@@ -1,3 +1,4 @@
+import os, getopt,sys
 import charonFoodTra,splitCharonMultiAnimalTra
 import numpy as np 
 from tqdm import tqdm
@@ -5,11 +6,13 @@ import pandas as pd
 import cv2 as cv
 
 class readMultiAnimalCharonTra:
-    def __init__(self,traFile,movFile,bboxFile,maxReads=-1):
-        self.traFile  = traFile
-        self.movFile  = movFile
-        self.bboxFile = bboxFile
-        self.maxReads = maxReads
+    def __init__(self,traFile,movFile,bboxFile,arenaHeightmm,arenaWidthmm,maxReads=-1):
+        self.traFile   = traFile
+        self.movFile   = movFile
+        self.bboxFile  = bboxFile
+        self.maxReads  = maxReads
+        self.arenaHeightmm = arenaHeightmm
+        self.arenaWidthmm = arenaWidthmm
 
         self.getFrameParameters()
         self.getRelPos4ArenaPosBBox()
@@ -65,6 +68,11 @@ class readMultiAnimalCharonTra:
     def calculateMeanArenaCoords(self):
         self.meanArenaCoords = self.sumArenaCoords/self.arenaCoordsOcc  
 
+    def cart2pol(self,x, y):
+        rho = np.sqrt(x**2 + y**2)
+        phi = np.arctan2(y, x)
+        return(rho, phi)
+
     def coordinateTransform(self):
         for obj in tqdm(self.trajectory,desc='coordinate transformation'):
             if obj['coord_relImg_y'] == None:
@@ -75,6 +83,11 @@ class readMultiAnimalCharonTra:
                 coord_relArena_y,coord_relArena_x = self.getRelativePos(obj['coord_relImg_y'],obj['coord_relImg_x'],arenaCoords)
                 obj['coord_relArena_y'] = coord_relArena_y
                 obj['coord_relArena_x'] = coord_relArena_x
+                obj['coord_mmArena_y'] = coord_relArena_y*self.arenaHeightmm
+                obj['coord_mmArena_x'] = coord_relArena_x*self.arenaWidthmm
+                rho,phi = self.cart2pol(obj['coord_mmArena_x']-(self.arenaWidthmm/2.0),obj['coord_mmArena_y']-(self.arenaHeightmm/2.0))
+                obj['coord_rho'] = rho
+                obj['coord_phi'] = phi
 
     def saveAna(self,arenaFilePos,traFilePos):
         np.savetxt(arenaFilePos,self.meanArenaCoords,delimiter=',')
@@ -85,3 +98,49 @@ class readMultiAnimalCharonTra:
         self.read()
         self.calculateMeanArenaCoords()
         self.coordinateTransform()
+
+if __name__ == '__main__':
+    
+    # get input variables
+    usageStr = 'usage: analyseSingleArenaTra.py -t <traFilePos> -a <arenaBoundingBoxFilePos> -m <movieFilePos> -x <arenaWidthMM> -y <arenaHeightMM> -o <outputDir>'
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],"ht:a:m:x:y:o:",["traFilePos=","arenaBoundingBoxFilePos=",'movieFilePos=',"arenaWidthMM=","arenaHeightMM=",'outputDir='])
+        #print(sys.argv)
+    except getopt.GetoptError:
+        print(usageStr)
+        sys.exit(2)
+
+    #parse Inputs
+    traFilePos              = False
+    arenaBoundingBoxFilePos = False
+    movieFilePos            = False
+
+    for o, a in opts:
+        # if user asks for help 
+        if o == '-h':
+            print(usageStr)
+        elif o == '-t':
+            traFilePos = a
+        elif o == '-a':
+            arenaBoundingBoxFilePos = a
+        elif o == '-m':
+            movieFilePos = a
+        elif o == '-x':
+            arenaWidthMM = float(a)
+        elif o == '-y':
+            arenaHeightMM = float(a)
+        elif o == '-o':
+            outputDir = a
+    if os.path.isfile(traFilePos) == False:
+        raise ValueError(f'-i is not an existing file: {traFilePos} ')
+    if os.path.isfile(arenaBoundingBoxFilePos) == False:
+        raise ValueError(f'-i is not an existing file: {arenaBoundingBoxFilePos} ')
+    if os.path.isfile(movieFilePos) == False:
+        raise ValueError(f'-i is not an existing file: {movieFilePos} ')
+
+    fileName     = os.path.basename(traFilePos)[0:-4]   
+    cleanTraOut  = os.path.join(outputDir,fileName+'_trajectory.h5')
+    meanArenaOut = os.path.join(outputDir,fileName+'_meanArena.csv')
+    cmar = readMultiAnimalCharonTra(traFilePos,movieFilePos,arenaBoundingBoxFilePos,arenaHeightMM,arenaWidthMM)
+    cmar.run()
+    cmar.saveAna(meanArenaOut,cleanTraOut)
