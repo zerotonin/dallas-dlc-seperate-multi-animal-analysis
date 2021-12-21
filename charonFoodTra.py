@@ -133,12 +133,12 @@ class readCharonFood54():
         # convert text data 2 img object dictionaries
         self.convertRecordingtoListDict()
 
-    def readFile(self):
+    def readFile(self,maxReads = -1):
         self.imObjData = list()
         file1 = open(self.filePosition, 'r')
         count = 0
         progressStr='-\|/' 
-        while True:
+        while True and (count <= maxReads):
             count += 1
             os.system("printf '\033c'")
             print(f'{progressStr[count%4]} reading line {count}', flush=True)
