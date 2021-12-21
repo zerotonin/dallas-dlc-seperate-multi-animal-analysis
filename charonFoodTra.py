@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import os
 class readCharonFood54():
     def __init__(self,filePosition):
 
@@ -120,7 +121,7 @@ class readCharonFood54():
             # each line is read and converted into an image object dictionary list and appended to self.imgObjData
             self.imObjData.append(self.readImObjPerLine(line))
 
-    def readFile(self):
+    def readFile_old(self):
         '''
         Main reader class.
         Reads the file at the position stored in self.filePosition.
@@ -131,6 +132,26 @@ class readCharonFood54():
         self.readFoodRecResult()
         # convert text data 2 img object dictionaries
         self.convertRecordingtoListDict()
+
+    def readFile(self):
+        self.imObjData = list()
+        file1 = open(self.filePosition, 'r')
+        count = 0
+        progressStr='-\|/' 
+        while True:
+            count += 1
+            os.system("printf '\033c'")
+            print(f'{progressStr[count%4]} reading line {count}', flush=True)
+    
+            # Get next line from file
+            line = file1.readline()
+            # if line is empty end of file is reached
+            if not line:
+                break
+            self.imObjData.append(self.readImObjPerLine(line))
+ 
+        file1.close()
+        
 
 
         
