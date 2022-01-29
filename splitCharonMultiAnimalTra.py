@@ -65,13 +65,18 @@ class splitCharonMultiAnimalTra:
             TCdictNew['arenaNo'] = i
             TCdictNew['coord_relImg_y'] = TCdict['centerOfMass'][0]
             TCdictNew['coord_relImg_x'] = TCdict['centerOfMass'][1]
+            TCdictNew['BB_relImg_ymin'] = TCdict['boundingBox'][0]
+            TCdictNew['BB_relImg_xmin'] = TCdict['boundingBox'][1]
+            TCdictNew['BB_relImg_ymax'] = TCdict['boundingBox'][2]
+            TCdictNew['BB_relImg_xmax'] = TCdict['boundingBox'][3]
             self.newImgObjList.append(TCdictNew)
         # if no beetle could be found add empty dict
         else:
-            self.newImgObjList.append({'frameNo':self.frameNumber, 'arenaNo':i, 'coord_relImg_y':None, 'coord_relImg_x':None})
+            self.newImgObjList.append({'frameNo':self.frameNumber, 'arenaNo':i, 'coord_relImg_y':None, 'coord_relImg_x':None, 'BB_relImg_ymin':None, 'BB_relImg_xmin':None, 'BB_relImg_ymax':None, 'BB_relImg_xmax':None})
 
     def run(self):
         self.splitFrameNumber()
         self.assignArenaPositions()
         self.getBestDetections()
         return self.newImgObjList,self.sumArenaCoords,self.arenaCoordsOcc
+
