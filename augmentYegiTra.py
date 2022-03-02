@@ -7,6 +7,7 @@ import os
 class augmentYegiTra:
     def __init__(self,traPos,metaDataFlag='<29',fps=10,activityThreshHold=0.3):
         self.traPos = traPos
+        self.savePos = self.traPos[0:-3]+'Ana.h5'
         self.metaDataFlag = metaDataFlag
         self.fps = fps
         self.activityThreshHold = activityThreshHold
@@ -78,7 +79,7 @@ class augmentYegiTra:
         self.dfAugmented = pd.concat(subsetList)     
 
     def writeTra(self):
-        self.dfAugmented.to_hdf(self.traPos[0:-3]+'Ana.h5','data')
+        self.dfAugmented.to_hdf(self.savePos,'data')
 
     def run(self):
         self.readTra()
