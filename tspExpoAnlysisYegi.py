@@ -31,5 +31,6 @@ movList = [x[0:-3]+'avi' for x in traList]
 metaData = ['28' for i in range(9)]+['29' for i in range(4)]
 #send to tsp
 
+#expoAnalysisWithTPS(traList[-4::],metaData[-4::],fps,activity_tresh,bbList[-4::],movList[-4::],arenaWidthMM,arenaHeightMM,outDir,None)
 
 expoAnalysisWithTPS(traList,metaData,fps,activity_tresh,bbList,movList,arenaWidthMM,arenaHeightMM,outDir,None)
