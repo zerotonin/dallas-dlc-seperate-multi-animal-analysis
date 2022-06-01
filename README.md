@@ -1,5 +1,17 @@
 # DALLAS - Dlc seperAte muLti animaL AnalysiS
 
+These scripts are meant to work together with the charon script system. They can be used to read in tracking data from AI tracking with charon.
+
+The scripts can be installed using conda and the dallas.yaml file
+
+
+## Troubleshooting 
+
+The bounding box has the following succession
+
+
+For any newcomers, the order of the box coordinates have changed to: [ymin, xmin, ymax, xmax] – Gregory Saldanha Mar 12 '18 at 0:08
+
 ## Divide and conquer to analyse the trajectory file
 
 1. read in data frame wise
@@ -64,3 +76,9 @@ y0: Y-coordinate of the lower right of the bounding box
         | (_/^\_) |
         |         |
         |-----x1,y1
+
+
+
+
+## ssh for mac users
+ssh-add -K /Users/test/.ssh/id_rsa

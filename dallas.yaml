@@ -15,6 +15,9 @@ name: dallas
 dependencies:   
 - python=3.7
 - pandas   
+- ipython
+- tqdm
+- openpyxl
 - pip   
 - pip:
     - vidstab[cv2]

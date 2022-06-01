@@ -59,18 +59,18 @@ all_expo_df.to_hdf('./all_expo_data.h5',key='data')
 
 
 
-all_expo_df = pd.read_hdf('./all_expo_data.h5',key='data')
+
 plt.figure()
-sns.boxplot(x='status',y='exploredArea__mm2',hue='sex',data=all_expo_df,
+sns.boxplot(x='sex',y='exploredArea__mm2',hue='status',data=all_expo_df,
                 notch=False)     
 plt.figure()
-sns.boxplot(x='status',y='rel. expo rate, mm2/h',hue='sex',data=all_expo_df,
+sns.boxplot(x='sex',y='rel. expo rate, mm2/h',hue='status',data=all_expo_df,
                 notch=False)     
 ax = plt.gca()
 ax.set_yscale('log')
 
 plt.figure()
-sns.boxplot(x='status',y='abs. expo rate, mm2/h',hue='sex',data=all_expo_df,
+sns.boxplot(x='sex',y='abs. expo rate, mm2/h',hue='status',data=all_expo_df,
                 notch=False)     
 ax = plt.gca()
 ax.set_yscale('log')

@@ -23,11 +23,11 @@ class trajectoryAna():
             self.mmTra[:,i,:] = self.pix2mmObj.convertPix2mm(self.pixTra[:,i,:])
     
     
-    def smoothTraGauss(self):
+    def smoothTraGauss(self,sigma = 5):
         self.mmTraSmooth= np.zeros(shape=self.mmTra.shape)
         for bodyI in range(self.bodyPartNo):
             for coordI in range(self.coordNo):
-                self.mmTraSmooth[:,bodyI,coordI] = gaussian_filter1d(self.mmTra[:,bodyI,coordI], 5)
+                self.mmTraSmooth[:,bodyI,coordI] = gaussian_filter1d(self.mmTra[:,bodyI,coordI], sigma)
     
     def calculateYaw(self):
         self.yaw = np.zeros(shape=(self.frameNo,))
