@@ -31,7 +31,7 @@ class readCharonFood54():
 
     def readImageObject(self,imageObjectString):
         '''
-        Each object consist out of one string (the object name) and 5 numbers: quality ,x0,y0,x1,y1
+        Each object consist out of one string (the object name) and 5 numbers: quality ,y0,x0,y1,x1
         The last for are the minimum and maximum of the bounding box of the object given
         in coordinates normalised to the picture size.
         The string containing this data is seperated by commata and is now split at these and the 
