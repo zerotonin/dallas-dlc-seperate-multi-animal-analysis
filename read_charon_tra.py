@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import pandas as pd
 import os
 class read_charon_tra():
     def __init__(self,file_position):
@@ -135,7 +136,7 @@ class read_charon_tra():
         self.convert_entire_raw_file_to_dicts()
 
     def read_file(self,start_line = 0, maximum_lines = -1, show_progress = True):
-        self.image_object_data = list()
+        #self.image_object_data = list()
         file_dialog = open(self.file_position, 'r')
         line_count  = 0
         progress_bar_str='-\|/' 
@@ -158,12 +159,20 @@ class read_charon_tra():
  
         file_dialog.close()
 
+    def only_read_specific_lines_from_tra_file(self):
+        self.image_object_data = list()
+        mp4_file_name = 'Gentoo_02-03-2021_Dato1.mp4'
+        data = pd.read_csv('/media/anne/Samsung_T5/penguins//Penguin_video_data.csv')
+        mp4_file_data = data[data['filename'] == mp4_file_name]
+        for i in range(0,len(mp4_file_data)):
+            self.read_file(mp4_file_data['start'][i],mp4_file_data['end'][i])
+        #self.read_file(mp4_file_data['start'][0],mp4_file_data['end'][0])
         
 
 if __name__ == '__main__':
-    source_file = '/media/dataSSD/ownCloudDrosoVis/penguins/penguins/Gentoo/Gentoo_10-03-2021_morning.tra' 
+    source_file = '/media/anne/Samsung_T5/penguins/Gentoo/Gentoo_02-03-2021_Dato1.tra' 
     reader = read_charon_tra(source_file)
-    reader.read_file( 8000,8200)
+    reader.only_read_specific_lines_from_tra_file()
     print(reader.image_object_data,len(reader.image_object_data))
 
 
