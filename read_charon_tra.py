@@ -155,7 +155,7 @@ class read_charon_tra():
         
 
 
-        
+'''        
 
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
@@ -216,3 +216,4 @@ class plotCharonFood:
 
         plt.axis('equal')
         #plt.show()
+'''
