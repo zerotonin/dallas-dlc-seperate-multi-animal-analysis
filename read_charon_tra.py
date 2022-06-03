@@ -134,7 +134,7 @@ class read_charon_tra():
         # convert text data 2 img object dictionaries
         self.convert_entire_raw_file_to_dicts()
 
-    def read_file(self,start_line = 0 , maximum_lines = -1):
+    def read_file(self,start_line = 0, maximum_lines = -1, show_progress = True):
         self.image_object_data = list()
         file_dialog = open(self.file_position, 'r')
         line_count  = 0
@@ -150,9 +150,10 @@ class read_charon_tra():
             
             if line_count >= start_line:            
                 #update progress bar
-                os.system("printf '\033c'")
-                print(f'{progress_bar_str[line_count%4]} reading line {line_count}', flush=True)
-                #save data
+                if show_progress:
+                    os.system("printf '\033c'")
+                    print(f'{progress_bar_str[line_count%4]} reading line {line_count}', flush=True)
+                #s data
                 self.image_object_data.append(self.read_image_object_per_line(line))
  
         file_dialog.close()
