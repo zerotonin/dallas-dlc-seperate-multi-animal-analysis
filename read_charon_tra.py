@@ -154,6 +154,10 @@ class read_charon_tra():
         file_dialog.close()
         
 
+if __name__ == '__main__':
+    source_file = '/media/dataSSD/ownCloudDrosoVis/penguins/penguins/Gentoo/Gentoo_10-03-2021_morning.tra' 
+    reader = read_charon_tra(source_file)
+    reader.read_file()
 
 '''        
 
