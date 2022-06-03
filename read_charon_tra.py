@@ -134,13 +134,14 @@ class read_charon_tra():
         # convert text data 2 img object dictionaries
         self.convert_entire_raw_file_to_dicts()
 
-    def read_file(self,maximum_lines = -1):
+    def read_file(self,start_line = 0 , maximum_lines = -1):
         self.image_object_data = list()
         file_dialog = open(self.file_position, 'r')
         line_count = 0
         progress_bar_str='-\|/' 
         while (maximum_lines == -1) or (line_count <= maximum_lines):
             line_count += 1
+            
             os.system("printf '\033c'")
             print(f'{progress_bar_str[line_count%4]} reading line {line_count}', flush=True)
     
@@ -149,16 +150,19 @@ class read_charon_tra():
             # if line is empty end of file is reached
             if not line:
                 break
-            self.image_object_data.append(self.read_image_object_per_line(line))
+            
+            if line_count >= start_line:
+                self.image_object_data.append(self.read_image_object_per_line(line))
  
         file_dialog.close()
+
         
 
 if __name__ == '__main__':
     source_file = '/media/dataSSD/ownCloudDrosoVis/penguins/penguins/Gentoo/Gentoo_10-03-2021_morning.tra' 
     reader = read_charon_tra(source_file)
     reader.read_file()
-    print(reader.image_object_data)
+
 
 '''        
 
