@@ -12,25 +12,25 @@ class read_charon_tra():
         temporay_file_dialog.close()
         #print(self.rawTextData)               # and print it into the rawTextData List?
 
-    def splitLineIntoImageObjects(self,line): 
+    def split_line_into_image_objects(self,line): 
         '''
         This function splits all objects in a line of raw text data. 
         The strings are split by the > symbol
         Function returns a list of string containing all found objects in this line, but ignores the framenumber.
         '''
-        objectList = line.split('>')  # each object is encapsuilated in ><
-        del(objectList[0]) # first entry is frameNumber
-        return objectList
+        object_list = line.split('>')  # each object is encapsuilated in ><
+        del(object_list[0]) # first entry is frameNumber
+        return object_list
 
-    def getFrameNumberFromLine(self,line):
+    def get_frame_number_from_line(self,line):
         '''
         This function returns the frame number as int from a given text data line.
         '''
-        objectList = line.split('>')
-        frameNumber = int(objectList[0][0:-3])
-        return frameNumber
+        object_list = line.split('>')
+        frame_number = int(object_list[0][0:-3])
+        return frame_number
 
-    def readImageObject(self,imageObjectString):
+    def split_image_object_to_list(self,image_object_string):
         '''
         Each object consist out of one string (the object name) and 5 numbers: quality ,y0,x0,y1,x1
         The last for are the minimum and maximum of the bounding box of the object given
@@ -39,15 +39,15 @@ class read_charon_tra():
         numerical data are converted into floats. The return value is a list consistent of a string
         and five floats. 
         '''
-        objectValList=imageObjectString.split(',') # object Values are seperated by ','
-        objectValList[5]= objectValList[5][0:-2] # delete the last two characters of the string ' <'
+        object_value_list=image_object_string.split(',') # object Values are seperated by ','
+        object_value_list[5]= object_value_list[5][0:-2] # delete the last two characters of the string ' <'
         # convert all values into float except of the first which is the name of the object already given as a string
         for i in range(1,6):
-            objectValList[i]= float(objectValList[i]) # convert string into floating point number
+            object_value_list[i]= float(object_value_list[i]) # convert string into floating point number
         # return object values in list
-        return objectValList
+        return object_value_list
 
-    def imObjectVal2imObjDict(self,objectValList): # putting objectValues into Dictionary
+    def image_object_list_to_dict(self,object_value_list): # putting objectValues into Dictionary
         '''
         This function transforms the list of object values returned by self.readImageObject
         into a dictionary with the following keys and values
@@ -62,44 +62,44 @@ class read_charon_tra():
                        bounding box in the succession (y0,x0,y1,x1)
         '''
         # shorthands for name and quality
-        imObjName = objectValList[0]
-        quality   = objectValList[1]
+        image_objec_name = object_value_list#[0]
+        quality   = object_value_list#[1]
         # combine coordinates into a tuple to avoid permutation of coordinates
-        boundingBoxCoordinates = tuple(objectValList[2::])   # a Tupel is a finite ordered list of elements
+        bounding_box_coordinates = tuple(object_value_list[2::])   # a Tupel is a finite ordered list of elements
         # caclulate center of mass
-        y,x = self.boundingBox2centerOfMass(boundingBoxCoordinates)
-        centerOfMass = (y,x) # make tuple to avoid permutation
+        y,x = self.calculate_center_of_mass_from_BB(bounding_box_coordinates)
+        center_of_mass = (y,x) # make tuple to avoid permutation
 
         # define a dictionary with the data and return it
-        return {'name':imObjName,'centerOfMass': centerOfMass, 'quality': quality, 'boundingBox': boundingBoxCoordinates} #dictionary{key:value pairs}
+        return {'name':image_objec_name,'centerOfMass': center_of_mass, 'quality': quality, 'boundingBox': bounding_box_coordinates} #dictionary{key:value pairs}
 
-    def boundingBox2centerOfMass(self,boundingBoxCoordinates):
+    def calculate_center_of_mass_from_BB(self,bounding_box_coordinates):
         '''
         To get the middle or center of mass of a bounding box you need to
         calculate the mean of the x-coordinates and y-coordinates respectively.
         '''
-        y = (boundingBoxCoordinates[0]+boundingBoxCoordinates[2])/2.0
-        x = (boundingBoxCoordinates[1]+boundingBoxCoordinates[3])/2.0
+        y = (bounding_box_coordinates[0]+bounding_box_coordinates[2])/2.0
+        x = (bounding_box_coordinates[1]+bounding_box_coordinates[3])/2.0
         return y,x
     
-    def readImObjPerLine(self,line): 
+    def read_image_object_per_line(self,line): 
         # get image objects as list of strings from line
-        imageObjects  = self.splitLineIntoImageObjects(line)  
+        image_objects  = self.split_line_into_image_objects(line)  
         # get frame number as integer from line
-        frameNumber   = self.getFrameNumberFromLine(line)
+        frame_number   = self.get_frame_number_from_line(line)
         # initialize return list with frame number
-        imgObjList = [frameNumber]
+        image_object_dict_list = [frame_number]
         # this for loop transverses through the list of string img Obj
-        for imgObj in imageObjects:
+        for image_object in image_objects:
             # object string is split in different values and numericals are converted to floats
-            objectValList = self.readImageObject(imgObj)
+            object_value_list = self.split_image_object_to_list(image_object)
             # converts list of data into a structer dict
-            imObjDict     = self.imObjectVal2imObjDict(objectValList)
+            image_object_dictionary = self.image_object_list_to_dict(object_value_list)
             # add dict to return list
-            imgObjList.append(imObjDict)       
-        return imgObjList
+            image_object_dict_list.append(image_object_dictionary)       
+        return image_object_dict_list
 
-    def convertRecordingtoListDict(self):
+    def convert_entire_raw_file_to_dicts(self):
         '''
         Convert the raw text data into a list in which each element is the data of a frame.
         Each frame consists of a list, which first element is the frame number as an integer. All following
@@ -116,13 +116,13 @@ class read_charon_tra():
 
         '''
         # preallocation of an empty list
-        self.imObjData = list()
+        self.image_object_data = list()
         # for loop transverses each line of the file
         for line in tqdm(self.rawTextData,desc = 'converting text to dict'):
             # each line is read and converted into an image object dictionary list and appended to self.imgObjData
-            self.imObjData.append(self.readImObjPerLine(line))
+            self.image_object_data.append(self.read_image_object_per_line(line))
 
-    def readFile_old(self):
+    def read_entire_small_file(self):
         '''
         Main reader class.
         Reads the file at the position stored in self.filePosition.
@@ -132,26 +132,26 @@ class read_charon_tra():
         # read text data from file
         self.read_raw_text_entire_file()
         # convert text data 2 img object dictionaries
-        self.convertRecordingtoListDict()
+        self.convert_entire_raw_file_to_dicts()
 
-    def readFile(self,maxReads = -1):
-        self.imObjData = list()
-        file1 = open(self.file_position, 'r')
-        count = 0
-        progressStr='-\|/' 
-        while True and (count <= maxReads):
-            count += 1
+    def read_file(self,maximum_lines = -1):
+        self.image_object_data = list()
+        file_dialog = open(self.file_position, 'r')
+        line_count = 0
+        progress_bar_str='-\|/' 
+        while True and (line_count <= maximum_lines):
+            line_count += 1
             os.system("printf '\033c'")
-            print(f'{progressStr[count%4]} reading line {count}', flush=True)
+            print(f'{progress_bar_str[line_count%4]} reading line {line_count}', flush=True)
     
             # Get next line from file
-            line = file1.readline()
+            line = file_dialog.readline()
             # if line is empty end of file is reached
             if not line:
                 break
-            self.imObjData.append(self.readImObjPerLine(line))
+            self.image_object_data.append(self.read_image_object_per_line(line))
  
-        file1.close()
+        file_dialog.close()
         
 
 
