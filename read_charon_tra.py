@@ -139,7 +139,7 @@ class read_charon_tra():
         file_dialog = open(self.file_position, 'r')
         line_count = 0
         progress_bar_str='-\|/' 
-        while True and (line_count <= maximum_lines):
+        while (maximum_lines == -1) or (line_count <= maximum_lines):
             line_count += 1
             os.system("printf '\033c'")
             print(f'{progress_bar_str[line_count%4]} reading line {line_count}', flush=True)
@@ -158,6 +158,7 @@ if __name__ == '__main__':
     source_file = '/media/dataSSD/ownCloudDrosoVis/penguins/penguins/Gentoo/Gentoo_10-03-2021_morning.tra' 
     reader = read_charon_tra(source_file)
     reader.read_file()
+    print(reader.image_object_data)
 
 '''        
 
