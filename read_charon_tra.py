@@ -160,12 +160,16 @@ class read_charon_tra():
         file_dialog.close()
 
     def only_read_specific_lines_from_tra_file(self):
-        self.image_object_data = list()
         mp4_file_name = 'Gentoo_02-03-2021_Dato1.mp4'
         data = pd.read_csv('/media/anne/Samsung_T5/penguins//Penguin_video_data.csv')
         mp4_file_data = data[data['filename'] == mp4_file_name]
         for i in range(0,len(mp4_file_data)):
+            self.image_object_data = list()
             self.read_file(mp4_file_data['start'][i],mp4_file_data['end'][i]-mp4_file_data['start'][i])
+            df = pd.DataFrame(self.image_object_data)
+            df.to_hdf("iterierenderName.h5")
+
+
         #self.read_file(mp4_file_data['start'][0],mp4_file_data['end'][0])
         
 
