@@ -166,7 +166,7 @@ class read_charon_tra():
         for i in range(0,len(mp4_file_data)):
             self.image_object_data = list()
             self.read_file(mp4_file_data['start'][i],mp4_file_data['end'][i]-mp4_file_data['start'][i])
-            df = pd.DataFrame(self.image_object_data)
+            df = pd.DataFrame(self.image_object_data[;][1],index=self.image_object_data[:][0])
             df.to_hdf("iterierenderName.h5")
 
 
