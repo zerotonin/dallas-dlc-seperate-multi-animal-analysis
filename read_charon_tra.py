@@ -165,7 +165,7 @@ class read_charon_tra():
         data = pd.read_csv('/media/anne/Samsung_T5/penguins//Penguin_video_data.csv')
         mp4_file_data = data[data['filename'] == mp4_file_name]
         for i in range(0,len(mp4_file_data)):
-            self.read_file(mp4_file_data['start'][i],mp4_file_data['end'][i])
+            self.read_file(mp4_file_data['start'][i],mp4_file_data['end'][i]-mp4_file_data['start'][i])
         #self.read_file(mp4_file_data['start'][0],mp4_file_data['end'][0])
         
 
