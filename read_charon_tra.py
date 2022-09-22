@@ -63,8 +63,8 @@ class read_charon_tra():
                        bounding box in the succession (y0,x0,y1,x1)
         '''
         # shorthands for name and quality
-        image_objec_name = object_value_list#[0]
-        quality   = object_value_list#[1]
+        image_objec_name = object_value_list[0]
+        quality   = object_value_list[1]
         # combine coordinates into a tuple to avoid permutation of coordinates
         bounding_box_coordinates = tuple(object_value_list[2::])   # a Tupel is a finite ordered list of elements
         # caclulate center of mass
