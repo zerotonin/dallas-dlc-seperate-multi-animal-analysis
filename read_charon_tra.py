@@ -2,10 +2,11 @@ from tqdm import tqdm
 import pandas as pd
 import os
 class read_charon_tra():
-    def __init__(self,file_position):
+    def __init__(self,file_position,indice_file = ''):
 
         self.file_position = file_position # filePosition = file name
         self.rawTextData  = []           # preallocation with empty list
+        self.indice_file = indice_file
 
     def read_raw_text_entire_file(self):
         temporay_file_dialog = open(self.file_position, 'r')  # 'r': open for reading
@@ -160,12 +161,13 @@ class read_charon_tra():
         file_dialog.close()
 
     def only_read_specific_lines_from_tra_file(self):
-        mp4_file_name = 'Gentoo_02-03-2021_Dato1.mp4'
-        data = pd.read_csv('/media/anne/Samsung_T5/penguins//Penguin_video_data.csv')
+        mp4_file_name = os.path.basename(self.file_position)[:-3]+"mp4"
+        data = pd.read_csv(self.indice_file)
         mp4_file_data = data[data['filename'] == mp4_file_name]
-        for i in range(0,len(mp4_file_data)):
+        for i,x in mp4_file_data.iterrows():
             self.image_object_data = list()
-            self.read_file(mp4_file_data['start'][i],mp4_file_data['end'][i]-mp4_file_data['start'][i])
+            self.read_file(x.start, x.end-x.start)
+            # use region of interest
             df = pd.DataFrame(self.image_object_data[:][1],index=self.image_object_data[:][0])
             df.to_hdf("iterierenderName.h5")
 
@@ -174,7 +176,7 @@ class read_charon_tra():
         
 
 if __name__ == '__main__':
-    source_file = '/media/anne/Samsung_T5/penguins/Gentoo/Gentoo_02-03-2021_Dato1.tra' 
+    source_file = '/home/bgeurten/penguins/Rockhopper_05-03-2021.tra' 
     reader = read_charon_tra(source_file)
     reader.only_read_specific_lines_from_tra_file()
     print(reader.image_object_data,len(reader.image_object_data))
@@ -241,4 +243,4 @@ class plotCharonFood:
 
         plt.axis('equal')
         #plt.show()
-'''
+''' 
