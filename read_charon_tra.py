@@ -160,16 +160,48 @@ class read_charon_tra():
  
         file_dialog.close()
 
+    '''
+    define limits for those animals on land not swimming:
+    Land is defined by 
+    x0=660px/1402  = 0.47075606276747506
+    y0=0px/788     = 0.0 
+    x1=1402px/1402 = 1.0
+    y1=272px/788   = 0.34517766497461927
+
+    total image is x=1402 y=788px
+
+    to set limits to ignore datapoints:
+    all animals detected for x > 666/1402
+                             y < 272/788
+    should be ignored 
+    
+     x0,y0------
+        |         |
+        | ._q0p_. |
+        | '=(_)=' 
+        |  / V \  |
+        | (_/^\_) |
+        |         |
+        |-----x1,y1'''
     def only_read_specific_lines_from_tra_file(self):
         mp4_file_name = os.path.basename(self.file_position)[:-3]+"mp4"
         data = pd.read_csv(self.indice_file)
         mp4_file_data = data[data['filename'] == mp4_file_name]
         for i,x in mp4_file_data.iterrows():
             self.image_object_data = list()
-            self.read_file(x.start, x.end-x.start)
+            self.read_file(x.start, x.end-x.start) 
+            if mp4_file_data['x0'][x] >= 666/1402:
+                pass
+            elif mp4_file_data['x1'][x] >= 666/1402: 
+                pass
+            elif mp4_file_data['y0'][x] <= 272/788: 
+                pass
+            elif mp4_file_data['y1'][x] <= 272/788: 
+                pass
+            else: 
             # use region of interest
-            df = pd.DataFrame(self.image_object_data[:][1],index=self.image_object_data[:][0])
-            df.to_hdf("iterierenderName.h5")
+                df = pd.DataFrame(self.image_object_data[:][1],index=self.image_object_data[:][0])
+                df.to_hdf("iterierenderName.h5")
 
 
         #self.read_file(mp4_file_data['start'][0],mp4_file_data['end'][0])
