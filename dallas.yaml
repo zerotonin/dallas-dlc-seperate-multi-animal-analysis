@@ -23,3 +23,5 @@ dependencies:
     - vidstab[cv2]
     - pympler
     - pims
+    - shapely
+    - tables
