@@ -1,12 +1,15 @@
 from tqdm import tqdm
 import pandas as pd
 import os
+from shapely.geometry import Point, Polygon
+import numpy as np
 class read_charon_tra():
-    def __init__(self,file_position,indice_file = ''):
+    def __init__(self,file_position,indice_file = '',roi = []):
 
         self.file_position = file_position # filePosition = file name
         self.rawTextData  = []           # preallocation with empty list
         self.indice_file = indice_file
+        self.roi = Polygon(roi)
 
     def read_raw_text_entire_file(self):
         temporay_file_dialog = open(self.file_position, 'r')  # 'r': open for reading
@@ -98,7 +101,8 @@ class read_charon_tra():
             # converts list of data into a structer dict
             image_object_dictionary = self.image_object_list_to_dict(object_value_list)
             # add dict to return list
-            image_object_dict_list.append(image_object_dictionary)       
+            if self.test_if_animal_in_roi(image_object_dictionary['centerOfMass']):
+                image_object_dict_list.append(image_object_dictionary)       
         return image_object_dict_list
 
     def convert_entire_raw_file_to_dicts(self):
@@ -160,29 +164,28 @@ class read_charon_tra():
  
         file_dialog.close()
 
-    '''
-    define limits for those animals on land not swimming:
-    Land is defined by 
-    x0=660px/1402  = 0.47075606276747506
-    y0=0px/788     = 0.0 
-    x1=1402px/1402 = 1.0
-    y1=272px/788   = 0.34517766497461927
+    def test_if_animal_in_roi(self,center_of_mass):
+        # test if there is a roi = polygon
+        if self.roi:
+            point_of_mass = Point(center_of_mass)
+            return point_of_mass.within(self.roi)
+        # if no roi is defined return that the animal is in it as it only needs to be detected
+        else:
+            return True
+        
+    def delete_empty_frames(self):
+        self.image_object_data = [inner_list for inner_list in self.image_object_data if len(inner_list)> 1]
+        
+    def chose_best_detection(self):
+        for i in range(len(self.image_object_data)):
+            frame = self.image_object_data[i]
+            if len(frame)>2:
+                # Could be that all obkects are sorted by their quality and this might be superfluous
+                qualities = [img_object['quality'] for img_object in frame[1::] ]
+                max_index = np.argmax(qualities)
+                frame =  [frame[0],frame[max_index+1]]
+                self.image_object_data[i] = frame
 
-    total image is x=1402 y=788px
-
-    to set limits to ignore datapoints:
-    all animals detected for x > 666/1402
-                             y < 272/788
-    should be ignored 
-    
-     x0,y0------
-        |         |
-        | ._q0p_. |
-        | '=(_)=' 
-        |  / V \  |
-        | (_/^\_) |
-        |         |
-        |-----x1,y1'''
     def only_read_specific_lines_from_tra_file(self):
         mp4_file_name = os.path.basename(self.file_position)[:-3]+"mp4"
         data = pd.read_csv(self.indice_file)
@@ -190,18 +193,22 @@ class read_charon_tra():
         for i,x in mp4_file_data.iterrows():
             self.image_object_data = list()
             self.read_file(x.start, x.end-x.start) 
-            if mp4_file_data['x0'][x] >= 666/1402:
-                pass
-            elif mp4_file_data['x1'][x] >= 666/1402: 
-                pass
-            elif mp4_file_data['y0'][x] <= 272/788: 
-                pass
-            elif mp4_file_data['y1'][x] <= 272/788: 
-                pass
-            else: 
-            # use region of interest
-                df = pd.DataFrame(self.image_object_data[:][1],index=self.image_object_data[:][0])
-                df.to_hdf("iterierenderName.h5")
+            self.delete_empty_frames()
+            self.chose_best_detection()
+            df = pd.DataFrame([frame[1] for frame in self.image_object_data],
+                              index= [frame[0] for frame in self.image_object_data])
+            df['center_of_mass_x'] = df['centerOfMass'].apply(lambda x: x[1])
+            df['center_of_mass_y'] = df['centerOfMass'].apply(lambda x: x[0])
+            df['bounding_box_x0']  = df['boundingBox'].apply(lambda x: x[1])
+            df['bounding_box_y0']  = df['boundingBox'].apply(lambda x: x[0])
+            df['bounding_box_x1']  = df['boundingBox'].apply(lambda x: x[3])
+            df['bounding_box_y1']  = df['boundingBox'].apply(lambda x: x[2])
+            df = df.drop('centerOfMass', axis=1)
+            df = df.drop('boundingBox', axis=1)
+
+            return df
+            #df.to_hdf("iterierenderName.h5", key='trace')
+
 
 
         #self.read_file(mp4_file_data['start'][0],mp4_file_data['end'][0])
@@ -209,70 +216,19 @@ class read_charon_tra():
 
 if __name__ == '__main__':
     source_file = '/home/bgeurten/penguins/Rockhopper_05-03-2021.tra' 
-    reader = read_charon_tra(source_file)
-    reader.only_read_specific_lines_from_tra_file()
-    print(reader.image_object_data,len(reader.image_object_data))
-
-
-'''        
-
-import matplotlib.path as mpath
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
-from matplotlib import cm
-import itertools
-class plotCharonFood:
-    def __init__(self):
-        pass
-
-    def boundingBox2MPLrect(self,boundingBox,edgeColor, labelStr = ""):
-        # Bounding box of an image object is ymin,xmin,ymax,xmax
-        # also the y axis is inverse
-        # matplotlib patches expects xmin and ymin plus width and height of the box
-
-        # add a rectangle
-        rect = mpatches.Rectangle((boundingBox[1],boundingBox[0]),boundingBox[3]-boundingBox[1],boundingBox[2]-boundingBox[0],
-                                edgecolor = edgeColor, fill=False,label=labelStr,linewidth=1)
-        return rect
-
-    def mplRects4ImgObjList(self,imgObjList, edgeColor='g', labelTag='imgObj'):
-        imgObjRects = list()
-        imgObjC = 0
-        for imgObj in imgObjList:
-            imgObjRects.append(self.boundingBox2MPLrect(imgObj['boundingBox'],edgeColor, labelTag +'_'+str(imgObjC)))
-            imgObjC += 1
-        return imgObjRects
-
-    def plotRecognisedImgObjBoundBoxes(self,arenaList,flyList):
-        objectRects  = self.mplRects4ImgObjList(flyList,edgeColor=[0, 0, 1],labelTag ='fly')
-        objectRects += self.mplRects4ImgObjList(arenaList,edgeColor= [1,0,0], labelTag ='arena')
-        
-        fig, ax = plt.subplots()
-
-        for patch in objectRects:
-            ax.add_patch(patch)
-        plt.axis('equal')
-        plt.show()
-
-    def plotFlyAssignmentControll(self,arenaList,videoFly,step =1):
-        # colormap
-        plasmaCM  = cm.get_cmap('plasma', 54)
-        plasmaCol = plasmaCM.colors
-        # make arenas
-        objectRects = self.mplRects4ImgObjList(arenaList,edgeColor= [0.5,0.5,0.5], labelTag ='arena')
-        # figure window
-        fig, ax = plt.subplots()
-        # add arena patches
-        for patch in objectRects:
-            ax.add_patch(patch)
-        # add flies
-        for flyList in itertools.islice(videoFly,0,None,step):
-            for i in range(54):
-                if flyList[i] is not None:
-                    ax.add_patch(self.boundingBox2MPLrect(flyList[i]['boundingBox'],edgeColor=plasmaCol[i], labelStr = "fly"))
-
-        plt.axis('equal')
-        #plt.show()
-''' 
+    indice_file = '/home/bgeurten/penguins/Penguin_video_data.csv'
+    #roi in pixel coordinates
+    roi = np.array([(0,0),(660,0),(660,272),(1402,272),(1402,788),(0,788)],dtype=float)
+    # roi in rel. coordinates
+    roi[:,0]=roi[:,0]/1402.
+    roi[:,1]=roi[:,1]/788.
+    # roi in tensorflow coordinates
+    roi = np.fliplr(roi)
+    reader = read_charon_tra(source_file,indice_file,roi)
+    df = reader.only_read_specific_lines_from_tra_file()
+    
+    
+    # Reindex the DataFrame with a complete range of indices
+    min_idx, max_idx = df.index.min(), df.index.max()
+    df_reindexed = df.reindex(range(min_idx, max_idx + 1))
+    df_interpolated = df_reindexed.interpolate(method='polynomial', order=2)
