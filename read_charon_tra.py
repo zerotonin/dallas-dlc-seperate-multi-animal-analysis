@@ -229,6 +229,10 @@ if __name__ == '__main__':
     
     
     # Reindex the DataFrame with a complete range of indices
-    min_idx, max_idx = df.index.min(), df.index.max()
-    df_reindexed = df.reindex(range(min_idx, max_idx + 1))
-    df_interpolated = df_reindexed.interpolate(method='polynomial', order=2)
+    #min_idx, max_idx = df.index.min(), df.index.max()
+    #df_reindexed = df.reindex(range(min_idx, max_idx + 1))
+    #df_interpolated = df_reindexed.interpolate(method='polynomial', order=2)
+    # import matplotlib.pyplot as plt   
+    #df_interpolated.plot('center_of_mass_x','center_of_mass_y')
+    #plt.show()
+ 
