@@ -287,29 +287,66 @@ class TrajectoryProcessor:
         saccade_df.reset_index(drop=True)
         return  saccade_df
     
-    def artifact_avoidance(self, saccade_df, max_duration_sec =1, max_speed_degPsec= 300):
-        '''To extract only the biological relevant saccades detected by the peak finder,
-        we here define two values as biological limits for a saccade
-        1 = duration < 1s (30 frames)
-        2 = amplitude in degPsec < 300
-        '''
-        return  saccade_df.drop(saccade_df[(saccade_df.amplitude_degPsec > max_speed_degPsec)|(saccade_df.saccade_duration_s > max_duration_sec)].index)
+    def filter_artifacts(self, saccade_df, max_duration_sec=2, max_speed_degPsec=700):
+        """
+        Filters out saccades that are not biologically relevant based on specified duration and amplitude thresholds.
 
-    def save_saccade_data(self, df_interp, df_real_saccades):
+        Parameters
+        ----------
+        saccade_df : pd.DataFrame
+            DataFrame containing saccade information.
+        max_duration_sec : float, optional
+            Maximum allowed duration for a biologically relevant saccade in seconds (default is 2 seconds).
+        max_speed_degPsec : float, optional
+            Maximum allowed amplitude for a biologically relevant saccade in degrees per second (default is 700 deg/sec).
+
+        Returns
+        -------
+        saccade_df_filtered : pd.DataFrame
+            DataFrame containing saccade information after filtering out non-biologically relevant saccades.
+        """
+        # Drop saccades with amplitude > max_speed_degPsec or duration > max_duration_sec
+        saccade_df_filtered = saccade_df.drop(saccade_df[(saccade_df.amplitude_degPsec > max_speed_degPsec) | 
+                                                        (saccade_df.saccade_duration_s > max_duration_sec)].index)
+        return saccade_df_filtered
+
+
+    def extract_one_sec_saccades(self, df_interp, df_real_saccades):
+        """
+        Extracts one-second saccade data from interpolated DataFrame and real saccade DataFrame.
+
+        Parameters
+        ----------
+        df_interp : pd.DataFrame
+            Interpolated DataFrame containing saccade information.
+        df_real_saccades : pd.DataFrame
+            DataFrame containing real saccade information.
+
+        Returns
+        -------
+        one_sec_saccade_list : list
+            List of one-second saccade DataFrames.
+        """
         one_sec_saccade_list = list()
         half_window = int(self.frame_rate/2)
+
+        # Iterate through real saccades
         for i, row in df_real_saccades.iterrows():
             saccade_data = df_interp.loc[df_interp['segment'] == int(row['segment'])] 
             saccade_data = saccade_data.dropna()
             peak_index = int(row.peak_orig_index)
+
+            # Extract one-second saccade data
             one_sec_saccade = saccade_data.loc[np.arange(peak_index-half_window, peak_index+half_window)]
 
+            # Adjust yaw_rad and yaw_deg relative to the mean of the first two values
             one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,1]].yaw_rad.mean()
             one_sec_saccade['yaw_deg'] = np.rad2deg(one_sec_saccade.yaw_rad)
 
             one_sec_saccade_list.append(one_sec_saccade)
-        
+
         return one_sec_saccade_list
+
             
 
 
