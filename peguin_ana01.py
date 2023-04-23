@@ -272,18 +272,19 @@ class TrajectoryProcessor:
             df_temp = df_interp.loc[df_interp.segment == i,:]
 
             peak_pos, peak_data = find_peaks(df_temp['rot_speed_degPs'], prominence=threshold)
-            peak_pos_time   = (df_interp.index[peak_pos]/self.frame_rate).to_numpy()
-            peak_start_time = (df_interp.index[peak_data['left_bases']]/self.frame_rate).to_numpy()
-            peak_end_time   = (df_interp.index[peak_data['right_bases']]/self.frame_rate).to_numpy()
+            peak_orig_index = df_temp.index[peak_pos]
+            peak_pos_time   = (df_temp.index[peak_pos]/self.frame_rate).to_numpy()
+            peak_start_time = (df_temp.index[peak_data['left_bases']]/self.frame_rate).to_numpy()
+            peak_end_time   = (df_temp.index[peak_data['right_bases']]/self.frame_rate).to_numpy()
             peak_duration   = peak_end_time - peak_start_time
             peak_amplitude = peak_data['prominences']
-            saccade_temp_df = pd.DataFrame(np.stack([peak_pos_time, peak_start_time, peak_end_time, peak_amplitude, peak_duration]).T,
-                    columns=['saccade_peak_s', 'saccade_start_s', 'saccade_stop_s', 'amplitude_degPsec', 'saccade_duration_s'])
+            saccade_temp_df = pd.DataFrame(np.stack([peak_pos_time, peak_start_time, peak_end_time, peak_amplitude, peak_duration, peak_orig_index]).T,
+                    columns=['saccade_peak_s', 'saccade_start_s', 'saccade_stop_s', 'amplitude_degPsec', 'saccade_duration_s','peak_orig_index'])
             saccade_temp_df['segment'] = i
             saccade_df_list.append(saccade_temp_df)
         saccade_df = pd.concat(saccade_df_list)
         saccade_df = self.artifact_avoidance(saccade_df)
-        saccade_df.reset_index(drop=True,inplace=True)
+        saccade_df.reset_index(drop=True)
         return  saccade_df
     
     def artifact_avoidance(self, saccade_df, max_duration_sec =1, max_speed_degPsec= 300):
