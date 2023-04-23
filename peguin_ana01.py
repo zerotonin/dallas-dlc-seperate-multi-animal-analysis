@@ -91,6 +91,37 @@ class TrajectoryProcessor:
         self.df.bounding_box_y0  = self.df.bounding_box_y0 * self.image_height * self.pix2m
         self.df.bounding_box_x1  = self.df.bounding_box_x1 * self.image_width * self.pix2m
         self.df.bounding_box_y1  = self.df.bounding_box_y1 * self.image_height * self.pix2m
+
+    def continuous_angle(self, angles):
+        """
+        Convert an array of angles to continuous angles by removing discontinuities caused by wrapping around 2*pi.
+
+        This function takes an array of angles (in radians) and returns a new array where the angles are continuous,
+        meaning that if the input angles jump from a value close to 2*pi to a value close to 0, the output angles
+        will continue to increase beyond 2*pi, maintaining the continuity.
+
+        Args:
+            angles (np.ndarray): A 1D numpy array containing angles in radians.
+
+        Returns:
+            np.ndarray: A 1D numpy array containing the continuous angles.
+
+        Example:
+            >>> angles = np.array([0, 1, 2, 3, 0, 1, 2, 3])
+            >>> continuous_angles = continuous_angle(angles)
+            >>> continuous_angles
+            array([0., 1., 2., 3., 4., 5., 6., 7.])
+        """
+        continuous_angles = np.zeros_like(angles)
+        continuous_angles[0] = angles[0]
+        for i in range(1, len(angles)):
+            diff = angles[i] - angles[i - 1]
+            if diff > np.pi:
+                diff -= 2 * np.pi
+            elif diff < -np.pi:
+                diff += 2 * np.pi
+            continuous_angles[i] = continuous_angles[i - 1] + diff
+        return continuous_angles
     
     def calc_yaw_from_heading(self, df):
         """
@@ -112,8 +143,10 @@ class TrajectoryProcessor:
             diff_x.iloc[0] =diff_x.iloc[1]
             diff_y.iloc[0] =diff_y.iloc[1]
             yaw = np.arctan2(diff_y, diff_x)
-            # Unwrap the phase angles to avoid jumps when moving over the pi/2 position
+            # Unwrap the phase angles to avoid jumps when moving over the pi/2 position, as resulting from, np.atan2
             unwrapped_yaw = np.unwrap(yaw)
+            # For speed calculations we need a continous angle observation so that no jumps over 2pi or -2pi are produced
+            unwrapped_yaw = self.continuous_angle(yaw)
             # save results
             df_temp['yaw_rad'] = unwrapped_yaw
             df_list.append(df_temp)
@@ -249,74 +282,35 @@ class TrajectoryProcessor:
             saccade_temp_df['segment'] = i
             saccade_df_list.append(saccade_temp_df)
         saccade_df = pd.concat(saccade_df_list)
+        saccade_df = self.artifact_avoidance(saccade_df)
         saccade_df.reset_index(drop=True,inplace=True)
         return  saccade_df
-
     
+    def artifact_avoidance(self, saccade_df, max_duration_sec =1, max_speed_degPsec= 300):
+        '''To extract only the biological relevant saccades detected by the peak finder,
+        we here define two values as biological limits for a saccade
+        1 = duration < 1s (30 frames)
+        2 = amplitude in degPsec < 300
+        '''
+        return  saccade_df.drop(saccade_df[(saccade_df.amplitude_degPsec > max_speed_degPsec)|(saccade_df.saccade_duration_s > max_duration_sec)].index)
+
+    def save_saccade_data(self, df_interp, df_real_saccades):
+        one_sec_saccade_list = list()
+        for i, row in df_real_saccades.iterrows():
+            saccade_data = df_interp.loc[df_interp['segment'] == int(row['segment'])] 
+            saccade_data = saccade_data.dropna()
+            saccade_peak  = saccade_data.loc[saccade_data['rot_speed_degPs'].abs() == float(row['amplitude_degPsec'])]
+            one_sec_saccade = saccade_data.loc[np.arange(saccade_peak.index.values[0]-5, saccade_peak.index.values[0]+5)]
+
+            one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,1]].yaw_rad.mean()
+            one_sec_saccade['yaw_deg'] = np.rad2deg(one_sec_saccade.yaw_rad)
+
+            one_sec_saccade_list.append(one_sec_saccade)
+        
+        return one_sec_saccade_list
+            
 
 
 
 
-pix2m      = np.array([0.97/124.6,0.3/66,0.4/76.2]).mean()
-im_height  = 788
-im_width   = 1402
-frame_rate = 30
 
-
-df = pd.read_hdf('/media/anne/Samsung_T5/PHD/penguins/Gentoo/Gentoo_02-03-2021_Dato1.h5','trace')
-
-tp = TrajectoryProcessor(df,im_width,im_height,pix2m,frame_rate)
-df_interp,df_saccades = tp.main()
-df_temp = df_interp.loc[df_interp.segment == 10,:]
-fig = tp.plot_quiver(df_temp)
-plt.show()
-df_temp.rot_speed_degPs.plot()
-plt.show()
-
-
-
-
-'''To extract only the biological relevant saccades detected by the peak finder,
-we here define two values as biological limits for a saccade
-1 = duration < 1s (30 frames)
-2 = amplitude in degPsec < 300
-'''
-
-df_realSaccades = df_saccades.drop(df_saccades[(df_saccades.amplitude_degPsec > 300)|(df_saccades.saccade_duration_s > 1)].index)
-
-"""for each saccade in df_realSaccades we need to read out the yaw velocity and yaw angle stored in the df_interp.index"""
-
-for i, row in df_realSaccades.interrows():
-
-    saccade_data = df_interp.loc[df_interp['segment'] == int(df_realSaccades.iloc[[row]].segment)] #take the data from df.interp for segment 
-    saccade_data = saccade_data.dropna()
-    saccadePeak  = saccade_data.loc[saccade_data['rot_speed_degPs'] == float(df_realSaccades.iloc[[row]].amplitude_degPsec)] #find the frame with the saccadic peak
-    oneSecSaccade = saccade_data.loc[np.arange(saccadePeak.index.values[0]-5,saccadePeak.index.values[0]+5)] # create a new dataframe sourrounding the saccadic peak (in total 30frames) currently using 5 as 15 is extending the Dataset
-    
-    oneSecSaccade['yaw_rad'] = oneSecSaccade.yaw_rad - oneSecSaccade.iloc[[0,1]].yaw_rad.mean() #normalize yaw to basement yaw before start of saccade
-    oneSecSaccade.yaw_deg = np.rad2deg(oneSecSaccade.yaw_rad)
-    oneSecSaccade.to_csv("/media/anne/Samsung_T5/PHD/saccadicData.csv",index=False) # still needs to be automated for the for loop
-
-    oneSecSaccade.rot_speed_degPs.plot()
-    plt.show()
-    oneSecSaccade.yaw_deg.plot()
-    plt.show()
-
-#######
-# here is the code that can be ran in ipython that works already. the for loops still gives to many error since it cant find the saccade peaks
-#######
-
-row = 0
-saccade_data = df_interp.loc[df_interp['segment'] == int(df_realSaccades.iloc[[row]].segment)] #take the data from df.interp for segment 
-saccade_data = saccade_data.dropna()
-saccadePeak  = saccade_data.loc[saccade_data['rot_speed_degPs'] == float(df_realSaccades.iloc[[row]].amplitude_degPsec)] #find the frame with the saccadic peak
-oneSecSaccade = saccade_data.loc[np.arange(saccadePeak.index.values[0]-5,saccadePeak.index.values[0]+5)] # create a new dataframe sourrounding the saccadic peak (in total 30frames) currently using 5 as 15 is extending the Dataset
-    
-oneSecSaccade['yaw_rad'] = oneSecSaccade.yaw_rad - oneSecSaccade.iloc[[0,1]].yaw_rad.mean() #normalize yaw to basement yaw before start of saccade
-oneSecSaccade.yaw_deg = np.rad2deg(oneSecSaccade.yaw_rad)
-oneSecSaccade.to_csv("/media/anne/Samsung_T5/PHD/saccadicData.csv",index=False) # still needs to be automated for the for loop
-
-oneSecSaccade.rot_speed_degPs.plot()
-plt.show()
-oneSecSaccade.yaw_deg.plot()
-plt.show()
