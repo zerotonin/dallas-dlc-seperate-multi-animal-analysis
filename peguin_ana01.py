@@ -297,11 +297,12 @@ class TrajectoryProcessor:
 
     def save_saccade_data(self, df_interp, df_real_saccades):
         one_sec_saccade_list = list()
+        half_window = int(self.frame_rate/2)
         for i, row in df_real_saccades.iterrows():
             saccade_data = df_interp.loc[df_interp['segment'] == int(row['segment'])] 
             saccade_data = saccade_data.dropna()
-            saccade_peak  = saccade_data.loc[saccade_data['rot_speed_degPs'].abs() == float(row['amplitude_degPsec'])]
-            one_sec_saccade = saccade_data.loc[np.arange(saccade_peak.index.values[0]-5, saccade_peak.index.values[0]+5)]
+            peak_index = int(row.peak_orig_index)
+            one_sec_saccade = saccade_data.loc[np.arange(peak_index-half_window, peak_index+half_window)]
 
             one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,1]].yaw_rad.mean()
             one_sec_saccade['yaw_deg'] = np.rad2deg(one_sec_saccade.yaw_rad)
