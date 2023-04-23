@@ -2,12 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
+from scipy.signal import find_peaks
 class TrajectoryProcessor:
     """
     A class to process trajectories from a DataFrame, including interpolating missing data, converting coordinates,
     calculating yaw angles, applying a Gaussian low-pass filter, and plotting a quiver plot.
     """
-    def __init__(self, df, image_width, image_height, pix2m,frame_rate, gap = 10, filt_sigma =2):
+    def __init__(self, df, image_width, image_height, pix2m,frame_rate, gap = 10, filt_sigma =3):
         """
         Initialize the TrajectoryProcessor with the given DataFrame and parameters.
 
@@ -99,7 +100,7 @@ class TrajectoryProcessor:
             df (pd.DataFrame): The input DataFrame containing trajectory data.
 
         Returns:
-            pd.DataFrame: The input DataFrame with an additional 'yaw' column containing the calculated yaw angles.
+            pd.DataFrame: The input DataFrame with an additional 'yaw_rad' column containing the calculated yaw angles.
         """
         df_list = list()
         for i in range(int(df.segment.max())):
@@ -114,7 +115,7 @@ class TrajectoryProcessor:
             # Unwrap the phase angles to avoid jumps when moving over the pi/2 position
             unwrapped_yaw = np.unwrap(yaw)
             # save results
-            df_temp['yaw'] = unwrapped_yaw
+            df_temp['yaw_rad'] = unwrapped_yaw
             df_list.append(df_temp)
         return pd.concat(df_list)
     
@@ -164,7 +165,7 @@ class TrajectoryProcessor:
             df_temp = df.loc[df.segment == i,:]
             # Calculate the norm of the difference vector
             df_temp['trans_speed_mPs'] = np.sqrt(df_temp.center_of_mass_x.diff()**2 + df_temp.center_of_mass_x.diff()**2)*self.frame_rate
-            df_temp['rot_speed_mPs'] = df_temp.yaw.diff()*self.frame_rate
+            df_temp['rot_speed_degPs'] = np.rad2deg(df_temp.yaw_rad.diff())*self.frame_rate
             df_list.append(df_temp)
         return pd.concat(df_list)
 
@@ -182,11 +183,12 @@ class TrajectoryProcessor:
         df_interp = self.apply_low_pass_filter(df_interp)
         df_interp = self.calc_yaw_from_heading(df_interp)
         df_interp = self.calc_speeds(df_interp)
+        df_saccades = self.find_saccades(df_interp,180)
 
-        return df_interp
+        return df_interp,df_saccades
         
 
-    def plot_quiver(self, df, x_col='center_of_mass_x', y_col='center_of_mass_y', yaw_col='yaw',step=2):
+    def plot_quiver(self, df, x_col='center_of_mass_x', y_col='center_of_mass_y', yaw_col='yaw_rad',step=2):
         """
         Create a quiver plot of the input DataFrame's yaw angles.
 
@@ -216,6 +218,38 @@ class TrajectoryProcessor:
         plt.axis('equal')
 
         return fig
+    
+
+    def find_saccades(self, df_interp, threshold):
+        """
+        Finds the peaks in the signal with a given prominence threshold.
+
+        Parameters
+        ----------
+        threshold : float
+            The prominence threshold for detecting peaks.
+
+        Returns
+        -------
+        saccade_df : pd.DataFrame
+            A DataFrame containing the saccade times, start and stop times, and amplitudes.
+        """
+        saccade_df_list = list()
+        for i in range(int(df_interp.segment.max())):
+            df_temp = df_interp.loc[df_interp.segment == i,:]
+
+            peak_pos, peak_data = find_peaks(df_temp['rot_speed_degPs'], prominence=threshold)
+            peak_pos_time   = (df_interp.index[peak_pos]/self.frame_rate).to_numpy()
+            peak_start_time = (df_interp.index[peak_data['left_bases']]/self.frame_rate).to_numpy()
+            peak_end_time   = (df_interp.index[peak_data['right_bases']]/self.frame_rate).to_numpy()
+            peak_amplitude = peak_data['prominences']
+            saccade_temp_df = pd.DataFrame(np.stack([peak_pos_time, peak_start_time, peak_end_time, peak_amplitude]).T,
+                    columns=['saccade_peak_s', 'saccade_start_s', 'saccade_stop_s', 'amplitude_degPsec'])
+            saccade_temp_df['segment'] = i
+            saccade_df_list.append(saccade_temp_df)
+        saccade_df = pd.concat(saccade_df_list)
+        saccade_df.reset_index(drop=True,inplace=True)
+        return  saccade_df
 
 
 
@@ -229,6 +263,9 @@ frame_rate = 30
 df = pd.read_hdf('/home/bgeurten/penguins/sorted and filtered/Gentoo_02-03-2021_Dato1.h5','trace')
 
 tp = TrajectoryProcessor(df,im_width,im_height,pix2m,frame_rate)
-df_interp = tp.main()
+df_interp,df_saccades = tp.main()
 df_temp = df_interp.loc[df_interp.segment == 10,:]
 fig = tp.plot_quiver(df_temp)
+plt.show()
+df_temp.rot_speed_degPs.plot()
+plt.show()
