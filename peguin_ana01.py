@@ -283,7 +283,7 @@ class TrajectoryProcessor:
             saccade_temp_df['segment'] = i
             saccade_df_list.append(saccade_temp_df)
         saccade_df = pd.concat(saccade_df_list)
-        saccade_df = self.artifact_avoidance(saccade_df)
+        saccade_df = self.filter_artifacts(saccade_df)
         saccade_df.reset_index(drop=True)
         return  saccade_df
     
