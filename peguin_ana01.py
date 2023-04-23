@@ -242,14 +242,17 @@ class TrajectoryProcessor:
             peak_pos_time   = (df_interp.index[peak_pos]/self.frame_rate).to_numpy()
             peak_start_time = (df_interp.index[peak_data['left_bases']]/self.frame_rate).to_numpy()
             peak_end_time   = (df_interp.index[peak_data['right_bases']]/self.frame_rate).to_numpy()
+            peak_duration   = peak_end_time - peak_start_time
             peak_amplitude = peak_data['prominences']
-            saccade_temp_df = pd.DataFrame(np.stack([peak_pos_time, peak_start_time, peak_end_time, peak_amplitude]).T,
-                    columns=['saccade_peak_s', 'saccade_start_s', 'saccade_stop_s', 'amplitude_degPsec'])
+            saccade_temp_df = pd.DataFrame(np.stack([peak_pos_time, peak_start_time, peak_end_time, peak_amplitude, peak_duration]).T,
+                    columns=['saccade_peak_s', 'saccade_start_s', 'saccade_stop_s', 'amplitude_degPsec', 'saccade_duration_s'])
             saccade_temp_df['segment'] = i
             saccade_df_list.append(saccade_temp_df)
         saccade_df = pd.concat(saccade_df_list)
         saccade_df.reset_index(drop=True,inplace=True)
         return  saccade_df
+
+    
 
 
 
@@ -260,7 +263,7 @@ im_width   = 1402
 frame_rate = 30
 
 
-df = pd.read_hdf('/home/bgeurten/penguins/sorted and filtered/Gentoo_02-03-2021_Dato1.h5','trace')
+df = pd.read_hdf('/media/anne/Samsung_T5/PHD/penguins/Gentoo/Gentoo_02-03-2021_Dato1.h5','trace')
 
 tp = TrajectoryProcessor(df,im_width,im_height,pix2m,frame_rate)
 df_interp,df_saccades = tp.main()
@@ -268,4 +271,52 @@ df_temp = df_interp.loc[df_interp.segment == 10,:]
 fig = tp.plot_quiver(df_temp)
 plt.show()
 df_temp.rot_speed_degPs.plot()
+plt.show()
+
+
+
+
+'''To extract only the biological relevant saccades detected by the peak finder,
+we here define two values as biological limits for a saccade
+1 = duration < 1s (30 frames)
+2 = amplitude in degPsec < 300
+'''
+
+df_realSaccades = df_saccades.drop(df_saccades[(df_saccades.amplitude_degPsec > 300)|(df_saccades.saccade_duration_s > 1)].index)
+
+"""for each saccade in df_realSaccades we need to read out the yaw velocity and yaw angle stored in the df_interp.index"""
+
+for i, row in df_realSaccades.interrows():
+
+    saccade_data = df_interp.loc[df_interp['segment'] == int(df_realSaccades.iloc[[row]].segment)] #take the data from df.interp for segment 
+    saccade_data = saccade_data.dropna()
+    saccadePeak  = saccade_data.loc[saccade_data['rot_speed_degPs'] == float(df_realSaccades.iloc[[row]].amplitude_degPsec)] #find the frame with the saccadic peak
+    oneSecSaccade = saccade_data.loc[np.arange(saccadePeak.index.values[0]-5,saccadePeak.index.values[0]+5)] # create a new dataframe sourrounding the saccadic peak (in total 30frames) currently using 5 as 15 is extending the Dataset
+    
+    oneSecSaccade['yaw_rad'] = oneSecSaccade.yaw_rad - oneSecSaccade.iloc[[0,1]].yaw_rad.mean() #normalize yaw to basement yaw before start of saccade
+    oneSecSaccade.yaw_deg = np.rad2deg(oneSecSaccade.yaw_rad)
+    oneSecSaccade.to_csv("/media/anne/Samsung_T5/PHD/saccadicData.csv",index=False) # still needs to be automated for the for loop
+
+    oneSecSaccade.rot_speed_degPs.plot()
+    plt.show()
+    oneSecSaccade.yaw_deg.plot()
+    plt.show()
+
+#######
+# here is the code that can be ran in ipython that works already. the for loops still gives to many error since it cant find the saccade peaks
+#######
+
+row = 0
+saccade_data = df_interp.loc[df_interp['segment'] == int(df_realSaccades.iloc[[row]].segment)] #take the data from df.interp for segment 
+saccade_data = saccade_data.dropna()
+saccadePeak  = saccade_data.loc[saccade_data['rot_speed_degPs'] == float(df_realSaccades.iloc[[row]].amplitude_degPsec)] #find the frame with the saccadic peak
+oneSecSaccade = saccade_data.loc[np.arange(saccadePeak.index.values[0]-5,saccadePeak.index.values[0]+5)] # create a new dataframe sourrounding the saccadic peak (in total 30frames) currently using 5 as 15 is extending the Dataset
+    
+oneSecSaccade['yaw_rad'] = oneSecSaccade.yaw_rad - oneSecSaccade.iloc[[0,1]].yaw_rad.mean() #normalize yaw to basement yaw before start of saccade
+oneSecSaccade.yaw_deg = np.rad2deg(oneSecSaccade.yaw_rad)
+oneSecSaccade.to_csv("/media/anne/Samsung_T5/PHD/saccadicData.csv",index=False) # still needs to be automated for the for loop
+
+oneSecSaccade.rot_speed_degPs.plot()
+plt.show()
+oneSecSaccade.yaw_deg.plot()
 plt.show()
