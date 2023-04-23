@@ -146,7 +146,7 @@ class TrajectoryProcessor:
             # Unwrap the phase angles to avoid jumps when moving over the pi/2 position, as resulting from, np.atan2
             unwrapped_yaw = np.unwrap(yaw)
             # For speed calculations we need a continous angle observation so that no jumps over 2pi or -2pi are produced
-            unwrapped_yaw = self.continuous_angle(yaw)
+            unwrapped_yaw = self.continuous_angle(unwrapped_yaw)
             # save results
             df_temp['yaw_rad'] = unwrapped_yaw
             df_list.append(df_temp)
