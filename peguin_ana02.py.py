@@ -47,11 +47,11 @@ df_saccades = pd.concat(saccade_list)
 fig, axes = plt.subplots(4, 1, figsize=(10, 10))
 
 # Plot median angle
-axes[0].plot(np.nanmean(angle, axis=0))
+axes[0].plot(np.nanmedian(angle, axis=0))
 axes[0].set_title('Median Angle')
 
 # Plot median angle velocity
-axes[1].plot(np.nanmean(angle_vel, axis=0))
+axes[1].plot(np.nanmedian(angle_vel, axis=0))
 axes[1].set_title('Median Angle Velocity')
 
 # Plot saccade duration histogram
@@ -59,7 +59,7 @@ axes[2].hist(df_saccades.saccade_duration_s)
 axes[2].set_title('Saccade Duration Histogram')
 
 # Plot amplitude histogram
-axes[3].hist(df_saccades.amplitude_degPsec)
+axes[3].hist(df_saccades.amplitude_deg)
 axes[3].set_title('Amplitude Histogram')
 
 # Show the figure
