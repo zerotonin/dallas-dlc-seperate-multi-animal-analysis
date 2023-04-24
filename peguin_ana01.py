@@ -8,7 +8,7 @@ class TrajectoryProcessor:
     A class to process trajectories from a DataFrame, including interpolating missing data, converting coordinates,
     calculating yaw angles, applying a Gaussian low-pass filter, and plotting a quiver plot.
     """
-    def __init__(self, df, image_width, image_height, pix2m,frame_rate, gap = 10, filt_sigma =3):
+    def __init__(self, df, image_width, image_height, pix2m,frame_rate, gap = 10, filt_sigma =4):
         """
         Initialize the TrajectoryProcessor with the given DataFrame and parameters.
 
@@ -134,7 +134,7 @@ class TrajectoryProcessor:
             pd.DataFrame: The input DataFrame with an additional 'yaw_rad' column containing the calculated yaw angles.
         """
         df_list = list()
-        for i in range(int(df.segment.max())):
+        for i in range(int(df.segment.max()+1)):
             df_temp = df.loc[df.segment == i,:]
             # get change in x an y position 
             diff_x = df_temp.center_of_mass_x.diff()
@@ -150,7 +150,10 @@ class TrajectoryProcessor:
             # save results
             df_temp['yaw_rad'] = unwrapped_yaw
             df_list.append(df_temp)
-        return pd.concat(df_list)
+        if len(df_list) > 0:
+            return pd.concat(df_list)
+        else:
+            return None
     
 
     def apply_low_pass_filter(self,df):
@@ -175,7 +178,7 @@ class TrajectoryProcessor:
       
             for column in segment_df.select_dtypes(include=[np.number]).columns:
                 if column != 'segment':
-                    segment_df[column] = gaussian_filter1d(segment_df[column], self.filt_sigma)
+                    segment_df[column] = gaussian_filter1d(segment_df[column], self.filt_sigma, order=1)
 
             # Append the filtered segment data to the filtered_df DataFrame
             filtered_df = filtered_df.append(segment_df)
@@ -194,7 +197,7 @@ class TrajectoryProcessor:
             pd.DataFrame: The input DataFrame with additional 'trans_speed_mPs' and 'rot_speed_mPs' columns containing the calculated speeds.
         """
         df_list = list()
-        for i in range(int(df.segment.max())):
+        for i in range(int(df.segment.max()+1)):
             df_temp = df.loc[df.segment == i,:]
             # Calculate the norm of the difference vector
             df_temp['trans_speed_mPs'] = np.sqrt(df_temp.center_of_mass_x.diff()**2 + df_temp.center_of_mass_x.diff()**2)*self.frame_rate
@@ -268,7 +271,7 @@ class TrajectoryProcessor:
             A DataFrame containing the saccade times, start and stop times, and amplitudes.
         """
         saccade_df_list = list()
-        for i in range(int(df_interp.segment.max())):
+        for i in range(int(df_interp.segment.max()+1)):
             df_temp = df_interp.loc[df_interp.segment == i,:]
 
             peak_pos, peak_data = find_peaks(df_temp['rot_speed_degPs'], prominence=threshold)
@@ -330,8 +333,13 @@ class TrajectoryProcessor:
         """
         start_index = max(saccade_data.index.min(), peak_index - half_window)
         end_index = min(saccade_data.index.max(), peak_index + half_window)
+    
+        one_sec_saccade = saccade_data.loc[start_index:end_index]
 
-        return saccade_data.loc[np.arange(start_index, end_index)]
+        start_shift = start_index -(peak_index -half_window)
+        end_shift = end_index - (peak_index + half_window)
+        
+        return one_sec_saccade, start_shift, end_shift
 
     def extract_one_sec_saccades(self, df_interp, df_real_saccades):
         """
@@ -350,6 +358,7 @@ class TrajectoryProcessor:
             List of one-second saccade DataFrames.
         """
         half_window = int(self.frame_rate/2)
+        full_length = half_window*2+1
 
         angle = list()
         angle_vel = list()
@@ -360,24 +369,36 @@ class TrajectoryProcessor:
             saccade_data = saccade_data.dropna()
             peak_index = int(row.peak_orig_index)
         
-        # Extract one-second saccade data
-        try:
-            one_sec_saccade = saccade_data.loc[np.arange(peak_index - half_window, peak_index + half_window)]
-        except KeyError:
-            # If the full window cannot be used, adjust the window size
-            one_sec_saccade = self.extract_adjusted_window_saccades(saccade_data, peak_index, half_window)
+            # Extract one-second saccade data
+            try:
+                one_sec_saccade = saccade_data.loc[np.arange(peak_index - half_window, peak_index + half_window +1)]
+                start_shift = 0
+                end_shift   = 0
+            except KeyError:
+                # If the full window cannot be used, adjust the window size
+                one_sec_saccade,start_shift,end_shift = self.extract_adjusted_window_saccades(saccade_data, peak_index, half_window)
 
-
+            one_sec_saccade = one_sec_saccade.copy()
             # Adjust yaw_rad and yaw_deg relative to the mean of the first two values
             one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,1]].yaw_rad.mean()
             one_sec_saccade['yaw_rad'] = one_sec_saccade['yaw_rad'].abs() 
             one_sec_saccade['yaw_deg'] = np.rad2deg(one_sec_saccade.yaw_rad)
             one_sec_saccade.rot_speed_degPs = one_sec_saccade.rot_speed_degPs.abs()  
 
-            angle.append(one_sec_saccade.yaw_deg.to_numpy())
-            angle_vel.append(one_sec_saccade.rot_speed_degPs.to_numpy())
+            # Fill missing values with np.nan to keep the saccade peak at half_window + 1
+            filled_yaw_deg = np.full(2 * half_window +1, np.nan)
+            filled_rot_speed_degPs = np.full(2 * half_window +1, np.nan)
 
-        return np.vstack(angle),np.vstack(angle_vel)
+            filled_yaw_deg[start_shift:full_length+end_shift] = one_sec_saccade.yaw_deg.to_numpy()
+            filled_rot_speed_degPs[start_shift:full_length+end_shift] = one_sec_saccade.rot_speed_degPs.to_numpy()
+
+            angle.append(filled_yaw_deg)
+            angle_vel.append(filled_rot_speed_degPs)
+
+        if len(angle)> 0:
+            return np.vstack(angle),np.vstack(angle_vel)
+        else:
+            return None,None
 
             
 
