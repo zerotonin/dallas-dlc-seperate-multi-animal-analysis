@@ -8,7 +8,7 @@ class TrajectoryProcessor:
     A class to process trajectories from a DataFrame, including interpolating missing data, converting coordinates,
     calculating yaw angles, applying a Gaussian low-pass filter, and plotting a quiver plot.
     """
-    def __init__(self, df, image_width, image_height, pix2m,frame_rate, gap = 10, filt_sigma =4):
+    def __init__(self, df, image_width, image_height, pix2m,frame_rate, gap = 10, filt_sigma =3, filt_order =1):
         """
         Initialize the TrajectoryProcessor with the given DataFrame and parameters.
 
@@ -29,6 +29,7 @@ class TrajectoryProcessor:
         self.gap          = gap
         self.min_len      = filt_sigma
         self.filt_sigma   = filt_sigma
+        self.filt_order   = filt_order
 
     def get_trajectory_segments(self):
         """
@@ -147,6 +148,8 @@ class TrajectoryProcessor:
             unwrapped_yaw = np.unwrap(yaw)
             # For speed calculations we need a continous angle observation so that no jumps over 2pi or -2pi are produced
             unwrapped_yaw = self.continuous_angle(unwrapped_yaw)
+            # filter yaw
+            unwrapped_yaw = gaussian_filter1d(unwrapped_yaw, self.filt_sigma, order=self.filt_order)
             # save results
             df_temp['yaw_rad'] = unwrapped_yaw
             df_list.append(df_temp)
@@ -178,7 +181,7 @@ class TrajectoryProcessor:
       
             for column in segment_df.select_dtypes(include=[np.number]).columns:
                 if column != 'segment':
-                    segment_df[column] = gaussian_filter1d(segment_df[column], self.filt_sigma, order=1)
+                    segment_df[column] = gaussian_filter1d(segment_df[column], self.filt_sigma, order=self.filt_order)
 
             # Append the filtered segment data to the filtered_df DataFrame
             filtered_df = filtered_df.append(segment_df)
@@ -290,7 +293,7 @@ class TrajectoryProcessor:
         saccade_df.reset_index(drop=True)
         return  saccade_df
     
-    def filter_artifacts(self, saccade_df, max_duration_sec=2, max_speed_degPsec=700):
+    def filter_artifacts(self, saccade_df, max_duration_sec=1, max_speed_degPsec=700):
         """
         Filters out saccades that are not biologically relevant based on specified duration and amplitude thresholds.
 
