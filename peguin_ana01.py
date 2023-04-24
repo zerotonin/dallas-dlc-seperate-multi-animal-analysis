@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
-from scipy.signal import find_peaks
+from scipy.signal import find_peaks, peak_widths
 class TrajectoryProcessor:
     """
     A class to process trajectories from a DataFrame, including interpolating missing data, converting coordinates,
@@ -277,23 +277,31 @@ class TrajectoryProcessor:
         for i in range(int(df_interp.segment.max()+1)):
             df_temp = df_interp.loc[df_interp.segment == i,:]
 
-            peak_pos, peak_data = find_peaks(df_temp['rot_speed_degPs'], prominence=threshold)
-            peak_orig_index = df_temp.index[peak_pos]
-            peak_pos_time   = (df_temp.index[peak_pos]/self.frame_rate).to_numpy()
-            peak_start_time = (df_temp.index[peak_data['left_bases']]/self.frame_rate).to_numpy()
-            peak_end_time   = (df_temp.index[peak_data['right_bases']]/self.frame_rate).to_numpy()
-            peak_duration   = peak_end_time - peak_start_time
-            peak_amplitude = peak_data['prominences']
-            saccade_temp_df = pd.DataFrame(np.stack([peak_pos_time, peak_start_time, peak_end_time, peak_amplitude, peak_duration, peak_orig_index]).T,
-                    columns=['saccade_peak_s', 'saccade_start_s', 'saccade_stop_s', 'amplitude_degPsec', 'saccade_duration_s','peak_orig_index'])
+            sacc_peak_pos, sacc_peak_data = find_peaks(df_temp['rot_speed_degPs'].abs(), height=threshold,distance=self.frame_rate/10)
+            peak_orig_index = df_temp.index[sacc_peak_pos]
+            sacc_dur,_,sacc_start,sacc_stop = peak_widths(df_temp['rot_speed_degPs'].abs(), sacc_peak_pos, rel_height=0.95)
+
+
+            sacc_start_index = df_temp.index[np.rint(sacc_start).astype(int)].to_numpy()
+            sacc_stop_index  = df_temp.index[np.rint(sacc_stop).astype(int)].to_numpy()
+            sacc_peak_time   = (df_temp.index[sacc_peak_pos]/self.frame_rate).to_numpy()
+
+            sacc_amplitude = np.rad2deg(np.abs(df_temp.yaw_rad[sacc_stop_index].to_numpy()-df_temp.yaw_rad[sacc_start_index].to_numpy()))
+
+            sacc_duration   = sacc_dur/self.frame_rate
+            sacc_top_speed  = sacc_peak_data['peak_heights']
+            saccade_temp_df = pd.DataFrame(np.stack([sacc_peak_time, sacc_start_index,peak_orig_index, sacc_stop_index, sacc_amplitude, sacc_top_speed, sacc_duration ]).T,
+                    columns=['saccade_peak_s', 'saccade_start_idx','sacc_peak_idx', 'saccade_stop_idx', 'amplitude_deg', 'top_speed_degPs', 'saccade_duration_s'])
+            
             saccade_temp_df['segment'] = i
             saccade_df_list.append(saccade_temp_df)
+
         saccade_df = pd.concat(saccade_df_list)
         saccade_df = self.filter_artifacts(saccade_df)
         saccade_df.reset_index(drop=True)
         return  saccade_df
     
-    def filter_artifacts(self, saccade_df, max_duration_sec=1, max_speed_degPsec=700):
+    def filter_artifacts(self, saccade_df, max_duration_sec=1, max_speed_degPsec=1000, min_amplitude_deg =10):
         """
         Filters out saccades that are not biologically relevant based on specified duration and amplitude thresholds.
 
@@ -312,8 +320,9 @@ class TrajectoryProcessor:
             DataFrame containing saccade information after filtering out non-biologically relevant saccades.
         """
         # Drop saccades with amplitude > max_speed_degPsec or duration > max_duration_sec
-        saccade_df_filtered = saccade_df.drop(saccade_df[(saccade_df.amplitude_degPsec > max_speed_degPsec) | 
-                                                        (saccade_df.saccade_duration_s > max_duration_sec)].index)
+        saccade_df_filtered = saccade_df.drop(saccade_df[(saccade_df.top_speed_degPs > max_speed_degPsec) | 
+                                                        (saccade_df.saccade_duration_s > max_duration_sec)  |
+                                                        (saccade_df.amplitude_deg < min_amplitude_deg)].index)
         return saccade_df_filtered
     
     def extract_adjusted_window_saccades(self, saccade_data, peak_index, half_window):
@@ -370,7 +379,7 @@ class TrajectoryProcessor:
         for i, row in df_real_saccades.iterrows():
             saccade_data = df_interp.loc[df_interp['segment'] == int(row['segment'])] 
             saccade_data = saccade_data.dropna()
-            peak_index = int(row.peak_orig_index)
+            peak_index = int(row.sacc_peak_idx)
         
             # Extract one-second saccade data
             try:
@@ -383,7 +392,7 @@ class TrajectoryProcessor:
 
             one_sec_saccade = one_sec_saccade.copy()
             # Adjust yaw_rad and yaw_deg relative to the mean of the first two values
-            one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,1]].yaw_rad.mean()
+            one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,3]].yaw_rad.mean()
             one_sec_saccade['yaw_rad'] = one_sec_saccade['yaw_rad'].abs() 
             one_sec_saccade['yaw_deg'] = np.rad2deg(one_sec_saccade.yaw_rad)
             one_sec_saccade.rot_speed_degPs = one_sec_saccade.rot_speed_degPs.abs()  
