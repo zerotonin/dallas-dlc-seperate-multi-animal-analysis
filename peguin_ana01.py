@@ -309,7 +309,29 @@ class TrajectoryProcessor:
         saccade_df_filtered = saccade_df.drop(saccade_df[(saccade_df.amplitude_degPsec > max_speed_degPsec) | 
                                                         (saccade_df.saccade_duration_s > max_duration_sec)].index)
         return saccade_df_filtered
+    
+    def extract_adjusted_window_saccades(self, saccade_data, peak_index, half_window):
+        """
+        Extracts saccade data using an adjusted window size if the full window cannot be used.
 
+        Parameters
+        ----------
+        saccade_data : pd.DataFrame
+            DataFrame containing saccade data.
+        peak_index : int
+            Index of the saccade peak.
+        half_window : int
+            Half of the desired window size.
+
+        Returns
+        -------
+        adjusted_saccade : pd.DataFrame
+            DataFrame containing saccade data with adjusted window size.
+        """
+        start_index = max(0, peak_index - half_window)
+        end_index = min(len(saccade_data) - 1, peak_index + half_window)
+
+        return saccade_data.loc[np.arange(start_index, end_index)]
 
     def extract_one_sec_saccades(self, df_interp, df_real_saccades):
         """
@@ -327,25 +349,35 @@ class TrajectoryProcessor:
         one_sec_saccade_list : list
             List of one-second saccade DataFrames.
         """
-        one_sec_saccade_list = list()
         half_window = int(self.frame_rate/2)
+
+        angle = list()
+        angle_vel = list()
 
         # Iterate through real saccades
         for i, row in df_real_saccades.iterrows():
             saccade_data = df_interp.loc[df_interp['segment'] == int(row['segment'])] 
             saccade_data = saccade_data.dropna()
             peak_index = int(row.peak_orig_index)
+        
+        # Extract one-second saccade data
+        try:
+            one_sec_saccade = saccade_data.loc[np.arange(peak_index - half_window, peak_index + half_window)]
+        except KeyError:
+            # If the full window cannot be used, adjust the window size
+            one_sec_saccade = self.extract_adjusted_window_saccades(saccade_data, peak_index, half_window)
 
-            # Extract one-second saccade data
-            one_sec_saccade = saccade_data.loc[np.arange(peak_index-half_window, peak_index+half_window)]
 
             # Adjust yaw_rad and yaw_deg relative to the mean of the first two values
             one_sec_saccade['yaw_rad'] = one_sec_saccade.yaw_rad - one_sec_saccade.iloc[[0,1]].yaw_rad.mean()
+            one_sec_saccade['yaw_rad'] = one_sec_saccade['yaw_rad'].abs() 
             one_sec_saccade['yaw_deg'] = np.rad2deg(one_sec_saccade.yaw_rad)
+            one_sec_saccade.rot_speed_degPs = one_sec_saccade.rot_speed_degPs.abs()  
 
-            one_sec_saccade_list.append(one_sec_saccade)
+            angle.append(one_sec_saccade.yaw_deg.to_numpy())
+            angle_vel.append(one_sec_saccade.rot_speed_degPs.to_numpy())
 
-        return one_sec_saccade_list
+        return np.vstack(angle),np.vstack(angle_vel)
 
             
 
