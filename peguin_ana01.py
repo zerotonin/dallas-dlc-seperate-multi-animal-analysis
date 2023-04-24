@@ -328,8 +328,8 @@ class TrajectoryProcessor:
         adjusted_saccade : pd.DataFrame
             DataFrame containing saccade data with adjusted window size.
         """
-        start_index = max(0, peak_index - half_window)
-        end_index = min(len(saccade_data) - 1, peak_index + half_window)
+        start_index = max(saccade_data.index.min(), peak_index - half_window)
+        end_index = min(saccade_data.index.max(), peak_index + half_window)
 
         return saccade_data.loc[np.arange(start_index, end_index)]
 
