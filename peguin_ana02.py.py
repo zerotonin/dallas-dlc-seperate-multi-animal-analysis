@@ -19,14 +19,35 @@ file_list = glob.glob(os.path.join(path_to_penguins, f'**/*{file_extension}'), r
 saccade_list = list()
 angle_list = list()
 angle_vel_list = list()
+c = 0 
+d = 0
 
 for file_path in file_list:
-df = pd.read_hdf(f'{path_to_penguins}Gentoo_02-03-2021_Dato1.h5','trace')
+    df = pd.read_hdf(file_path)
 
-tp = TrajectoryProcessor(df,im_width,im_height,pix2m,frame_rate)
-df_interp,df_saccades = tp.main()
+    c +=1
 
-angle,angle_vel =tp.extract_one_sec_saccades(df_interp,df_saccades)
-df_temp = df_interp.loc[df_interp.segment == 10,:]
+    tp = TrajectoryProcessor(df,im_width,im_height,pix2m,frame_rate)
+    df_interp,df_saccades = tp.main()
+
+    if df_saccades is not None:
+        d +=1
+        angle,angle_vel =tp.extract_one_sec_saccades(df_interp,df_saccades)
+        saccade_list.append(df_saccades)
+        angle_list.append(angle)
+        angle_vel_list.append(angle_vel)
+        print(c,d,angle.shape)
+
+angle = np.vstack(angle_list)
+angle_vel = np.vstack(angle_vel_list)
+df_saccades = pd.concat(saccade_list)
 
 
+
+plt.plot(np.mean(angle, axis=0))
+
+
+plt.plot(np.mean(angle_vel, axis=0))
+plt.show()
+df_saccades.saccade_duration_s.hist()
+df_saccades.amplitude_degPsec.hist()
