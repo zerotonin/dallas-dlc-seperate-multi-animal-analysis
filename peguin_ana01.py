@@ -412,7 +412,66 @@ class TrajectoryProcessor:
         else:
             return None,None
 
-            
+    def extract_saccades(self, df_interp, df_real_saccades, half_window_size):
+        """
+        Extracts saccade data of a specified window size from interpolated DataFrame and real saccade DataFrame.
+
+        Parameters
+        ----------
+        df_interp : pd.DataFrame
+            Interpolated DataFrame containing saccade information.
+        df_real_saccades : pd.DataFrame
+            DataFrame containing real saccade information.
+        half_window_size : int
+            Half the size of the window for extracting saccades, in frames.
+
+        Returns
+        -------
+        saccade_list : list
+            List of saccade DataFrames.
+        """
+        half_window = half_window_size
+        full_length = half_window*2+1
+
+        angle = list()
+        angle_vel = list()
+
+        # Iterate through real saccades
+        for i, row in df_real_saccades.iterrows():
+            saccade_data = df_interp.loc[df_interp['segment'] == int(row['segment'])] 
+            saccade_data = saccade_data.dropna()
+            peak_index = int(row.sacc_peak_idx)
+        
+            # Extract saccade data of the specified window size
+            try:
+                saccades = saccade_data.loc[np.arange(peak_index - half_window, peak_index + half_window +1)]
+                start_shift = 0
+                end_shift   = 0
+            except KeyError:
+                # If the full window cannot be used, adjust the window size
+                saccades,start_shift,end_shift = self.extract_adjusted_window_saccades(saccade_data, peak_index, half_window)
+
+            saccades = saccades.copy()
+            # Adjust yaw_rad and yaw_deg relative to the mean of the first two values
+            saccades['yaw_rad'] = saccades.yaw_rad - saccades.iloc[[0,3]].yaw_rad.mean()
+            saccades['yaw_rad'] = saccades['yaw_rad'].abs() 
+            saccades['yaw_deg'] = np.rad2deg(saccades.yaw_rad)
+            saccades.rot_speed_degPs = saccades.rot_speed_degPs.abs()  
+
+            # Fill missing values with np.nan to keep the saccade peak at half_window + 1
+            filled_yaw_deg = np.full(2 * half_window +1, np.nan)
+            filled_rot_speed_degPs = np.full(2 * half_window +1, np.nan)
+
+            filled_yaw_deg[start_shift:full_length+end_shift] = saccades.yaw_deg.to_numpy()
+            filled_rot_speed_degPs[start_shift:full_length+end_shift] = saccades.rot_speed_degPs.to_numpy()
+
+            angle.append(filled_yaw_deg)
+            angle_vel.append(filled_rot_speed_degPs)
+
+        if len(angle)> 0:
+            return np.vstack(angle),np.vstack(angle_vel)
+        else:
+            return None,None
 
 
 
