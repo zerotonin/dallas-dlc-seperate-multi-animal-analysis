@@ -337,7 +337,7 @@ class SaccadeAnalysis:
         return pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix
 
 
-    def main(self,angles,threshold, plot_now = False):
+    def main(self,angles,threshold,window_size, plot_now = False):
         """
         This is the main function for analyzing saccades from given angles and a threshold for peak angular velocity. 
         
@@ -377,8 +377,9 @@ class SaccadeAnalysis:
         """
 
         angles, velocities = self.compute_angular_velocity(angles)
+        angles = np.rad2deg(angles)
         saccades = self.find_saccades(angles,velocities,threshold=threshold)
-        pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = self.get_saccade_triggered_average(angles,velocities,100)
+        pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = self.get_saccade_triggered_average(angles,velocities,window_size)
         if plot_now:
             self.plot_saccades(angles,velocities,saccades)
 
