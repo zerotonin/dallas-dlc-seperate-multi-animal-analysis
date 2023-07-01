@@ -344,7 +344,7 @@ class SaccadeAnalysis:
         It first computes the angular velocities from the angles, then finds saccades based on the computed velocities and provided threshold.
         It proceeds to extract saccade-triggered windows around each saccade peak, separates positive and negative saccades,
         normalizes the saccades, and transforms the data into matrices for further analysis.
-        Finally, it plots the angular velocities with marks indicating saccade start, peak, and stop points.
+        If the plot_now parameter is set to True, it plots the angular velocities with marks indicating saccade start, peak, and stop points.
 
         Parameters
         ----------
@@ -353,6 +353,10 @@ class SaccadeAnalysis:
 
         threshold : float
             Threshold for peak angular velocity (in degrees per second) to define a saccade.
+        
+        plot_now : bool, optional
+            If set to True, the function plots the angular velocities with marks indicating saccade start, peak, and stop points. 
+            Default is False.
 
         Returns
         -------
