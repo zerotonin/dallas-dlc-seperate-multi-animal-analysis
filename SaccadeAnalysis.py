@@ -384,3 +384,56 @@ class SaccadeAnalysis:
             self.plot_saccades(angles,velocities,saccades)
 
         return saccades,pos_angle_matrix,pos_velocity_matrix,neg_angle_matrix,neg_velocity_matrix
+    
+
+    def collect_more_triggered_data(self, saccades, data_array, window_length):
+        """
+        Collects windowed data around the saccade peaks from the given data_array, 
+        separated by positive and negative amplitude saccades.
+
+        Parameters:
+        -----------
+        saccades : list of dicts
+            List containing information about each saccade, including the peak index and amplitude.
+        
+        data_array : np.ndarray
+            1D array containing the data for which the triggered data is to be collected.
+        
+        window_length : int
+            The length of the window around each peak for which the triggered data is collected.
+
+        Returns:
+        --------
+        pos_triggered_matrix : np.ndarray
+            2D array containing the collected windowed data for saccades with positive amplitude.
+        
+        neg_triggered_matrix : np.ndarray
+            2D array containing the collected windowed data for saccades with negative amplitude.
+        """
+        half_window = window_length // 2
+        pos_triggered_matrix = []
+        neg_triggered_matrix = []
+
+        for saccade in saccades:
+            peak_idx = saccade['sacc_peak_idx']
+            amplitude = saccade['amplitude_deg']
+            start_idx = max(0, peak_idx - half_window)
+            end_idx = min(len(data_array), peak_idx + half_window)
+
+            # Extract the data around the peak
+            window_data = data_array[start_idx:end_idx]
+
+            # Pad window_data if it's shorter than window_length
+            if len(window_data) < window_length:
+                padding = window_length - len(window_data)
+                window_data = np.pad(window_data, (0, padding), 'constant', constant_values=np.nan)
+
+            if amplitude > 0:
+                pos_triggered_matrix.append(window_data)
+            else:
+                neg_triggered_matrix.append(window_data)
+
+        pos_triggered_matrix = np.array(pos_triggered_matrix)
+        neg_triggered_matrix = np.array(neg_triggered_matrix)
+        
+        return pos_triggered_matrix, neg_triggered_matrix
