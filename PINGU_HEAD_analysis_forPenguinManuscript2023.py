@@ -220,8 +220,6 @@ def plot_multi_triggered_avg(mean_list, error_list, ylabel, time_ax, labels):
     plt.xlabel('Time (ms)')
     plt.ylabel(ylabel)
     plt.legend()
-    plt.show()
-
 
 def append_if_non_empty(accumulated_list, array_to_append):
     if np.size(array_to_append) > 0:
@@ -253,7 +251,7 @@ def normalize_angle_matrices(angle_matrices):
     return [np.apply_along_axis(sa.normalize_angle_data, 1, matrix) for matrix in angle_matrices]
 
 
-def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
+def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length ,mode = 'head'):
     """Analyzes a DataFrame grouped by 'Identifier', accumulating saccade-related matrices.
 
     Parameters:
@@ -269,18 +267,28 @@ def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
     saccades_accumulated = []
     accumulated_lists = [[] for _ in range(8)]
 
+    if mode == 'head':
+        primary =  'head_yaw_rad'
+        secondaries = ('body_yaw_rad','body_yaw_speed')
+    elif mode == 'body':
+        primary =  'body_yaw_rad'
+        secondaries = ('head_yaw_rad','head_yaw_speed')
+    else:
+        raise ValueError(f'analyze_grouped_data: Unknown mode {mode}' )
+
+
     for name, group in grouped_df:
         print(f"Processing Identifier: {name}")
         
         # Identify saccades and other related parameters
-        saccades, pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = sa.main(group['head_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
+        saccades, pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = sa.main(group[primary].to_numpy(), angle_vel_threshold, window_length, False)
 
         # Save output
         saccades_accumulated += saccades
 
         # Collect more triggered data for body angles and velocities
-        pos_body_angle_matrix, neg_body_angle_matrix = sa.collect_more_triggered_data(saccades, np.degrees(group['body_yaw_rad'].to_numpy()), window_length)
-        pos_body_velocity_matrix, neg_body_velocity_matrix = sa.collect_more_triggered_data(saccades, group['body_yaw_speed'].to_numpy(), window_length)
+        pos_body_angle_matrix, neg_body_angle_matrix = sa.collect_more_triggered_data(saccades, np.degrees(group[secondaries[0]].to_numpy()), window_length)
+        pos_body_velocity_matrix, neg_body_velocity_matrix = sa.collect_more_triggered_data(saccades, group[secondaries[1]].to_numpy(), window_length)
         # Normalise body angles
         if pos_body_angle_matrix.size>0:
             pos_body_angle_matrix =  np.apply_along_axis(sa.normalize_angle_data, 1, pos_body_angle_matrix)
@@ -331,8 +339,33 @@ def concatenate_and_invert_matrices(pos_accumulated, neg_accumulated):
     neg_concatenated = np.concatenate(neg_accumulated) * -1
     return np.concatenate((pos_concatenated, neg_concatenated))
 
+def save_last_three_figures(path, suffix):
+    """
+    Saves the last three Matplotlib figures to the specified path with the given suffix in SVG and PNG formats.
 
-def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
+    Parameters:
+    path (str): The directory where the figures will be saved.
+    suffix (str): A suffix to append to the filenames of the saved figures.
+    """
+    # Define the extensions and descriptors for each figure
+    extensions = ['svg', 'png']
+    descriptors = ['saccade_angle_trigAve_', 'saccade_velocity_trigAve_', 'saccade_durationHist_']
+    
+    # Get the last three figure numbers
+    last_three_fig_nums = plt.get_fignums()[-3:]
+    
+    # Loop over each figure number and descriptor
+    for fig_num, descriptor in zip(last_three_fig_nums, descriptors):
+        
+        # Get the figure by its number
+        fig = plt.figure(fig_num)
+        
+        # Loop over each extension to save the figure
+        for ext in extensions:
+            filename = os.path.join(path, f"{descriptor}{suffix}.{ext}")
+            fig.savefig(filename)
+            
+def main(target_folder, mode, frame_rate=25, window_length=25, angle_vel_threshold=250):
     """Main function to execute the data analysis pipeline.
 
     Parameters:
@@ -352,7 +385,7 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
     sa = SaccadeAnalysis.SaccadeAnalysis(frame_rate)
 
     # Perform saccade analysis and accumulate matrices
-    saccades_accumulated, accumulated_lists = analyze_grouped_data(grouped, sa, angle_vel_threshold, window_length)
+    saccades_accumulated, accumulated_lists = analyze_grouped_data(grouped, sa, angle_vel_threshold, window_length,mode)
 
     # Concatenate and invert matrices for plotting
     pos_angle_matrix_accumulated, pos_velocity_matrix_accumulated, neg_angle_matrix_accumulated, neg_velocity_matrix_accumulated, \
@@ -370,14 +403,28 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
     mean_vel_body, sem_vel_body = calculate_mean_and_sem(concatenated_vel_body)
 
     # Here, you can add plotting or other forms of output
+    if mode is 'head':
+        legend_list = ['head','body']
+    else:
+        legend_list = ['body', 'head']
+
     time_ax = np.linspace(-500, 500, window_length)
-    plot_multi_triggered_avg([mean_ang, mean_ang_body], [sem_ang, sem_ang_body], 'angle, deg', time_ax, ['head', 'body'])
-    plot_multi_triggered_avg([mean_vel, mean_vel_body], [sem_vel, sem_vel_body], 'velocity, deg/s', time_ax, ['head', 'body'])
-    plt.show()
+    plot_multi_triggered_avg([mean_ang, mean_ang_body], [sem_ang, sem_ang_body], 'angle, deg', time_ax, legend_list)
+    plot_multi_triggered_avg([mean_vel, mean_vel_body], [sem_vel, sem_vel_body], 'velocity, deg/s', time_ax, legend_list)
+
+    # Create a dataframe from the list of saccades for easier visualization
+    saccades_df = pd.DataFrame(saccades_accumulated)
+    # Convert saccade duration to milliseconds
+    saccades_df['saccade_duration_ms'] = saccades_df.saccade_duration_s*1000
+    # Plot histogram
+    g = sns.displot(saccades_df, x="saccade_duration_ms", stat="probability", bins= np.linspace(10, 100, 10))
+    g.fig.suptitle(f'{legend_list[0]} saccade durations (n = {len(saccades_df)})')
+    save_last_three_figures(f'{target_folder}/figures/', legend_list[0])
+
 
 
 if __name__ == "__main__":
     target_folder = '/home/bgeurten/pengu_head_movies/'
-    main(target_folder)
-
-print('')
+    main(target_folder,'head')
+    main(target_folder,'body')
+    plt.show()
