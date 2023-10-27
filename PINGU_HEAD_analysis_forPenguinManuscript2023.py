@@ -184,65 +184,200 @@ def plot_triggered_avg(mean,error,ylabel,time_ax):
     plt.xlabel('time, ms')
     plt.ylabel(ylabel)
 
-# Usage example:
-target_folder =  '/home/bgeurten/pengu_head_movies/'
-combined_df = read_csvs_into_dataframe(target_folder)
-
-
-# Initialize SaccadeAnalysis with a threshold of 500
-sa = SaccadeAnalysis.SaccadeAnalysis(25)
-
-# Lists to store saccade analysis results
-saccades_accumulated = []
-pos_angle_matrix_accumulated = []
-pos_velocity_matrix_accumulated = []
-neg_angle_matrix_accumulated = []
-neg_velocity_matrix_accumulated = []
-
-# Group the DataFrame by 'Identifier'
-grouped = combined_df.groupby('Identifier')
-
-# Iterate over each group
-for name, group in grouped:
-    print(f"Processing Identifier: {name}")
+def plot_multi_triggered_avg(mean_list, error_list, ylabel, time_ax, labels):
+    """
+    This function creates multiple line plots of the average (triggered) data over time. 
+    It also includes shaded regions indicating the standard error of the mean (SEM) around each line.
     
+    Parameters
+    ----------
+    mean_list : list of array-like
+        List of 1D array-like objects (lists, numpy arrays, etc.) containing the mean data points over time for each condition.
+        
+    error_list : list of array-like
+        List of 1D array-like objects containing the standard error of the mean (SEM) for each data point over time for each condition.
 
-    # Load the data from the .tra file into a numpy matrix
-
+    ylabel : str
+        The label to be set for the y-axis of the plot.
     
-    # Identify saccades and other related parameters using the SaccadeAnalysis object
-    saccades, pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = sa.main(group['head_yaw_rad'].to_numpy(),250,25,False)
-    
-    # Save output
-    saccades_accumulated += saccades
-    pos_angle_matrix_accumulated.append(pos_angle_matrix)
-    pos_velocity_matrix_accumulated.append(pos_velocity_matrix)
-    neg_angle_matrix_accumulated.append(neg_angle_matrix)
-    neg_velocity_matrix_accumulated.append(neg_velocity_matrix)
+    time_ax : array-like
+        1D array-like object indicating the time axis.
 
-# Create a dataframe from the list of saccades for easier visualization
-saccades_df = pd.DataFrame(saccades_accumulated)
+    labels : list of str
+        List of strings for the legend, corresponding to each line.
 
-# Convert saccade duration to milliseconds
-saccades_df['saccade_duration_ms'] = saccades_df.saccade_duration_s*1000
+    Returns
+    -------
+    None. 
+    The function directly generates a plot which displays the mean data with its SEM over time for multiple conditions.
+    """
+    plt.figure(figsize=(10, 6))
+
+    for mean, error, label in zip(mean_list, error_list, labels):
+        plt.plot(time_ax, mean, label=label)
+        plt.fill_between(time_ax, mean - error, mean + error, alpha=0.2)
+
+    plt.xlabel('Time (ms)')
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.show()
 
 
-# Concatenate matrices for plotting
-ang = np.concatenate((np.concatenate(pos_angle_matrix_accumulated),np.concatenate(neg_angle_matrix_accumulated)*-1))
-vel = np.concatenate((np.concatenate(pos_velocity_matrix_accumulated),np.concatenate(neg_velocity_matrix_accumulated)*-1))
+def append_if_non_empty(accumulated_list, array_to_append):
+    if np.size(array_to_append) > 0:
+        accumulated_list.append(array_to_append)
 
-# Calculate mean and SEM for plotting
-mean_ang = np.nanmean(ang, axis=0)
-sem_ang = np.nanstd(ang, axis=0) / np.sqrt(ang.shape[0])
+def accumulate_non_empty_matrices(accumulated_lists, arrays_to_append):
+    """Appends non-empty numpy arrays to their corresponding accumulation lists.
 
-mean_vel = np.nanmean(vel, axis=0)
-sem_vel = np.nanstd(vel, axis=0) / np.sqrt(vel.shape[0])
+    Parameters:
+        accumulated_lists (list): List of lists where arrays are accumulated.
+        arrays_to_append (list): List of numpy arrays to append to the accumulation lists.
 
-# Plot the average angle and velocity with SEM as a transparent area around the line
-time_ax =  np.linspace(-500,500,25)
-plot_triggered_avg(mean_ang, sem_ang, 'angle, deg',time_ax)
-plot_triggered_avg(mean_vel, sem_vel, 'velocity, deg/s',time_ax)
-# Plot the distribution of saccade durations
-sns.displot(saccades_df, x="saccade_duration_ms", stat="probability", bins= np.linspace(10,100,10))
+    Returns:
+        None: The function modifies the accumulated_lists in-place.
+    """
+    for acc_list, array in zip(accumulated_lists, arrays_to_append):
+        append_if_non_empty(acc_list, array)
 
-plt.show()
+
+def normalize_angle_matrices(angle_matrices):
+    """Applies angle normalization on each row of every matrix in a list.
+
+    Parameters:
+        angle_matrices (list): List of numpy matrices to be normalized.
+
+    Returns:
+        list: List of normalized numpy matrices.
+    """
+    return [np.apply_along_axis(sa.normalize_angle_data, 1, matrix) for matrix in angle_matrices]
+
+
+def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
+    """Analyzes a DataFrame grouped by 'Identifier', accumulating saccade-related matrices.
+
+    Parameters:
+        grouped_df (DataFrameGroupBy): DataFrame grouped by 'Identifier'.
+        sa (SaccadeAnalysis): An instance of the SaccadeAnalysis class.
+        angle_vel_threshold (float): Threshold for angular velocity.
+        window_length (int): The window length for the main analysis function.
+
+    Returns:
+        list: Lists containing accumulated saccade data and related matrices.
+    """
+    # Initialize lists to store saccade analysis results
+    saccades_accumulated = []
+    accumulated_lists = [[] for _ in range(8)]
+
+    for name, group in grouped_df:
+        print(f"Processing Identifier: {name}")
+        
+        # Identify saccades and other related parameters
+        saccades, pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = sa.main(group['head_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
+
+        # Save output
+        saccades_accumulated += saccades
+
+        # Collect more triggered data for body angles and velocities
+        pos_body_angle_matrix, neg_body_angle_matrix = sa.collect_more_triggered_data(saccades, np.degrees(group['body_yaw_rad'].to_numpy()), window_length)
+        pos_body_velocity_matrix, neg_body_velocity_matrix = sa.collect_more_triggered_data(saccades, group['body_yaw_speed'].to_numpy(), window_length)
+        # Normalise body angles
+        if pos_body_angle_matrix.size>0:
+            pos_body_angle_matrix =  np.apply_along_axis(sa.normalize_angle_data, 1, pos_body_angle_matrix)
+        if neg_body_angle_matrix.size>0:
+            neg_body_angle_matrix =  np.apply_along_axis(sa.normalize_angle_data, 1, neg_body_angle_matrix)
+
+        # Append non-empty arrays
+        matrices_to_append = [
+            pos_angle_matrix,
+            pos_velocity_matrix,
+            neg_angle_matrix,
+            neg_velocity_matrix,
+            pos_body_angle_matrix,
+            pos_body_velocity_matrix,
+            neg_body_angle_matrix,
+            neg_body_velocity_matrix
+        ]
+        
+        accumulate_non_empty_matrices(accumulated_lists, matrices_to_append)
+
+    return saccades_accumulated, accumulated_lists
+
+
+def calculate_mean_and_sem(data_matrix):
+    """Calculates the mean and standard error of the mean (SEM) along axis 0 for a given 2D array.
+
+    Parameters:
+        data_matrix (numpy.ndarray): 2D numpy array where each row is a sample.
+
+    Returns:
+        tuple: A tuple containing the mean and SEM arrays.
+    """
+    mean_data = np.nanmean(data_matrix, axis=0)
+    sem_data = np.nanstd(data_matrix, axis=0) / np.sqrt(data_matrix.shape[0])
+    return mean_data, sem_data
+
+def concatenate_and_invert_matrices(pos_accumulated, neg_accumulated):
+    """Concatenates positive and negative matrices, inverting the latter.
+
+    Parameters:
+        pos_accumulated (list of numpy.ndarray): List of 2D arrays with positive values.
+        neg_accumulated (list of numpy.ndarray): List of 2D arrays with negative values.
+
+    Returns:
+        numpy.ndarray: A 2D array containing the concatenated and inverted matrices.
+    """
+    pos_concatenated = np.concatenate(pos_accumulated)
+    neg_concatenated = np.concatenate(neg_accumulated) * -1
+    return np.concatenate((pos_concatenated, neg_concatenated))
+
+
+def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
+    """Main function to execute the data analysis pipeline.
+
+    Parameters:
+        target_folder (str): Path to the folder containing the data files.
+        frame_rate (int): Frame rate of the data, default is 25.
+        window_length (int): The window length for the main analysis function, default is 25.
+        angle_vel_threshold (float): Threshold for angular velocity, default is 250.
+
+    Returns:
+        None: Outputs are saved or plotted.
+    """
+    # Read data and group by 'Identifier'
+    combined_df = read_csvs_into_dataframe(target_folder, frame_rate)
+    grouped = combined_df.groupby('Identifier')
+
+    # Initialize SaccadeAnalysis with a frame rate of 25
+    sa = SaccadeAnalysis.SaccadeAnalysis(frame_rate)
+
+    # Perform saccade analysis and accumulate matrices
+    saccades_accumulated, accumulated_lists = analyze_grouped_data(grouped, sa, angle_vel_threshold, window_length)
+
+    # Concatenate and invert matrices for plotting
+    pos_angle_matrix_accumulated, pos_velocity_matrix_accumulated, neg_angle_matrix_accumulated, neg_velocity_matrix_accumulated, \
+    pos_body_angle_matrix_accumulated, pos_body_velocity_matrix_accumulated, neg_body_angle_matrix_accumulated, neg_body_velocity_matrix_accumulated = accumulated_lists
+
+    concatenated_ang = concatenate_and_invert_matrices(pos_angle_matrix_accumulated, neg_angle_matrix_accumulated)
+    concatenated_vel = concatenate_and_invert_matrices(pos_velocity_matrix_accumulated, neg_velocity_matrix_accumulated)
+    concatenated_ang_body = concatenate_and_invert_matrices(pos_body_angle_matrix_accumulated, neg_body_angle_matrix_accumulated)
+    concatenated_vel_body = concatenate_and_invert_matrices(pos_body_velocity_matrix_accumulated, neg_body_velocity_matrix_accumulated)
+
+    # Calculate mean and SEM
+    mean_ang, sem_ang = calculate_mean_and_sem(concatenated_ang)
+    mean_vel, sem_vel = calculate_mean_and_sem(concatenated_vel)
+    mean_ang_body, sem_ang_body = calculate_mean_and_sem(concatenated_ang_body)
+    mean_vel_body, sem_vel_body = calculate_mean_and_sem(concatenated_vel_body)
+
+    # Here, you can add plotting or other forms of output
+    time_ax = np.linspace(-500, 500, window_length)
+    plot_multi_triggered_avg([mean_ang, mean_ang_body], [sem_ang, sem_ang_body], 'angle, deg', time_ax, ['head', 'body'])
+    plot_multi_triggered_avg([mean_vel, mean_vel_body], [sem_vel, sem_vel_body], 'velocity, deg/s', time_ax, ['head', 'body'])
+    plt.show()
+
+
+if __name__ == "__main__":
+    target_folder = '/home/bgeurten/pengu_head_movies/'
+    main(target_folder)
+
+print('')
