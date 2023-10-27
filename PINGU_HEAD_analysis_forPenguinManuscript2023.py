@@ -282,6 +282,8 @@ def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length ,mod
         
         # Identify saccades and other related parameters
         saccades, pos_angle_matrix, pos_velocity_matrix, neg_angle_matrix, neg_velocity_matrix = sa.main(group[primary].to_numpy(), angle_vel_threshold, window_length, False)
+        saccades =  [{**d, 'id': name} for d in saccades]
+
 
         # Save output
         saccades_accumulated += saccades
@@ -420,7 +422,7 @@ def main(target_folder, mode, frame_rate=25, window_length=25, angle_vel_thresho
     g = sns.displot(saccades_df, x="saccade_duration_ms", stat="probability", bins= np.linspace(10, 100, 10))
     g.fig.suptitle(f'{legend_list[0]} saccade durations (n = {len(saccades_df)})')
     save_last_three_figures(f'{target_folder}/figures/', legend_list[0])
-
+    saccades_df.to_csv(f'{target_folder}/saccade_data/saccades_{mode}.csv', index=False)
 
 
 if __name__ == "__main__":
