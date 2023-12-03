@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
 import scipy.stats
 import SaccadeAnalysis
+import seaborn as sns
 
 
 def butter_lowpass_filter(data, cutoff_freq, sample_rate):
@@ -188,8 +189,11 @@ def process_identifier_group(name, group, sa, angle_vel_threshold, window_length
             # Collecting triggered data for each saccade
             trig_data = collect_triggered_data_for_saccade(saccade, group, sa, window_length)
             trig_saccades.extend(trig_data)
+    body_saccade_df = pd.DataFrame(body_saccades)
+    body_saccade_df['id'] = name
+    body_saccade_df['category'] = 'body'
 
-    return {'saccades': saccades_accumulated, 'trig_saccades': trig_saccades}
+    return {'saccades': saccades_accumulated, 'trig_saccades': trig_saccades, 'body_saccades':body_saccade_df}
 
 def collect_triggered_data_for_saccade(saccade, group, sa, window_length):
     """
@@ -249,17 +253,19 @@ def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
     """
     saccades_accumulated = []
     trig_saccades = []
+    body_saccades = []
+
 
     for name, group in grouped_df:
         print(f"Processing Identifier: {name}")
         processed_data = process_identifier_group(name, group, sa, angle_vel_threshold, window_length)
         saccades_accumulated.extend(processed_data['saccades'])
         trig_saccades.extend(processed_data['trig_saccades'])
-
+        body_saccades.append(processed_data['body_saccades']
+)
     all_trig_saccades_df = pd.concat(trig_saccades, ignore_index=True)
     saccades_df = pd.DataFrame(saccades_accumulated)
-    return saccades_df, all_trig_saccades_df
-
+    return saccades_df, all_trig_saccades_df, body_saccades
 
 def categorise_saccade_type(head_saccades: pd.DataFrame, body_saccades: pd.DataFrame, time_threshold: float = 1.0) -> list:
     """
@@ -434,7 +440,29 @@ def plot_saccade_data(df):
     plt.tight_layout()
     plt.show()
 
+def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_flag = False):
+    """
+    Plots a boxplot with a logarithmic y-axis.
 
+    Parameters:
+    df (pandas.DataFrame): The DataFrame containing the data.
+    data_col (str): The name of the column for data values.
+    category_col (str): The name of the column for categories.
+    category_order (list): The specific order of categories for the plot.
+    """
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x=category_col, y=data_col, data=df, order=category_order, notch=True)
+
+    # Set the y-axis to logarithmic scale
+    if log_flag == True:
+        plt.yscale('log')
+
+    # Additional customizations
+    plt.title('Boxplot of ' + data_col + ' by ' + category_col)
+    plt.xlabel(category_col.capitalize())
+    plt.ylabel(data_col.capitalize())
+
+ 
 
             
 def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
@@ -463,16 +491,24 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
     sa = SaccadeAnalysis.SaccadeAnalysis(frame_rate)
 
     # Perform saccade analysis and accumulate matrices
-    saccades_df, trig_average_df = analyze_grouped_data(grouped, sa, angle_vel_threshold, window_length)
+    saccades_df, trig_average_df,body_saccades = analyze_grouped_data(grouped, sa, angle_vel_threshold, window_length)
     trig_average_df = flip_left_saccades(trig_average_df)
     mean_triggered_average = calculate_mean_ci_for_all_saccades(trig_average_df)
-
+    
+    # combine for comaprison plots
+    body_saccades.append(saccades_df)
+    saccades_df = pd.concat(body_saccades)
+    saccades_df['abs_speed_degPs'] = saccades_df.top_speed_degPs.abs()
     # plotting
+    sacc_type_comparison_plots(saccades_df, 'saccade_duration_s', 'category', ['free', 'associated', 'body'],True)
+    sacc_type_comparison_plots(saccades_df, 'abs_speed_degPs', 'category', ['free', 'associated', 'body'])
     plot_saccade_data(mean_triggered_average)   
-
+    print()
 
 
 if __name__ == "__main__":
     target_folder = '/home/bgeurten/pengu_head_movies/'
     main(target_folder)
     plt.show()
+
+
