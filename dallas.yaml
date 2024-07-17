@@ -19,6 +19,7 @@ dependencies:
 - tqdm
 - openpyxl
 - pip   
+- scipy
 - pip:
     - vidstab[cv2]
     - pympler
