@@ -147,7 +147,19 @@ def main():
     df_inter_saccs = pd.DataFrame() 
     df_inter_saccs['species'] =species
     df_inter_saccs['inter_sacc_dur_sec'] = np.hstack((inter_saccades_gentoo,inter_saccades_rock))
-    df_inter_saccs.to_csv('/home/geuba03p/Penguin_Rostock/penguins/body_inter_saccade_dur.csv')
+    df_inter_saccs.to_csv('/home/geuba03p/Penguin_Rostock/penguins/body_inter_saccade_dur.csv',index=False)
+
+
+
+
+    saccade_dur_gentoo = saccade_list['gentoo'].saccade_duration_s.to_numpy()
+    saccade_dur_rock = saccade_list['rockhopper'].saccade_duration_s.to_numpy()
+    species = ['gentoo' for i in saccade_dur_gentoo] + ['rockhopper' for i in saccade_dur_rock ]
+
+    df_saccdur = pd.DataFrame() 
+    df_saccdur['species'] =species
+    df_saccdur['sacc_dur_sec'] = np.hstack((saccade_dur_gentoo,saccade_dur_rock))
+    df_saccdur.to_csv('/home/geuba03p/Penguin_Rostock/penguins/body_saccade_dur.csv',index=False)
     save_attributes(saccade_attrib, "/home/geuba03p/Penguin_Rostock/saccade_attributes.txt")
 
 if __name__ == "__main__":
