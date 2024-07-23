@@ -132,7 +132,7 @@ def main():
             angle, angle_vel = tp.extract_saccades(df_interp, df_saccades, 5)
             inter_saccs = np.vstack((df_saccades.saccade_start_idx[1::].to_numpy(),df_saccades.saccade_stop_idx[0:-1].to_numpy())).T
             inter_saccs =inter_saccs[:,0]-inter_saccs[:,1]
-            inter_saccs =np.abs(inter_saccs / frame_rate) 
+            inter_saccs =inter_saccs[inter_saccs>0] / frame_rate 
             categorize_data(file_path, df_saccades, angle, angle_vel,inter_saccs, saccade_list, angle_list, angle_vel_list, inter_sacc_list)
             d += 1
         c += 1
