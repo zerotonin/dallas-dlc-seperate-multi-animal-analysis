@@ -20,6 +20,7 @@ dependencies:
 - openpyxl
 - pip   
 - scipy
+- seaborn
 - pip:
     - vidstab[cv2]
     - pympler
