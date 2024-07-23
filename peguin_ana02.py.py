@@ -24,19 +24,22 @@ def process_file(file_path, im_width, im_height, pix2m, frame_rate):
     a,b = tp.main()
     return a,b,tp
 
-def categorize_data(file_path, df_saccades, angle, angle_vel, saccade_list, angle_list, angle_vel_list):
+def categorize_data(file_path, df_saccades, angle, angle_vel, inter_saccs, saccade_list, angle_list, angle_vel_list, inter_sacc_list):
     if 'Gentoo' in file_path:
         saccade_list['gentoo'].append(df_saccades)
         angle_list['gentoo'].append(angle)
         angle_vel_list['gentoo'].append(angle_vel)
+        inter_sacc_list['gentoo'].append(inter_saccs)
     elif 'Rockhopper' in file_path:
         saccade_list['rockhopper'].append(df_saccades)
         angle_list['rockhopper'].append(angle)
         angle_vel_list['rockhopper'].append(angle_vel)
+        inter_sacc_list['rockhopper'].append(inter_saccs)
 
     saccade_list['pooled'].append(df_saccades)
     angle_list['pooled'].append(angle)
     angle_vel_list['pooled'].append(angle_vel)
+    inter_sacc_list['pooled'].append(inter_saccs)
 
 def combine_data(saccade_list, angle_list, angle_vel_list):
     for key in saccade_list:
@@ -118,20 +121,33 @@ def main():
     saccade_list = {'gentoo': [], 'rockhopper': [], 'pooled': []}
     angle_list = {'gentoo': [], 'rockhopper': [], 'pooled': []}
     angle_vel_list = {'gentoo': [], 'rockhopper': [], 'pooled': []}
+    inter_sacc_list = {'gentoo': [], 'rockhopper': [], 'pooled': []}
     c = 0
     d = 0
 
     for file_path in file_list:
         df_interp, df_saccades,tp = process_file(file_path, im_width, im_height, pix2m, frame_rate)
+
         if df_saccades is not None:
             angle, angle_vel = tp.extract_saccades(df_interp, df_saccades, 5)
-            categorize_data(file_path, df_saccades, angle, angle_vel, saccade_list, angle_list, angle_vel_list)
+            inter_saccs = np.vstack((df_saccades.saccade_start_idx[1::].to_numpy(),df_saccades.saccade_stop_idx[0:-1].to_numpy())).T
+            inter_saccs =inter_saccs[:,0]-inter_saccs[:,1]
+            inter_saccs =np.abs(inter_saccs / frame_rate) 
+            categorize_data(file_path, df_saccades, angle, angle_vel,inter_saccs, saccade_list, angle_list, angle_vel_list, inter_sacc_list)
             d += 1
         c += 1
         print(c, d, angle.shape)
 
     combine_data(saccade_list, angle_list, angle_vel_list)
     saccade_attrib = plot_data(saccade_list, angle_list, angle_vel_list, frame_rate)
+    inter_saccades_gentoo = np.hstack(inter_sacc_list['gentoo'])
+    inter_saccades_rock = np.hstack(inter_sacc_list['rockhopper'])
+    species = ['gentoo' for i in inter_saccades_gentoo] + ['rockhopper' for i in inter_saccades_rock ]
+
+    df_inter_saccs = pd.DataFrame() 
+    df_inter_saccs['species'] =species
+    df_inter_saccs['inter_sacc_dur_sec'] = np.hstack((inter_saccades_gentoo,inter_saccades_rock))
+    df_inter_saccs.to_csv('/home/geuba03p/Penguin_Rostock/penguins/body_inter_saccade_dur.csv')
     save_attributes(saccade_attrib, "/home/geuba03p/Penguin_Rostock/saccade_attributes.txt")
 
 if __name__ == "__main__":
