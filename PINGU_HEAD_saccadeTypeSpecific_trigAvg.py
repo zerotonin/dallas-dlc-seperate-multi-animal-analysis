@@ -56,6 +56,35 @@ def calculate_vector_angle(df, point1, point2):
     
     return angles
 
+
+def calculate_translational_velocity(df, frame_rate=25):
+    """Calculates the translational velocity based on neck movement, in units of body lengths per second.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing x and y coordinates for neck and caudal, and other required columns.
+        frame_rate (int): The frame rate (fps) to calculate the velocity. Default is 25 fps.
+
+    Returns:
+        pd.DataFrame: DataFrame with an added 'translational_velocity' column.
+    """
+    # Calculate body length as the sum of the neck-to-beak and neck-to-caudal vectors
+    df['neck_caudal_length'] = np.sqrt((df['neck_x'] - df['caudal_x'])**2 + (df['neck_y'] - df['caudal_y'])**2)
+    df['beak_neck_length'] = np.sqrt((df['beak_x'] - df['neck_x'])**2 + (df['beak_y'] - df['neck_y'])**2)
+    df['body_length'] = df['neck_caudal_length'] + df['beak_neck_length']
+    df['body_length'] = butter_lowpass_filter(df['body_length'], 0.995, frame_rate)
+
+    # Calculate displacement of the neck across frames
+    df['neck_disp_x'] = df['neck_x'].diff()
+    df['neck_disp_y'] = df['neck_y'].diff()
+    df['neck_displacement'] = np.sqrt(df['neck_disp_x']**2 + df['neck_disp_y']**2)
+
+    # Calculate translational velocity in units of body lengths per second
+    df['translational_velocity'] = (df['neck_displacement'] / df['body_length']) * frame_rate
+    df['translational_velocity'] = butter_lowpass_filter(df['translational_velocity'], 0.995, frame_rate)
+
+    return df
+
+
 def read_cvs_into_dataframe(target_folder,frame_rate=25):
     """Reads all CSV files in a target folder into a Pandas DataFrame and adds an 'Identifier' field.
 
@@ -80,6 +109,8 @@ def read_cvs_into_dataframe(target_folder,frame_rate=25):
             
             # Combine multi-level columns into a single level with underscore
             df.columns = ['_'.join(col).strip() for col in df.columns.values]
+
+            df = calculate_translational_velocity(df)
 
             # Calculate the angle for the vector from neck to beak
             df['head_yaw_rad'] = calculate_vector_angle(df, 'neck', 'beak')
