@@ -56,7 +56,6 @@ def calculate_vector_angle(df, point1, point2):
     
     return angles
 
-
 def calculate_translational_velocity(df, frame_rate=25, mean_body_len_m = 0.8):
     """Calculates the translational velocity based on neck movement, in units of body lengths per second.
 
@@ -71,16 +70,21 @@ def calculate_translational_velocity(df, frame_rate=25, mean_body_len_m = 0.8):
     df['neck_caudal_length'] = np.sqrt((df['neck_x'] - df['caudal_x'])**2 + (df['neck_y'] - df['caudal_y'])**2)
     df['beak_neck_length'] = np.sqrt((df['beak_x'] - df['neck_x'])**2 + (df['beak_y'] - df['neck_y'])**2)
     df['body_length'] = df['neck_caudal_length'] + df['beak_neck_length']
+    df['body_length'].interpolate(method='linear', inplace=True)
     df['body_length'] = butter_lowpass_filter(df['body_length'], 0.995, frame_rate)
 
     # Calculate displacement of the neck across frames
     df['neck_disp_x'] = df['neck_x'].diff()
     df['neck_disp_y'] = df['neck_y'].diff()
     df['neck_displacement'] = np.sqrt(df['neck_disp_x']**2 + df['neck_disp_y']**2)
+    df.loc[0, 'neck_displacement'] = df.loc[1, 'neck_displacement'] # first value cannot be determined in time array
 
     # Calculate translational velocity in units of body lengths per second
     df['translational_velocity'] = (df['neck_displacement'] / df['body_length']) * frame_rate
-    df['translational_velocity'] = butter_lowpass_filter(df['translational_velocity'], 0.995, frame_rate)
+    df['translational_velocity'].interpolate(method='linear', inplace=True)
+
+    
+    #df['translational_velocity'] = butter_lowpass_filter(df['translational_velocity'], 0.995, frame_rate)
     
     # Translational velocity in meters per second
     df['translational_velocity_mPs'] = df['translational_velocity'] * mean_body_len_m
@@ -541,7 +545,7 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
 
 
 if __name__ == "__main__":
-    target_folder = '/home/bgeurten/pengu_head_movies/'
+    target_folder = '/home/geuba03p/Penguin_Rostock/pengu_head_movies'
     main(target_folder)
     plt.show()
 
