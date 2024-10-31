@@ -57,7 +57,7 @@ def calculate_vector_angle(df, point1, point2):
     return angles
 
 
-def calculate_translational_velocity(df, frame_rate=25):
+def calculate_translational_velocity(df, frame_rate=25, mean_body_len_m = 0.8):
     """Calculates the translational velocity based on neck movement, in units of body lengths per second.
 
     Args:
@@ -81,6 +81,9 @@ def calculate_translational_velocity(df, frame_rate=25):
     # Calculate translational velocity in units of body lengths per second
     df['translational_velocity'] = (df['neck_displacement'] / df['body_length']) * frame_rate
     df['translational_velocity'] = butter_lowpass_filter(df['translational_velocity'], 0.995, frame_rate)
+    
+    # Translational velocity in meters per second
+    df['translational_velocity_mPs'] = df['translational_velocity'] * mean_body_len_m
 
     return df
 
