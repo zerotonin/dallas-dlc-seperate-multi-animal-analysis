@@ -138,7 +138,7 @@ class readCharonFood54():
         file1 = open(self.filePosition, 'r')
         count = 0
         progressStr='-\|/' 
-        while True and (count <= maxReads):
+        while (maxReads == -1) or (count <= maxReads):
             count += 1
             os.system("printf '\033c'")
             print(f'{progressStr[count%4]} reading line {count}', flush=True)
