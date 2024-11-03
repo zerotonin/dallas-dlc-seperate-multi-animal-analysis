@@ -223,6 +223,25 @@ def categorize_saccades(head_saccades, body_saccades):
     sacc_type_timeDiff = categorise_saccade_type(head_df, body_df)
     return sacc_type_timeDiff
 
+def collect_triggered_data_for_saccades(saccades, group, sa, window_length):
+    """
+    Collects triggered data for a list of saccades.
+
+    Args:
+        saccades (list): List of saccade dictionaries.
+        group (pd.DataFrame): DataFrame group associated with the identifier.
+        sa (SaccadeAnalysis): Instance of SaccadeAnalysis class.
+        window_length (int): Length of the window used in saccade analysis.
+
+    Returns:
+        list: List of triggered saccade data.
+    """
+    trig_saccades = []
+    for saccade in saccades:
+        trig_data = collect_triggered_data_for_saccade(saccade, group, sa, window_length)
+        trig_saccades.extend(trig_data)
+    return trig_saccades
+
 
 def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
     """
