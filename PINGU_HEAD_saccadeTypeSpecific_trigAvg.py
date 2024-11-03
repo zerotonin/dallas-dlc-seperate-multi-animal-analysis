@@ -394,43 +394,6 @@ def process_identifier_group(name, group, sa, angle_vel_threshold, window_length
         'intersaccadic_intervals': intersaccadic_df
     }
 
-def collect_triggered_data_for_saccade(saccade, group, sa, window_length):
-    """
-    Collects and organizes triggered data for a specific saccade from the provided data group.
-
-    This function extracts the triggered data matrices for body and head angles and velocities,
-    normalizes them, and creates DataFrames for each type.
-
-    Args:
-        saccade (dict): Dictionary containing details of a single saccade.
-        group (pd.DataFrame): Grouped data related to the saccade.
-        sa (SaccadeAnalysis): Instance of SaccadeAnalysis for data collection.
-        window_length (int): Length of the window for collecting triggered data.
-
-    Returns:
-        list: List of DataFrames, each containing triggered data for a specific type.
-    """
-    trig_saccades = []
-    
-    b_angle_matrix = sa.collect_more_triggered_data([saccade], np.degrees(group['body_yaw_rad'].to_numpy()), window_length)
-    b_velocity_matrix = sa.collect_more_triggered_data([saccade], group['body_yaw_speed'].to_numpy(), window_length)
-    h_angle_matrix = sa.collect_more_triggered_data([saccade], np.degrees(group['head_yaw_rad'].to_numpy()), window_length)
-    h_velocity_matrix = sa.collect_more_triggered_data([saccade], group['head_yaw_speed'].to_numpy(), window_length)
-
-    # Select the correct matrices based on saccade direction
-    b_angle_matrix = b_angle_matrix[0] if saccade['direction'] == 'right' else b_angle_matrix[1]
-    b_velocity_matrix = b_velocity_matrix[0] if saccade['direction'] == 'right' else b_velocity_matrix[1]
-    h_angle_matrix = h_angle_matrix[0] if saccade['direction'] == 'right' else h_angle_matrix[1]
-    h_velocity_matrix = h_velocity_matrix[0] if saccade['direction'] == 'right' else h_velocity_matrix[1]
-
-    # Normalize and create dataframes for each data type
-    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'body_angle', sa.normalize_angle_data(b_angle_matrix[0])))
-    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'body_velocity', b_velocity_matrix[0]))
-    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'head_angle', sa.normalize_angle_data(h_angle_matrix[0])))
-    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'head_velocity', h_velocity_matrix[0]))
-
-    return trig_saccades
-
 def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
     """
     Analyzes grouped data from a DataFrame, processing each group to identify saccades and 
