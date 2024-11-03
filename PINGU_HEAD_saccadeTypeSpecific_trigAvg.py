@@ -292,6 +292,48 @@ def identify_intersaccadic_intervals(head_saccades, group_length):
 
     return intersaccadic_intervals
 
+def compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name):
+    """
+    Computes metrics for intersaccadic intervals.
+
+    Args:
+        intersaccadic_intervals (list): List of intersaccadic intervals with indices.
+        group (pd.DataFrame): DataFrame group associated with the identifier.
+        frame_rate (float): Frame rate of the data.
+        name (str): Identifier name.
+
+    Returns:
+        list: List of intersaccadic interval entries with metrics.
+    """
+    intersaccadic_df = []
+    for interval in intersaccadic_intervals:
+        start_idx = interval['saccade_start_idx']
+        stop_idx = interval['saccade_stop_idx']
+        duration_s = (stop_idx - start_idx) / frame_rate
+
+        # Compute peak speed in the interval
+        head_yaw_speed_interval = group['head_yaw_speed'].iloc[start_idx:stop_idx].to_numpy()
+        if len(head_yaw_speed_interval) == 0:
+            continue
+
+        top_speed_degPs = np.max(np.abs(head_yaw_speed_interval))
+
+        # Create intersaccadic entry with the same columns as saccades_df
+        intersaccadic_entry = {
+            'saccade_peak_s': (start_idx + stop_idx) / (2 * frame_rate),
+            'saccade_start_idx': start_idx,
+            'sacc_peak_idx': np.nan,  # No peak in intersaccadic interval
+            'saccade_stop_idx': stop_idx,
+            'amplitude_deg': np.nan,  # No amplitude
+            'top_speed_degPs': top_speed_degPs,
+            'saccade_duration_s': duration_s,
+            'direction': np.nan,
+            'id': name,
+            'category': 'intersaccadic'
+        }
+        intersaccadic_df.append(intersaccadic_entry)
+    return intersaccadic_df
+
 def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
     """
     Processes a group of data for a single identifier in the dataset.
