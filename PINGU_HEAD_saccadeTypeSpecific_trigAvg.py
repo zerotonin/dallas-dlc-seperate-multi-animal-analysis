@@ -627,45 +627,27 @@ def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_f
     plt.ylabel(data_col.capitalize())
            
 def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
-    """
-    Main function to execute the data analysis pipeline for saccade research.
-
-    This function reads in saccade data from CSV files, performs an analysis to categorize
-    and accumulate saccade events, and then visualizes the results. It processes both head
-    and body saccades, calculates means and confidence intervals for the accumulated data,
-    and generates plots for different saccade types and data points.
-
-    Parameters:
-        target_folder (str): Path to the folder containing the data files.
-        frame_rate (int): Frame rate of the data. Defaults to 25 frames per second.
-        window_length (int): The length of the time window used in the saccade analysis. Defaults to 25.
-        angle_vel_threshold (float): Threshold for angular velocity to identify saccades. Defaults to 250.
-
-    Returns:
-        None: The function doesn't return anything. It generates and displays plots as output.
-    """
     # Read data and group by 'Identifier'
     combined_df = read_cvs_into_dataframe(target_folder, frame_rate)
     grouped = combined_df.groupby('Identifier')
 
-    # Initialize SaccadeAnalysis with a frame rate of 25
+    # Initialize SaccadeAnalysis with the frame rate
     sa = SaccadeAnalysis.SaccadeAnalysis(frame_rate)
 
     # Perform saccade analysis and accumulate matrices
-    saccades_df, trig_average_df,body_saccades = analyze_grouped_data(grouped, sa, angle_vel_threshold, window_length)
+    saccades_df, trig_average_df, body_saccades, intersaccadic_df = analyze_grouped_data(
+        grouped, sa, angle_vel_threshold, window_length, frame_rate)
     trig_average_df = flip_left_saccades(trig_average_df)
     mean_triggered_average = calculate_mean_ci_for_all_saccades(trig_average_df)
     
-    # combine for comaprison plots
-    body_saccades.append(saccades_df)
-    saccades_df = pd.concat(body_saccades)
-    saccades_df['abs_speed_degPs'] = saccades_df.top_speed_degPs.abs()
-    # plotting
-    sacc_type_comparison_plots(saccades_df, 'saccade_duration_s', 'category', ['free', 'associated', 'body'],True)
-    sacc_type_comparison_plots(saccades_df, 'abs_speed_degPs', 'category', ['free', 'associated', 'body'])
-    plot_saccade_data(mean_triggered_average)   
-    print()
-
+    # Combine saccades and intersaccadic intervals for comparison
+    saccades_combined = pd.concat([saccades_df, intersaccadic_df], ignore_index=True)
+    saccades_combined['abs_speed_degPs'] = saccades_combined['top_speed_degPs'].abs()
+    
+    # Plotting including intersaccadic intervals
+    sacc_type_comparison_plots(saccades_combined, 'saccade_duration_s', 'category', ['free', 'associated', 'body', 'intersaccadic'], True)
+    sacc_type_comparison_plots(saccades_combined, 'abs_speed_degPs', 'category', ['free', 'associated', 'body', 'intersaccadic'])
+    plot_saccade_data(mean_triggered_average)
 
 if __name__ == "__main__":
     target_folder = '/home/geuba03p/Penguin_Rostock/pengu_head_movies'
