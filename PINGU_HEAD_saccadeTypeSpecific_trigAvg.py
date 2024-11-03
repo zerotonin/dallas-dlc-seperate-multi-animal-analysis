@@ -203,6 +203,26 @@ def identify_saccades(group, sa, angle_vel_threshold, window_length):
     body_saccades, _, _, _, _ = sa.main(group['body_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
     return head_saccades, body_saccades
 
+def categorize_saccades(head_saccades, body_saccades):
+    """
+    Categorizes head saccades as 'free' or 'associated'.
+
+    Args:
+        head_saccades (list): List of head saccades.
+        body_saccades (list): List of body saccades.
+
+    Returns:
+        list: List of tuples containing the category and time difference.
+    """
+    if not head_saccades or not body_saccades:
+        return [('free', np.nan) for _ in head_saccades]
+
+    head_df = pd.DataFrame(head_saccades)
+    body_df = pd.DataFrame(body_saccades)
+
+    sacc_type_timeDiff = categorise_saccade_type(head_df, body_df)
+    return sacc_type_timeDiff
+
 
 def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
     """
