@@ -415,6 +415,7 @@ def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
     saccades_accumulated = []
     trig_saccades = []
     body_saccades = []
+    intersaccadic_intervals_accumulated = []
 
 
     for name, group in grouped_df:
@@ -422,11 +423,14 @@ def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
         processed_data = process_identifier_group(name, group, sa, angle_vel_threshold, window_length)
         saccades_accumulated.extend(processed_data['saccades'])
         trig_saccades.extend(processed_data['trig_saccades'])
-        body_saccades.append(processed_data['body_saccades']
-)
+        body_saccades.append(processed_data['body_saccades'])
+        intersaccadic_intervals_accumulated.extend(processed_data['intersaccadic_intervals'])
+
+
     all_trig_saccades_df = pd.concat(trig_saccades, ignore_index=True)
     saccades_df = pd.DataFrame(saccades_accumulated)
-    return saccades_df, all_trig_saccades_df, body_saccades
+    intersaccadic_df = pd.DataFrame(intersaccadic_intervals_accumulated)
+    return saccades_df, all_trig_saccades_df, body_saccades, intersaccadic_df
 
 def categorise_saccade_type(head_saccades: pd.DataFrame, body_saccades: pd.DataFrame, time_threshold: float = 1.0) -> list:
     """
