@@ -242,6 +242,55 @@ def collect_triggered_data_for_saccades(saccades, group, sa, window_length):
         trig_saccades.extend(trig_data)
     return trig_saccades
 
+def identify_intersaccadic_intervals(head_saccades, group_length):
+    """
+    Identifies intersaccadic intervals based on saccade indices.
+
+    Args:
+        head_saccades (list): List of head saccade dictionaries.
+        group_length (int): Length of the data group.
+
+    Returns:
+        list: List of intersaccadic intervals with start and stop indices.
+    """
+    if not head_saccades:
+        # No saccades, entire duration is intersaccadic interval
+        return [{'saccade_start_idx': 0, 'saccade_stop_idx': group_length - 1}]
+
+    # Sort saccades by 'saccade_start_idx'
+    head_saccades_sorted = sorted(head_saccades, key=lambda s: s['saccade_start_idx'])
+
+    intersaccadic_intervals = []
+
+    # First interval
+    first_interval_start_idx = 0
+    first_interval_end_idx = head_saccades_sorted[0]['saccade_start_idx']
+    if first_interval_end_idx > first_interval_start_idx:
+        intersaccadic_intervals.append({
+            'saccade_start_idx': first_interval_start_idx,
+            'saccade_stop_idx': first_interval_end_idx,
+        })
+
+    # Middle intervals
+    for i in range(len(head_saccades_sorted) - 1):
+        interval_start_idx = head_saccades_sorted[i]['saccade_stop_idx']
+        interval_end_idx = head_saccades_sorted[i + 1]['saccade_start_idx']
+        if interval_end_idx > interval_start_idx:
+            intersaccadic_intervals.append({
+                'saccade_start_idx': interval_start_idx,
+                'saccade_stop_idx': interval_end_idx,
+            })
+
+    # Last interval
+    last_interval_start_idx = head_saccades_sorted[-1]['saccade_stop_idx']
+    last_interval_end_idx = group_length - 1
+    if last_interval_end_idx > last_interval_start_idx:
+        intersaccadic_intervals.append({
+            'saccade_start_idx': last_interval_start_idx,
+            'saccade_stop_idx': last_interval_end_idx,
+        })
+
+    return intersaccadic_intervals
 
 def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
     """
