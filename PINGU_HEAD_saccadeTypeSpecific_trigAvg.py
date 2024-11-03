@@ -91,7 +91,6 @@ def calculate_translational_velocity(df, frame_rate=25, mean_body_len_m = 0.8):
 
     return df
 
-
 def read_cvs_into_dataframe(target_folder,frame_rate=25):
     """Reads all CSV files in a target folder into a Pandas DataFrame and adds an 'Identifier' field.
 
@@ -151,7 +150,6 @@ def read_cvs_into_dataframe(target_folder,frame_rate=25):
     
     return combined_df
 
-
 def create_saccade_dataframe(name, sacc_dir, sacc_type, sacc_trigger, data_type, triggered_data):
     """
     Creates a DataFrame for a single saccade or a group of saccades with meta data and triggered data.
@@ -188,65 +186,83 @@ def create_saccade_dataframe(name, sacc_dir, sacc_type, sacc_trigger, data_type,
     # Convert the dictionary to a DataFrame
     return pd.DataFrame([data_dict])
 
-    def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
-        """
-        Processes a group of data for a single identifier in the dataset.
+def identify_saccades(group, sa, angle_vel_threshold, window_length):
+    """
+    Identifies saccades for head and body.
 
-        This function identifies saccades for both head and body, categorizes saccade types,
-        collects triggered data for each saccade, and identifies intersaccadic intervals.
+    Args:
+        group (pd.DataFrame): DataFrame group associated with the identifier.
+        sa (SaccadeAnalysis): Instance of SaccadeAnalysis class.
+        angle_vel_threshold (float): Threshold for angular velocity to identify saccades.
+        window_length (int): Length of the window used in saccade analysis.
 
-        Args:
-            name (str): Identifier for the group of data.
-            group (pd.DataFrame): DataFrame group associated with the identifier.
-            sa (SaccadeAnalysis): Instance of SaccadeAnalysis class.
-            angle_vel_threshold (float): Threshold for angular velocity to identify saccades.
-            window_length (int): Length of the window used in saccade analysis.
-            frame_rate (float): Frame rate of the data.
+    Returns:
+        tuple: (head_saccades, body_saccades)
+    """
+    head_saccades, _, _, _, _ = sa.main(group['head_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
+    body_saccades, _, _, _, _ = sa.main(group['body_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
+    return head_saccades, body_saccades
 
-        Returns:
-            dict: A dictionary containing lists - 'saccades', 'trig_saccades', 'body_saccades', and 'intersaccadic_intervals'.
-        """
-        # Step 1: Identify saccades
-        head_saccades, body_saccades = identify_saccades(group, sa, angle_vel_threshold, window_length)
 
-        saccades_accumulated = []
-        trig_saccades = []
-        intersaccadic_df = []
+def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
+    """
+    Processes a group of data for a single identifier in the dataset.
 
-        if head_saccades:
-            # Step 2: Categorize saccades
-            sacc_type_timeDiff = categorize_saccades(head_saccades, body_saccades)
+    This function identifies saccades for both head and body, categorizes saccade types,
+    collects triggered data for each saccade, and identifies intersaccadic intervals.
 
-            # Assign categories and IDs to saccades
-            for i, saccade in enumerate(head_saccades):
-                saccade['id'] = name
-                saccade['category'], _ = sacc_type_timeDiff[i]
-                saccades_accumulated.append(saccade)
+    Args:
+        name (str): Identifier for the group of data.
+        group (pd.DataFrame): DataFrame group associated with the identifier.
+        sa (SaccadeAnalysis): Instance of SaccadeAnalysis class.
+        angle_vel_threshold (float): Threshold for angular velocity to identify saccades.
+        window_length (int): Length of the window used in saccade analysis.
+        frame_rate (float): Frame rate of the data.
 
-            # Step 3: Collect triggered data
-            trig_saccades = collect_triggered_data_for_saccades(head_saccades, group, sa, window_length)
+    Returns:
+        dict: A dictionary containing lists - 'saccades', 'trig_saccades', 'body_saccades', and 'intersaccadic_intervals'.
+    """
+    # Step 1: Identify saccades
+    head_saccades, body_saccades = identify_saccades(group, sa, angle_vel_threshold, window_length)
 
-            # Step 4: Identify intersaccadic intervals
-            intersaccadic_intervals = identify_intersaccadic_intervals(head_saccades, len(group))
+    saccades_accumulated = []
+    trig_saccades = []
+    intersaccadic_df = []
 
-            # Step 5: Compute interval metrics
-            intersaccadic_df = compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name)
-        else:
-            # No saccades, entire duration is intersaccadic interval
-            intersaccadic_intervals = [{'saccade_start_idx': 0, 'saccade_stop_idx': len(group) - 1}]
-            intersaccadic_df = compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name)
+    if head_saccades:
+        # Step 2: Categorize saccades
+        sacc_type_timeDiff = categorize_saccades(head_saccades, body_saccades)
 
-        # Process body saccades
-        body_saccade_df = pd.DataFrame(body_saccades)
-        body_saccade_df['id'] = name
-        body_saccade_df['category'] = 'body'
+        # Assign categories and IDs to saccades
+        for i, saccade in enumerate(head_saccades):
+            saccade['id'] = name
+            saccade['category'], _ = sacc_type_timeDiff[i]
+            saccades_accumulated.append(saccade)
 
-        return {
-            'saccades': saccades_accumulated,
-            'trig_saccades': trig_saccades,
-            'body_saccades': body_saccade_df,
-            'intersaccadic_intervals': intersaccadic_df
-        }
+        # Step 3: Collect triggered data
+        trig_saccades = collect_triggered_data_for_saccades(head_saccades, group, sa, window_length)
+
+        # Step 4: Identify intersaccadic intervals
+        intersaccadic_intervals = identify_intersaccadic_intervals(head_saccades, len(group))
+
+        # Step 5: Compute interval metrics
+        intersaccadic_df = compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name)
+    else:
+        # No saccades, entire duration is intersaccadic interval
+        intersaccadic_intervals = [{'saccade_start_idx': 0, 'saccade_stop_idx': len(group) - 1}]
+        intersaccadic_df = compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name)
+
+    # Process body saccades
+    body_saccade_df = pd.DataFrame(body_saccades)
+    body_saccade_df['id'] = name
+    body_saccade_df['category'] = 'body'
+
+    return {
+        'saccades': saccades_accumulated,
+        'trig_saccades': trig_saccades,
+        'body_saccades': body_saccade_df,
+        'intersaccadic_intervals': intersaccadic_df
+    }
 
 def collect_triggered_data_for_saccade(saccade, group, sa, window_length):
     """
@@ -284,7 +300,6 @@ def collect_triggered_data_for_saccade(saccade, group, sa, window_length):
     trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'head_velocity', h_velocity_matrix[0]))
 
     return trig_saccades
-
 
 def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
     """
@@ -394,7 +409,6 @@ def flip_left_saccades(trig_average_df):
     trig_average_df.loc[left_saccades, time_columns] = trig_average_df.loc[left_saccades, time_columns] * -1
     trig_average_df.loc[left_saccades, 'sacc_dir'] = 'right'
     return trig_average_df
-
 
 def mean_confidence_interval(data, confidence=0.95):
     """
@@ -514,9 +528,7 @@ def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_f
     plt.title('Boxplot of ' + data_col + ' by ' + category_col)
     plt.xlabel(category_col.capitalize())
     plt.ylabel(data_col.capitalize())
-
-
-            
+           
 def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
     """
     Main function to execute the data analysis pipeline for saccade research.
