@@ -188,50 +188,65 @@ def create_saccade_dataframe(name, sacc_dir, sacc_type, sacc_trigger, data_type,
     # Convert the dictionary to a DataFrame
     return pd.DataFrame([data_dict])
 
+    def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
+        """
+        Processes a group of data for a single identifier in the dataset.
 
-def process_identifier_group(name, group, sa, angle_vel_threshold, window_length):
-    """
-    Processes a group of data for a single identifier in the dataset.
+        This function identifies saccades for both head and body, categorizes saccade types,
+        collects triggered data for each saccade, and identifies intersaccadic intervals.
 
-    This function identifies saccades for both head and body, categorizes saccade types,
-    and collects triggered data for each saccade.
+        Args:
+            name (str): Identifier for the group of data.
+            group (pd.DataFrame): DataFrame group associated with the identifier.
+            sa (SaccadeAnalysis): Instance of SaccadeAnalysis class.
+            angle_vel_threshold (float): Threshold for angular velocity to identify saccades.
+            window_length (int): Length of the window used in saccade analysis.
+            frame_rate (float): Frame rate of the data.
 
-    Args:
-        name (str): Identifier for the group of data.
-        group (pd.DataFrame): DataFrame group associated with the identifier.
-        sa (SaccadeAnalysis): Instance of SaccadeAnalysis class.
-        angle_vel_threshold (float): Threshold for angular velocity to identify saccades.
-        window_length (int): Length of the window used in saccade analysis.
+        Returns:
+            dict: A dictionary containing lists - 'saccades', 'trig_saccades', 'body_saccades', and 'intersaccadic_intervals'.
+        """
+        # Step 1: Identify saccades
+        head_saccades, body_saccades = identify_saccades(group, sa, angle_vel_threshold, window_length)
 
-    Returns:
-        dict: A dictionary containing two lists - 'saccades' (accumulated saccade data) and 
-              'trig_saccades' (accumulated triggered saccade data).
-    """
-    head_saccades, _, _, _, _ = sa.main(group['head_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
-    body_saccades, _, _, _, _ = sa.main(group['body_yaw_rad'].to_numpy(), angle_vel_threshold, window_length, False)
+        saccades_accumulated = []
+        trig_saccades = []
+        intersaccadic_df = []
 
-    saccades_accumulated = []
-    trig_saccades = []
+        if head_saccades:
+            # Step 2: Categorize saccades
+            sacc_type_timeDiff = categorize_saccades(head_saccades, body_saccades)
 
-    if head_saccades:
-        head_df = pd.DataFrame(head_saccades)
-        body_df = pd.DataFrame(body_saccades)
+            # Assign categories and IDs to saccades
+            for i, saccade in enumerate(head_saccades):
+                saccade['id'] = name
+                saccade['category'], _ = sacc_type_timeDiff[i]
+                saccades_accumulated.append(saccade)
 
-        sacc_type_timeDiff = categorise_saccade_type(head_df, body_df)
+            # Step 3: Collect triggered data
+            trig_saccades = collect_triggered_data_for_saccades(head_saccades, group, sa, window_length)
 
-        for i, saccade in enumerate(head_saccades):
-            saccade['id'] = name
-            saccade['category'], _ = sacc_type_timeDiff[i]
-            saccades_accumulated.append(saccade)
+            # Step 4: Identify intersaccadic intervals
+            intersaccadic_intervals = identify_intersaccadic_intervals(head_saccades, len(group))
 
-            # Collecting triggered data for each saccade
-            trig_data = collect_triggered_data_for_saccade(saccade, group, sa, window_length)
-            trig_saccades.extend(trig_data)
-    body_saccade_df = pd.DataFrame(body_saccades)
-    body_saccade_df['id'] = name
-    body_saccade_df['category'] = 'body'
+            # Step 5: Compute interval metrics
+            intersaccadic_df = compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name)
+        else:
+            # No saccades, entire duration is intersaccadic interval
+            intersaccadic_intervals = [{'saccade_start_idx': 0, 'saccade_stop_idx': len(group) - 1}]
+            intersaccadic_df = compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name)
 
-    return {'saccades': saccades_accumulated, 'trig_saccades': trig_saccades, 'body_saccades':body_saccade_df}
+        # Process body saccades
+        body_saccade_df = pd.DataFrame(body_saccades)
+        body_saccade_df['id'] = name
+        body_saccade_df['category'] = 'body'
+
+        return {
+            'saccades': saccades_accumulated,
+            'trig_saccades': trig_saccades,
+            'body_saccades': body_saccade_df,
+            'intersaccadic_intervals': intersaccadic_df
+        }
 
 def collect_triggered_data_for_saccade(saccade, group, sa, window_length):
     """
@@ -500,7 +515,6 @@ def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_f
     plt.xlabel(category_col.capitalize())
     plt.ylabel(data_col.capitalize())
 
- 
 
             
 def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
