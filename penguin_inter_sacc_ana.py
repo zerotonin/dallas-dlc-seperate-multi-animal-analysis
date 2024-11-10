@@ -3,21 +3,23 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Set frames per second
 fps = 25
 
+# Read CSV files into DataFrames
 df_dataset2_body = pd.read_csv('/home/geuba03p/Penguin_Rostock/pengu_head_movies/saccade_data/saccades_body.csv' )
 df_dataset2_combi = pd.read_csv('/home/geuba03p/Penguin_Rostock/pengu_head_movies/saccade_data/saccades_combi.csv' )
 df_dataset2_head = pd.read_csv('/home/geuba03p/Penguin_Rostock/pengu_head_movies/saccade_data/saccades_head.csv')
 df_dataset1_inter_sacc = pd.read_csv('/home/geuba03p/Penguin_Rostock/penguins/body_inter_saccade_dur.csv')
 df_dataset1_sacc = pd.read_csv('/home/geuba03p/Penguin_Rostock/penguins/body_saccade_dur.csv')
 
-
-species = list()
-dataset = list()
-saccade_type = list()
+# Initialize lists to collect data
+species          = list()
+dataset          = list()
+saccade_type     = list() # 'saccade' or 'intersaccade'
+saccade_duration = list() # 'free', 'associated', 'intersaccade'
 saccade_duration = list()
-saccade_duration = list()
-bodypart = list()
+bodypart         = list()
 
 
 for name,df in [('body',df_dataset2_body),('head',df_dataset2_head),('associated',df_dataset2_combi)]:  
