@@ -334,6 +334,56 @@ def compute_interval_metrics(intersaccadic_intervals, group, frame_rate, name):
         intersaccadic_df.append(intersaccadic_entry)
     return intersaccadic_df
 
+def compute_mean_velocities(saccades_combined, combined_df, frame_rate):
+    """
+    Computes the mean absolute rotational velocity and mean translational velocity
+    for each saccade and intersaccadic interval.
+
+    Args:
+        saccades_combined (pd.DataFrame): DataFrame containing saccade and intersaccadic data.
+        combined_df (pd.DataFrame): Combined DataFrame of all data groups.
+        frame_rate (float): Frame rate of the data.
+
+    Returns:
+        pd.DataFrame: Updated saccades_combined DataFrame with new columns.
+    """
+    # Create a mapping from 'Identifier' to their data groups
+    id_to_group = {name: group for name, group in combined_df.groupby('Identifier')}
+
+    mean_abs_rot_velocities = []
+    mean_trans_velocities = []
+
+    for idx, row in saccades_combined.iterrows():
+        id_ = row['id']
+        start_idx = int(row['saccade_start_idx'])
+        stop_idx = int(row['saccade_stop_idx'])
+
+        # Get the corresponding group DataFrame
+        group = id_to_group[id_]
+
+        # Ensure indices are within bounds
+        start_idx = max(0, start_idx)
+        stop_idx = min(len(group) - 1, stop_idx)
+
+        # Extract head_yaw_speed and translational_velocity_mPs
+        head_yaw_speed = group['head_yaw_speed'].iloc[start_idx:stop_idx + 1].to_numpy()
+        translational_velocity = group['translational_velocity_mPs'].iloc[start_idx:stop_idx + 1].to_numpy()
+
+        # Compute mean absolute rotational velocity
+        mean_abs_rot_vel = np.median(np.abs(head_yaw_speed))
+        mean_abs_rot_velocities.append(mean_abs_rot_vel)
+
+        # Compute mean translational velocity
+        mean_trans_vel = np.median(translational_velocity)
+        mean_trans_velocities.append(mean_trans_vel)
+
+    # Add new columns to saccades_combined DataFrame
+    saccades_combined['median_abs_rot_vel_degPs'] = mean_abs_rot_velocities
+    saccades_combined['median_translational_vel_mPs'] = mean_trans_velocities
+
+    return saccades_combined
+
+
 def process_identifier_group(name, group, sa, angle_vel_threshold, window_length, frame_rate):
     """
     Processes a group of data for a single identifier in the dataset.
@@ -394,7 +444,44 @@ def process_identifier_group(name, group, sa, angle_vel_threshold, window_length
         'intersaccadic_intervals': intersaccadic_df
     }
 
-def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
+def collect_triggered_data_for_saccade(saccade, group, sa, window_length):
+    """
+    Collects and organizes triggered data for a specific saccade from the provided data group.
+
+    This function extracts the triggered data matrices for body and head angles and velocities,
+    normalizes them, and creates DataFrames for each type.
+
+    Args:
+        saccade (dict): Dictionary containing details of a single saccade.
+        group (pd.DataFrame): Grouped data related to the saccade.
+        sa (SaccadeAnalysis): Instance of SaccadeAnalysis for data collection.
+        window_length (int): Length of the window for collecting triggered data.
+
+    Returns:
+        list: List of DataFrames, each containing triggered data for a specific type.
+    """
+    trig_saccades = []
+    
+    b_angle_matrix = sa.collect_more_triggered_data([saccade], np.degrees(group['body_yaw_rad'].to_numpy()), window_length)
+    b_velocity_matrix = sa.collect_more_triggered_data([saccade], group['body_yaw_speed'].to_numpy(), window_length)
+    h_angle_matrix = sa.collect_more_triggered_data([saccade], np.degrees(group['head_yaw_rad'].to_numpy()), window_length)
+    h_velocity_matrix = sa.collect_more_triggered_data([saccade], group['head_yaw_speed'].to_numpy(), window_length)
+
+    # Select the correct matrices based on saccade direction
+    b_angle_matrix = b_angle_matrix[0] if saccade['direction'] == 'right' else b_angle_matrix[1]
+    b_velocity_matrix = b_velocity_matrix[0] if saccade['direction'] == 'right' else b_velocity_matrix[1]
+    h_angle_matrix = h_angle_matrix[0] if saccade['direction'] == 'right' else h_angle_matrix[1]
+    h_velocity_matrix = h_velocity_matrix[0] if saccade['direction'] == 'right' else h_velocity_matrix[1]
+
+    # Normalize and create dataframes for each data type
+    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'body_angle', sa.normalize_angle_data(b_angle_matrix[0])))
+    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'body_velocity', b_velocity_matrix[0]))
+    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'head_angle', sa.normalize_angle_data(h_angle_matrix[0])))
+    trig_saccades.append(create_saccade_dataframe(saccade['id'], saccade['direction'], saccade['category'], 'head', 'head_velocity', h_velocity_matrix[0]))
+
+    return trig_saccades
+
+def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length,frame_rate):
     """
     Analyzes grouped data from a DataFrame, processing each group to identify saccades and 
     collect corresponding triggered data.
@@ -420,7 +507,7 @@ def analyze_grouped_data(grouped_df, sa, angle_vel_threshold, window_length):
 
     for name, group in grouped_df:
         print(f"Processing Identifier: {name}")
-        processed_data = process_identifier_group(name, group, sa, angle_vel_threshold, window_length)
+        processed_data = process_identifier_group(name, group, sa, angle_vel_threshold, window_length,frame_rate)
         saccades_accumulated.extend(processed_data['saccades'])
         trig_saccades.extend(processed_data['trig_saccades'])
         body_saccades.append(processed_data['body_saccades'])
@@ -604,27 +691,31 @@ def plot_saccade_data(df):
     plt.tight_layout()
     plt.show()
 
-def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_flag = False):
+def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_flag=False):
     """
-    Plots a boxplot with a logarithmic y-axis.
+    Plots a boxplot for the given data column across different categories.
 
     Parameters:
     df (pandas.DataFrame): The DataFrame containing the data.
     data_col (str): The name of the column for data values.
     category_col (str): The name of the column for categories.
     category_order (list): The specific order of categories for the plot.
+    log_flag (bool): Whether to use a logarithmic scale for the y-axis.
     """
     plt.figure(figsize=(10, 6))
-    sns.boxplot(x=category_col, y=data_col, data=df, order=category_order, notch=True)
+    sns.boxplot(x=category_col, y=data_col, data=df, order=category_order, notch=False)
 
-    # Set the y-axis to logarithmic scale
-    if log_flag == True:
+    # Set the y-axis to logarithmic scale if required
+    if log_flag:
         plt.yscale('log')
 
     # Additional customizations
-    plt.title('Boxplot of ' + data_col + ' by ' + category_col)
+    plt.title(f'Boxplot of {data_col} by {category_col}')
     plt.xlabel(category_col.capitalize())
-    plt.ylabel(data_col.capitalize())
+    plt.ylabel(data_col.replace('_', ' ').capitalize())
+
+
+
            
 def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
     # Read data and group by 'Identifier'
@@ -641,13 +732,24 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
     mean_triggered_average = calculate_mean_ci_for_all_saccades(trig_average_df)
     
     # Combine saccades and intersaccadic intervals for comparison
-    saccades_combined = pd.concat([saccades_df, intersaccadic_df], ignore_index=True)
+    saccades_combined = pd.concat([saccades_df, 
+                                   pd.concat(body_saccades, ignore_index=True), 
+                                   intersaccadic_df], ignore_index=True)
     saccades_combined['abs_speed_degPs'] = saccades_combined['top_speed_degPs'].abs()
-    
+
+    # Compute mean velocities
+    saccades_combined = compute_mean_velocities(saccades_combined, combined_df, frame_rate)
+
     # Plotting including intersaccadic intervals
-    sacc_type_comparison_plots(saccades_combined, 'saccade_duration_s', 'category', ['free', 'associated', 'body', 'intersaccadic'], True)
+    sacc_type_comparison_plots(saccades_combined, 'saccade_duration_s', 'category', ['free', 'associated', 'body'], True)
     sacc_type_comparison_plots(saccades_combined, 'abs_speed_degPs', 'category', ['free', 'associated', 'body', 'intersaccadic'])
+
+    # New plots for mean velocities
+    sacc_type_comparison_plots(saccades_combined, 'median_abs_rot_vel_degPs', 'category', ['free', 'associated', 'body', 'intersaccadic'],True)
+    sacc_type_comparison_plots(saccades_combined, 'median_translational_vel_mPs', 'category', ['free', 'associated', 'body', 'intersaccadic'], True)
+
     plot_saccade_data(mean_triggered_average)
+
 
 if __name__ == "__main__":
     target_folder = '/home/geuba03p/Penguin_Rostock/pengu_head_movies'
