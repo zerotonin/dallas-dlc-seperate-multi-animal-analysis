@@ -750,10 +750,13 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
 
     plot_saccade_data(mean_triggered_average)
 
+    return saccades_combined
+
 
 if __name__ == "__main__":
     target_folder = '/home/geuba03p/Penguin_Rostock/pengu_head_movies'
-    main(target_folder)
+    saccades_combined = main(target_folder)
+    saccades_combined.to_csv('./home/geuba03p/Penguin_Rostock/saccade_speeds_combined.csv')
     plt.show()
 
 
