@@ -184,7 +184,7 @@ class TrajectoryProcessor:
                     segment_df[column] = gaussian_filter1d(segment_df[column], self.filt_sigma, order=self.filt_order)
 
             # Append the filtered segment data to the filtered_df DataFrame
-            filtered_df = filtered_df.append(segment_df)
+            filtered_df = filtered_df._append(segment_df)
 
         return filtered_df
 
