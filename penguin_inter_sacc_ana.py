@@ -2,6 +2,29 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats
+
+# Statistics Function
+
+def compute_stats(group):
+    durations = group['saccade_duration_msec']
+    n = len(durations)
+    median = np.median(durations)
+    mean = np.mean(durations)
+    sem = scipy.stats.sem(durations)
+    if n > 1:
+        ci_low, ci_high = scipy.stats.t.interval(0.95, n-1, loc=mean, scale=sem)
+    else:
+        # For n=1, use mean ± sem
+        ci_low, ci_high = mean - sem, mean + sem
+    return pd.Series({
+        'Median Dur (ms)': median,
+        'Lower 95% CI': ci_low,
+        'Upper 95% CI': ci_high,
+        'Mean Dur (ms)': mean,
+        'SEM': sem
+    })
+
 
 # Set frames per second
 fps = 25
@@ -17,25 +40,35 @@ df_dataset1_sacc = pd.read_csv('/home/geuba03p/Penguin_Rostock/penguins/body_sac
 species          = list()
 dataset          = list()
 saccade_type     = list() # 'saccade' or 'intersaccade'
-saccade_duration = list() # 'free', 'associated', 'intersaccade'
+movement_type    = list() # 'free', 'associated', 'intersaccade'
 saccade_duration = list()
 bodypart         = list()
 
 
-for name,df in [('body',df_dataset2_body),('head',df_dataset2_head),('associated',df_dataset2_combi)]:  
+for name,movement_type_name,df in [('body','free',df_dataset2_body),
+                                   ('head','free',df_dataset2_head),
+                                   ('associated','associated',df_dataset2_combi)]:  
+    # Extract saccade durations in milliseconds
     temp_sacc_dur = df.saccade_duration_ms.to_list()
     temp_sacc_type = ['saccade' for i in temp_sacc_dur]
+    temp_movement_type = [movement_type_name for _ in temp_sacc_dur]
+
+    # Compute intersaccadic durations between consecutive saccades
     temp_intersacc_dur = np.diff(np.vstack((df.saccade_start_idx.to_numpy()[1::],df.saccade_stop_idx.to_numpy()[0:-1])).T,axis=1)
     temp_intersacc_dur = temp_intersacc_dur[temp_intersacc_dur>0]/fps*1000
     temp_sacc_type += ['intersaccade' for i in temp_intersacc_dur]
+    temp_movement_type += ['intersaccade' for _ in temp_intersacc_dur]
     
+    # Extend the main lists with data from this iteration
     saccade_duration += temp_sacc_dur + temp_intersacc_dur.flatten().tolist()
     saccade_type += temp_sacc_type
+    movement_type += temp_movement_type
     species += ['gentoo' for i in temp_sacc_type]
-    dataset += ['confined' for i in temp_sacc_type] 
+    dataset += [2 for i in temp_sacc_type] 
     bodypart += [name for i in temp_sacc_type] 
 
 
+# Process Dataset 1 (open environment) - Saccades
 temp_dur = list(df_dataset1_sacc.sacc_dur_sec.to_numpy()*1000)
 saccade_duration += temp_dur
 saccade_type +=['saccade' for i in temp_dur] 
@@ -43,11 +76,12 @@ species += df_dataset1_sacc.species.to_list()
 dataset += ['open' for i in temp_dur] 
 bodypart += ['body' for i in temp_dur] 
 
+# Process Dataset 1 (open environment) - Intersaccadic intervals
 temp_dur = list(df_dataset1_inter_sacc.inter_sacc_dur_sec.to_numpy()*1000)
 saccade_duration += temp_dur
 saccade_type +=['intersaccade' for i in temp_dur] 
 species += df_dataset1_inter_sacc.species.to_list()
-dataset += ['open' for i in temp_dur] 
+dataset += [1 for i in temp_dur] 
 bodypart += ['body' for i in temp_dur] 
 
 
