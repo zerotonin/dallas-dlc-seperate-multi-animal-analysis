@@ -47,7 +47,7 @@ bodypart         = list()
 
 for name,movement_type_name,df in [('body','free',df_dataset2_body),
                                    ('head','free',df_dataset2_head),
-                                   ('associated','associated',df_dataset2_combi)]:  
+                                   ('head+body','associated',df_dataset2_combi)]:  
     # Extract saccade durations in milliseconds
     temp_sacc_dur = df.saccade_duration_ms.to_list()
     temp_sacc_type = ['saccade' for i in temp_sacc_dur]
@@ -72,30 +72,51 @@ for name,movement_type_name,df in [('body','free',df_dataset2_body),
 temp_dur = list(df_dataset1_sacc.sacc_dur_sec.to_numpy()*1000)
 saccade_duration += temp_dur
 saccade_type +=['saccade' for i in temp_dur] 
+movement_type += ['saccade' for _ in temp_dur]   
 species += df_dataset1_sacc.species.to_list()
-dataset += ['open' for i in temp_dur] 
+dataset += [1 for i in temp_dur] 
 bodypart += ['body' for i in temp_dur] 
 
 # Process Dataset 1 (open environment) - Intersaccadic intervals
 temp_dur = list(df_dataset1_inter_sacc.inter_sacc_dur_sec.to_numpy()*1000)
 saccade_duration += temp_dur
 saccade_type +=['intersaccade' for i in temp_dur] 
+movement_type += ['intersaccade' for _ in temp_dur]   
 species += df_dataset1_inter_sacc.species.to_list()
 dataset += [1 for i in temp_dur] 
 bodypart += ['body' for i in temp_dur] 
 
 
+# Ensure all lists are of the same length
 for x in (saccade_duration, saccade_type, species, dataset, bodypart):
     print(len(x))
 
-df_durations = pd.DataFrame()
-df_durations['saccade_duration_msec'] = saccade_duration
-df_durations['saccade_type'] = saccade_type
-df_durations['species'] = species
-df_durations['dataset'] = dataset
-df_durations['bodypart'] = bodypart
+# Create DataFrame from the collected data
+df_durations = pd.DataFrame({
+    'saccade_duration_msec': saccade_duration,
+    'saccade_type': saccade_type,
+    'movement_type': movement_type,
+    'species': species,
+    'dataset': dataset,
+    'bodypart': bodypart
+})
+
 df_durations['id'] = [f'{ds} {bp} {s}' for ds,bp,s in list(zip(dataset,bodypart,species))]
 df_durations.to_csv('/home/geuba03p/Penguin_Rostock/comb_durations.csv',index=False)
+
+
+# Compute the statistics for the saccade durations
+group_cols = ['dataset', 'species', 'movement_type', 'bodypart']
+grouped = df_durations.groupby(group_cols)
+# Apply the compute_stats function to each group
+stats_df = grouped.apply(compute_stats).reset_index()
+
+# Rearranging columns
+stats_df = stats_df[['dataset', 'species', 'movement_type', 'bodypart',
+                     'Median Dur (ms)', 'Lower 95% CI', 'Upper 95% CI', 'Mean Dur (ms)', 'SEM']]
+
+# Save the statistics table to a CSV file
+stats_df.to_csv('/home/geuba03p/Penguin_Rostock/saccade_statistics.csv', index=False)
 
 sns.boxplot(data=df_durations, x="id", y="saccade_duration_msec",hue='saccade_type')
 plt.yscale('log')
