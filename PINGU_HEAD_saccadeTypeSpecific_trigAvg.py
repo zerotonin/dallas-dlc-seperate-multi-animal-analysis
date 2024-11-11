@@ -6,6 +6,7 @@ from scipy.signal import butter, filtfilt
 import scipy.stats
 import SaccadeAnalysis
 import seaborn as sns
+import scipy.stats
 
 
 def butter_lowpass_filter(data, cutoff_freq, sample_rate):
@@ -689,7 +690,6 @@ def plot_saccade_data(df):
             ax.legend()
 
     plt.tight_layout()
-    plt.show()
 
 def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_flag=False):
     """
@@ -715,8 +715,53 @@ def sacc_type_comparison_plots(df, data_col, category_col, category_order, log_f
     plt.ylabel(data_col.replace('_', ' ').capitalize())
 
 
+# Define a function to compute statistics
+def compute_stats(group, value_col):
+    data = group[value_col]
+    n = len(data)
+    median = np.median(data)
+    mean = np.mean(data)
+    sem = scipy.stats.sem(data)
+    if n > 1:
+        ci_low, ci_high = scipy.stats.t.interval(0.95, n-1, loc=mean, scale=sem)
+    else:
+        ci_low, ci_high = mean - sem, mean + sem
+    return pd.Series({
+        'Median Velocity': median,
+        'Lower 95% CI': ci_low,
+        'Upper 95% CI': ci_high,
+        'Mean Velocity': mean,
+        'SEM': sem
+    })
 
-           
+def make_statistic_df(saccades_combined):
+
+    df_velocities = saccades_combined.copy()
+    # Add 'Dataset' column
+    df_velocities['Dataset'] = '2'  
+    # Add 'Species' column
+    df_velocities['Species'] = 'Gentoo'  # Assuming the species is Gentoo
+
+    # Map 'category' to 'Movement Type'
+    df_velocities['Movement Type'] = df_velocities['category']
+
+    # Ensure necessary columns are present
+    # For rotational velocity
+    df_rotational = df_velocities[['Dataset', 'Species', 'Movement Type', 'Bodypart', 'median_abs_rot_vel_degPs']].copy()
+    df_rotational.rename(columns={'median_abs_rot_vel_degPs': 'Rotational Velocity (deg/s)'}, inplace=True)
+
+    # For translational velocity
+    df_translational = df_velocities[['Dataset', 'Species', 'Movement Type', 'Bodypart', 'median_translational_vel_mPs']].copy()
+    df_translational.rename(columns={'median_translational_vel_mPs': 'Translational Velocity (m/s)'}, inplace=True)
+    # Group and compute statistics for rotational velocity
+    group_cols = ['Dataset', 'Species', 'Movement Type', 'Bodypart']
+    rotational_stats = df_rotational.groupby(group_cols).apply(lambda x: compute_stats(x.dropna(), 'Rotational Velocity (deg/s)')).reset_index()
+
+    # Group and compute statistics for translational velocity
+    translational_stats = df_translational.groupby(group_cols).apply(lambda x: compute_stats(x, 'Translational Velocity (m/s)')).reset_index()
+
+    return rotational_stats, translational_stats
+            
 def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250):
     # Read data and group by 'Identifier'
     combined_df = read_cvs_into_dataframe(target_folder, frame_rate)
@@ -732,9 +777,12 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
     mean_triggered_average = calculate_mean_ci_for_all_saccades(trig_average_df)
     
     # Combine saccades and intersaccadic intervals for comparison
-    saccades_combined = pd.concat([saccades_df, 
-                                   pd.concat(body_saccades, ignore_index=True), 
-                                   intersaccadic_df], ignore_index=True)
+    saccades_df['Bodypart'] = 'head'
+    body_saccades =pd.concat(body_saccades, ignore_index=True)
+    body_saccades['Bodypart'] = 'body'
+    intersaccadic_df['Bodypart'] = 'head+body'
+
+    saccades_combined = pd.concat([saccades_df, body_saccades,intersaccadic_df], ignore_index=True)
     saccades_combined['abs_speed_degPs'] = saccades_combined['top_speed_degPs'].abs()
 
     # Compute mean velocities
@@ -749,14 +797,19 @@ def main(target_folder, frame_rate=25, window_length=25, angle_vel_threshold=250
     sacc_type_comparison_plots(saccades_combined, 'median_translational_vel_mPs', 'category', ['free', 'associated', 'body', 'intersaccadic'], True)
 
     plot_saccade_data(mean_triggered_average)
+    saccades_combined = saccades_combined.dropna(subset=['median_abs_rot_vel_degPs'])
+    rotational_stats, translational_stats = make_statistic_df(saccades_combined)
 
-    return saccades_combined
+    return saccades_combined, rotational_stats, translational_stats
 
 
 if __name__ == "__main__":
     target_folder = '/home/geuba03p/Penguin_Rostock/pengu_head_movies'
-    saccades_combined = main(target_folder)
-    saccades_combined.to_csv('./home/geuba03p/Penguin_Rostock/saccade_speeds_combined.csv')
+    saccades_combined,rotational_stats, translational_stats = main(target_folder)
+    saccades_combined.to_csv('/home/geuba03p/Penguin_Rostock/saccade_speeds_combined.csv')
+    rotational_stats.to_csv('/home/geuba03p/Penguin_Rostock/rotational_velocity_statistics.csv', index=False)
+    translational_stats.to_csv('/home/geuba03p/Penguin_Rostock/translational_velocity_statistics.csv', index=False)
+
     plt.show()
 
 
