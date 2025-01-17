@@ -426,7 +426,7 @@ def main(target_folder, mode, frame_rate=25, window_length=25, angle_vel_thresho
 
 
 if __name__ == "__main__":
-    target_folder = '/home/bgeurten/pengu_head_movies/'
+    target_folder = '/home/geuba03p/Penguin_Rostock/pengu_head_movies/'
     main(target_folder,'head')
     main(target_folder,'body')
     plt.show()

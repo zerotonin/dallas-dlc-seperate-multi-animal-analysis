@@ -12,6 +12,7 @@ def compute_stats(group):
     median = np.median(durations)
     mean = np.mean(durations)
     sem = scipy.stats.sem(durations)
+    max_dur =np.max(durations)
     if n > 1:
         ci_low, ci_high = scipy.stats.t.interval(0.95, n-1, loc=mean, scale=sem)
     else:
@@ -22,6 +23,7 @@ def compute_stats(group):
         'Lower 95% CI': ci_low,
         'Upper 95% CI': ci_high,
         'Mean Dur (ms)': mean,
+        'Max. Dur (ms)': max_dur,
         'SEM': sem
     })
 
@@ -113,7 +115,7 @@ stats_df = grouped.apply(compute_stats).reset_index()
 
 # Rearranging columns
 stats_df = stats_df[['dataset', 'species', 'movement_type', 'bodypart',
-                     'Median Dur (ms)', 'Lower 95% CI', 'Upper 95% CI', 'Mean Dur (ms)', 'SEM']]
+                     'Median Dur (ms)', 'Lower 95% CI', 'Upper 95% CI', 'Mean Dur (ms)',"Max. Dur (ms)", 'SEM']]
 
 # Save the statistics table to a CSV file
 stats_df.to_csv('/home/geuba03p/Penguin_Rostock/saccade_statistics.csv', index=False)
