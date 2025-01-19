@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class SaccadeAnalysis: 
     """
-    SaccadeAnalyser is a class for analyzing saccadic eye movements.
+    SaccadeAnalyser is a class for analyzing saccadic  movements.
 
     The class computes angular velocities from a given list of angles, then identifies saccades based on these velocities.
     It separates positive and negative saccades, normalizes the saccades, and transforms the data into matrices for further analysis.
