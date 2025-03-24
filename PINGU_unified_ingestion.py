@@ -33,6 +33,7 @@ IM_HEIGHT = 788
 FRAME_RATE_OPEN = 30
 PIX2M = np.array([0.97/124.6, 0.3/66, 0.4/76.2]).mean()
 FRAME_RATE_CLOSED = 25
+CURRENT_TID = 0
 
 # Final columns we expect
 REQUIRED_COLS = [
@@ -76,7 +77,6 @@ def ingest_open_data(path_open: str) -> pd.DataFrame:
     file_list = glob.glob(pattern, recursive=True)
 
     all_trajectories = []
-    current_tid = 0  # GLOBAL ID across all segments in all files
 
     for file_path in file_list:
         df_raw = pd.read_hdf(file_path)
@@ -132,10 +132,10 @@ def ingest_open_data(path_open: str) -> pd.DataFrame:
             df_seg["species"] = species
 
             df_seg["dataset"] = "open"
-
+            global CURRENT_TID
             # Assign a new trajectory_id for this segment
-            df_seg["trajectory_id"] = current_tid
-            current_tid += 1
+            df_seg["trajectory_id"] = CURRENT_TID
+            CURRENT_TID += 1
 
             # Ensure required columns
             for col in REQUIRED_COLS:
@@ -168,8 +168,7 @@ def ingest_closed_data(path_closed: str) -> pd.DataFrame:
 
     grouped = df_all.groupby("Identifier")
     all_parts = []
-    current_tid = 0  # increment for each group
-
+   
     for ident_value, df_sub in grouped:
         df_sub = df_sub.copy()
         df_sub["frame_index"] = df_sub.index
@@ -191,8 +190,9 @@ def ingest_closed_data(path_closed: str) -> pd.DataFrame:
         df_sub["dataset"] = "closed"
 
         # new trajectory_id
-        df_sub["trajectory_id"] = current_tid
-        current_tid += 1
+        global CURRENT_TID
+        df_sub["trajectory_id"] = CURRENT_TID
+        CURRENT_TID += 1
 
         # fill missing
         for col in REQUIRED_COLS:
